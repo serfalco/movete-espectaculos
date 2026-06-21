@@ -1,0 +1,10 @@
+REPO movete-espectaculos:
+  generar_edicion.py   -> generador principal de la edición HTML
+  venues.py            -> lista blanca de venues masivos (UNO != Único)
+  edicion.py           -> lógica de fechas jueves->miércoles
+  style.css            -> CSS reusado del theme (tokens, colores, fuentes)
+  assets/              -> logos, iconos por categoría, placeholders
+  eventos.json         -> EJEMPLO real (lo genera el scraper; reemplazar por el real)
+  edicion-ejemplo.html -> resultado renderizado, para abrir y ver
+
+Para generar:  python3 -c "from generar_edicion import generar; generar('eventos.json','index.html')"

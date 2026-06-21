@@ -1,0 +1,581 @@
+/*
+ Theme Name:   MoVeTe Child
+ Theme URI:    https://movete.info
+ Description:  Child theme de GeneratePress para MoVeTe — Agenda Cultural del Gran La Plata
+ Author:       MoVeTe
+ Template:     generatepress
+ Version:      2.1.0
+*/
+
+/* =========================================================
+   IMPORTS
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* =========================================================
+   TOKENS
+   ========================================================= */
+:root {
+  --ink:       #0e0d10;
+  --paper:     #f5f1e8;
+  --accent:    #ff5128;
+  --accent2:   #e8c547;
+  --muted:     rgba(14,13,16,0.45);
+  --border:    rgba(14,13,16,0.12);
+
+  --cat-stand-up:     #ff5128;
+  --cat-teatro:       #7b5ea7;
+  --cat-musica:       #2e86ab;
+  --cat-impro:        #f18f01;
+  --cat-danza:        #c73e1d;
+  --cat-cine:         #3b1f2b;
+  --cat-infantil:     #44bba4;
+  --cat-taller:       #393e41;
+  --cat-a-plasticas:  #b5651d;
+
+  --ff-serif:  'Fraunces', Georgia, serif;
+  --ff-mono:   'JetBrains Mono', 'Courier New', monospace;
+
+  --r: 4px;
+  --shadow: 0 2px 12px rgba(14,13,16,0.10);
+}
+
+/* =========================================================
+   RESET + BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ff-mono);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .movete-title {
+  font-family: var(--ff-serif);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.site-header {
+  background: var(--ink) !important;
+  padding: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: padding 0.25s ease, box-shadow 0.25s ease;
+}
+.site-header.scrolled {
+  box-shadow: 0 2px 20px rgba(14,13,16,0.4);
+}
+.site-header .inside-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   LOGO "MoVeTe" — apunta a .main-title (lo que GP genera)
+   GP mete CSS inline → necesitamos html body para ganarle
+   ========================================================= */
+body .site-header .header-image,
+body .site-header img.header-image,
+body .site-logo,
+body .site-header .site-logo,
+body .header-image.is-logo-image {
+  display: none !important;
+}
+
+html body .site-branding .main-title,
+html body .site-branding .main-title a,
+html body .site-branding .main-title a:link,
+html body .site-branding .main-title a:visited,
+html body .site-branding .main-title a:hover,
+html body .site-branding p.main-title a,
+html body .site-branding p.main-title {
+  color: #f5f1e8 !important;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+/* Puntito naranja del logo */
+html body .site-branding .main-title a::after,
+html body p.main-title a::after {
+  content: '' !important;
+  display: inline-block !important;
+  width: 9px !important;
+  height: 9px !important;
+  background: #ff5128 !important;
+  border-radius: 50% !important;
+  margin-left: 5px !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+}
+
+.site-header.scrolled .main-title a { font-size: 24px !important; }
+.movete-logo-dot { display: none; }
+
+/* =========================================================
+   NAVEGACIÓN
+   ========================================================= */
+html body .main-navigation .main-nav ul li a,
+html body .main-navigation ul li a,
+html body #site-navigation ul li a,
+html body nav.main-navigation .menu-item > a {
+  color: #f5f1e8 !important;
+  opacity: 1 !important;
+  font-family: var(--ff-mono) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 6px 14px !important;
+  text-shadow: none !important;
+  transition: color 0.15s ease !important;
+}
+html body .main-navigation ul li a:hover { color: var(--accent) !important; }
+
+/* "Hoy" con puntito naranja pulsante */
+.menu-item-hoy > a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.movete-hoy-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: movete-pulse 1.6s ease-in-out infinite;
+}
+@keyframes movete-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.75); }
+}
+
+/* "Cargar evento" — sin decoración */
+.menu-item-cta > a {
+  border: none !important;
+  text-decoration: none !important;
+}
+
+/* "Compartir" — pill verde WhatsApp */
+html body .main-navigation li.menu-item-compartir > a,
+html body .main-navigation li.cta-share > a {
+  background: #25d366 !important;
+  color: #0d0d0d !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+html body .main-navigation li.menu-item-compartir > a:hover,
+html body .main-navigation li.cta-share > a:hover {
+  background: #1ebe5d !important;
+  color: #0d0d0d !important;
+}
+
+/* Dropdown */
+.main-navigation ul ul {
+  background: var(--ink) !important;
+  border: 1px solid rgba(245,241,232,0.1) !important;
+  border-radius: var(--r) !important;
+  min-width: 180px !important;
+}
+.main-navigation ul ul li a {
+  border-bottom: 1px solid rgba(245,241,232,0.06) !important;
+}
+
+/* =========================================================
+   HERO (front-page)
+   ========================================================= */
+.movete-hero {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 80px 24px 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.movete-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(255,81,40,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.movete-hero h1 {
+  font-size: clamp(48px, 9vw, 110px);
+  color: var(--paper);
+  margin: 0 0 16px;
+}
+.movete-hero h1 .italic { font-style: italic; color: var(--accent); }
+.movete-hero p {
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(245,241,232,0.55);
+  margin: 0;
+}
+
+/* =========================================================
+   CATEGORÍAS — GRID
+   ========================================================= */
+.movete-cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 40px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.movete-cat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  border-radius: var(--r);
+  border: 1px solid transparent;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.movete-cat-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  color: var(--paper);
+  text-decoration: none;
+}
+.movete-cat-card .cat-icon { font-size: 24px; line-height: 1; }
+.movete-cat-card .cat-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   LISTA DE EVENTOS
+   ========================================================= */
+.movete-event-list {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+.movete-event-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 20px;
+  align-items: start;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.12s ease;
+}
+.movete-event-item:hover { background: rgba(14,13,16,0.03); color: var(--ink); }
+.movete-event-date {
+  text-align: center;
+  font-family: var(--ff-mono);
+}
+.movete-event-date .day {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+.movete-event-date .month {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.movete-event-title {
+  font-family: var(--ff-serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 6px;
+}
+.movete-event-meta {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.movete-event-cat {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border-radius: 2px;
+  color: #fff;
+  background: var(--accent);
+}
+
+/* =========================================================
+   BOTÓN COMPARTIR EN EVENTO (single)
+   ========================================================= */
+.movete-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25d366;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--r);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  margin-top: 24px;
+  transition: background 0.15s ease;
+}
+.movete-share-btn:hover { background: #1ebe5d; color: #fff; text-decoration: none; }
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+.site-footer {
+  background: var(--ink) !important;
+  color: rgba(245,241,232,0.6) !important;
+}
+.site-footer a { color: var(--accent) !important; }
+.site-info {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 20px;
+}
+
+/* =========================================================
+   PÁGINA /HOY/
+   ========================================================= */
+.movete-hoy-hero {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 60px 24px 48px;
+  text-align: center;
+}
+.movete-hoy-hero h1 {
+  font-size: clamp(36px, 7vw, 80px);
+  color: var(--paper);
+  margin: 0 0 8px;
+}
+.movete-hoy-hero h1 .count { color: var(--accent); font-style: italic; }
+.movete-hoy-hero p {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(245,241,232,0.45);
+  margin: 0;
+}
+.movete-hoy-empty {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 80px 24px;
+  text-align: center;
+}
+.movete-hoy-empty h1 {
+  font-size: clamp(32px, 6vw, 64px);
+  color: var(--paper);
+}
+.movete-hoy-empty p { color: rgba(245,241,232,0.5); font-size: 13px; }
+.movete-hoy-empty a { color: var(--accent); }
+
+/* =========================================================
+   PÁGINA /CINE/
+   ========================================================= */
+.movete-cine-page-header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 60px 24px 48px;
+  text-align: center;
+  border-bottom: 3px solid var(--accent);
+}
+.movete-cine-page-header h1 {
+  font-family: var(--ff-serif);
+  font-size: clamp(36px, 7vw, 72px);
+  font-weight: 900;
+  color: var(--paper);
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+}
+.movete-cine-page-header h1 .highlight { color: var(--accent); font-style: italic; }
+.movete-cine-page-header p {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(245,241,232,0.45);
+  margin: 0;
+}
+.movete-cartelera {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+.movete-cine {
+  margin-bottom: 56px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 48px;
+}
+.movete-cine:last-child { border-bottom: none; }
+.movete-cine-title {
+  font-family: var(--ff-serif);
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.movete-cine-direccion {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0 0 28px;
+}
+.movete-pelicula-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.movete-pelicula {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 20px;
+  align-items: start;
+  padding: 20px;
+  background: #fff;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.movete-pelicula:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(14,13,16,0.12);
+}
+.movete-pelicula-poster {
+  width: 110px;
+  height: 165px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+  background: var(--ink);
+}
+.movete-pelicula-info { display: flex; flex-direction: column; gap: 8px; }
+.movete-pelicula-titulo {
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+.movete-pelicula-meta {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.movete-pelicula-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.movete-pelicula-meta .sep { opacity: 0.3; }
+.movete-pelicula-funciones {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.movete-pelicula-funciones li {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  cursor: default;
+  transition: background 0.12s ease;
+}
+.movete-pelicula-funciones li:hover { background: var(--accent); }
+.movete-pelicula-badge {
+  display: inline-block;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+}
+.badge-sub  { color: var(--cat-teatro); }
+.badge-dob  { color: var(--cat-musica); }
+.badge-3d   { color: var(--accent); }
+.badge-4dx  { color: var(--cat-stand-up); }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+  .movete-cats { grid-template-columns: repeat(3, 1fr); }
+  .movete-event-item { grid-template-columns: 56px 1fr; }
+  .movete-event-item > *:last-child { display: none; }
+  .movete-pelicula { grid-template-columns: 80px 1fr; gap: 14px; padding: 14px; }
+  .movete-pelicula-poster { width: 80px; height: 120px; }
+  .movete-pelicula-titulo { font-size: 16px; }
+  .movete-pelicula-funciones li { font-size: 12px; padding: 4px 10px; }
+  .movete-cine-title { font-size: 28px; }
+  .movete-cartelera { padding: 32px 16px 60px; }
+  .main-navigation .menu-item-hoy > a { padding-left: 40px !important; position: relative !important; }
+  .main-navigation .menu-item-hoy > a .movete-hoy-dot {
+    position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+  }
+}

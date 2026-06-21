@@ -1,0 +1,2165 @@
+{
+  "generado": "2026-06-21T09:15:03",
+  "total": 238,
+  "por_fuente": {
+    "genda": 162,
+    "livepass": 34,
+    "alternativa": 38,
+    "teatro_metro": 2,
+    "coliseo": 21,
+    "opera": 6,
+    "eventbrite": 0
+  },
+  "por_categoria": {
+    "a-plasticas": 20,
+    "teatro": 93,
+    "stand-up": 5,
+    "cine": 38,
+    "infantil": 15,
+    "musica": 67
+  },
+  "eventos": [
+    {
+      "titulo": "La Feria del Playón – Meridiano V",
+      "fecha": "2026-06-21 11:00:00",
+      "lugar": "Meridiano V",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Feria de Parque Saavedra",
+      "fecha": "2026-06-21 12:00:00",
+      "lugar": "Jardín Botánico del Parque Saavedra - Casa histórica Pedro Benoit - Biblioteca Del otro lado del Arb",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Ciencia y juego para las infancias",
+      "fecha": "2026-06-21 13:00:00",
+      "lugar": "República de los Niños",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Un viaje por el aire y el tiempo - Animales del pasado y el presente",
+      "fecha": "2026-06-21 13:30:00",
+      "lugar": "Museo de Ciencias Naturales de La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Los hornos 1103 pasos",
+      "fecha": "2026-06-21 14:00:00",
+      "lugar": "AV. 66 Y 173, LOS HORNOS",
+      "direccion": "Av. 66 y 173, Los Hornos, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101243-los-hornos-1103-pasos?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Metro y medio - humor físico, absurdo y delirante de Maku Fanchulini",
+      "fecha": "2026-06-21 15:00:00",
+      "lugar": "República de los Niños",
+      "direccion": "",
+      "categoria": "stand-up",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Funciones en el planetario",
+      "fecha": "2026-06-21 15:00:00",
+      "lugar": "Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "José maría muscari",
+      "fecha": "2026-06-21 15:00:00",
+      "lugar": "Escenario 40",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Blow up",
+      "fecha": "2026-06-21 16:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Chingalepa",
+      "fecha": "2026-06-21 17:00:00",
+      "lugar": "Teatro Metro",
+      "direccion": "",
+      "categoria": "infantil",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Jam de Dibujo con Modelo Vivo, ¡y la temática es geisha samurai!",
+      "fecha": "2026-06-21 17:30:00",
+      "lugar": "La Culturosa",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tristán, los días por venir",
+      "fecha": "2026-06-21 18:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Isa Kremer",
+      "fecha": "2026-06-21 18:00:00",
+      "lugar": "Teatro de Cámara City Bell",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El juego de 22 - Documental sobre Tomás Felipe \"Trinche\" Carlovich",
+      "fecha": "2026-06-21 18:00:00",
+      "lugar": "Teatro El Altillo del Sur",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Rocambole en el camino",
+      "fecha": "2026-06-21 18:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Señorita argentina",
+      "fecha": "2026-06-21 19:00:00",
+      "lugar": "Pasaje Dardo Rocha",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Greyville, nuevo country",
+      "fecha": "2026-06-21 19:00:00",
+      "lugar": "Casa Hereje",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Carles - El eslabón perdido del rock nacional",
+      "fecha": "2026-06-21 19:00:00",
+      "lugar": "Teatro Abierto",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Noches de observación: La Luna",
+      "fecha": "2026-06-21 19:05:00",
+      "lugar": "Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Édoras Folk",
+      "fecha": "2026-06-21 20:00:00",
+      "lugar": "La Peña de las Bellas Artes",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tiempo de revancha - Dir. Adolfo Aristarain Año: 1981",
+      "fecha": "2026-06-21 20:00:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Boa noite banda - Canciones rioplatenses y brasileras",
+      "fecha": "2026-06-21 20:00:00",
+      "lugar": "Desafinado Club",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Ghost in the shell 2.0",
+      "fecha": "2026-06-21 20:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Bajo la Tormenta",
+      "fecha": "2026-06-21 20:00:00",
+      "lugar": "TEATRO ARMANDO DISCEPOLO",
+      "direccion": "Calle 12 entre 62 Y 63, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra101524-bajo-la-tormenta",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Valentina Zapata",
+      "fecha": "2026-06-21 21:00:00",
+      "lugar": "Entre Pueblos",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Leona + Santina avendaño + Livia",
+      "fecha": "2026-06-21 21:00:00",
+      "lugar": "Pura Vida",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Matías Martín Hargo cuarteto - Homenaje a Charlie Parker",
+      "fecha": "2026-06-21 22:00:00",
+      "lugar": "Desafinado Club",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Una historia sencilla",
+      "fecha": "2026-06-21 22:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Memoria, rock y resistencia en el sótano de diagonal 77",
+      "fecha": "2026-06-22 17:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Rocambole en el camino",
+      "fecha": "2026-06-22 18:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Mulholland Drive",
+      "fecha": "2026-06-22 19:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Familia (Dir. Ettore Scola - 1987)",
+      "fecha": "2026-06-22 20:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Laberinto Podestá, el último aplauso",
+      "fecha": "2026-06-22 20:30:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "teatro",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/teatro-inmersivo/laberinto-podesta-el-ultimo-aplauso",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Nunca es tarde para amar (Gianni Di Gregorio, 2022)",
+      "fecha": "2026-06-23 16:00:00",
+      "lugar": "Asociación de Jubilados y Pensionados de la Caja de Previsión Social para Abogados de la Prov de Bs",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Encuentro ajedrecístico",
+      "fecha": "2026-06-23 17:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La música está en el poema",
+      "fecha": "2026-06-23 18:00:00",
+      "lugar": "Museo Almafuerte",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Belén - Cine Debate “Soberanía de los cuerpos. Derechos sexuales y (no) reproductivos”",
+      "fecha": "2026-06-23 18:00:00",
+      "lugar": "Centro de Capacitación, Información e Investigación Educativa (CIIE)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tristán, los días por venir",
+      "fecha": "2026-06-23 18:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Rocambole en el camino",
+      "fecha": "2026-06-23 18:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Cinema Paradiso",
+      "fecha": "2026-06-23 20:00:00",
+      "lugar": "Desafinado Club",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Matinee - Dir. Joe Dante - 1993",
+      "fecha": "2026-06-23 20:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Muestra del taller del match de improvisacion",
+      "fecha": "2026-06-23 20:00:00",
+      "lugar": "SALA 420",
+      "direccion": "Calle 42 N° 571 entre 6 y 7, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101265-muestra-del-taller-del-match-de-improvisacion?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Robin Redbreast (Dir. James MacTaggart - 1970)",
+      "fecha": "2026-06-23 20:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Sinners (Ryan Coogler, 2025)",
+      "fecha": "2026-06-23 20:30:00",
+      "lugar": "Refugio 62",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Inland Empire",
+      "fecha": "2026-06-23 21:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-06-24 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-06-24 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El jeque blanco (Federico Fellini - 1952)",
+      "fecha": "2026-06-24 17:30:00",
+      "lugar": "Teatro Bar Cultural La Ferretería",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tristán, los días por venir",
+      "fecha": "2026-06-24 18:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Rocambole en el camino",
+      "fecha": "2026-06-24 18:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "F for Fake (Orson Welles, 1973)",
+      "fecha": "2026-06-24 20:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Blade Runner (1982, Ridley Scott)",
+      "fecha": "2026-06-24 20:00:00",
+      "lugar": "La Maga Club De Arte",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Nina Suárez",
+      "fecha": "2026-06-24 20:00:00",
+      "lugar": "Guajira Bar",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Metrópolis (2001 - Dir. Hayashi Shigeyuki)",
+      "fecha": "2026-06-24 20:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Joana Queiroz y Rafael Martini",
+      "fecha": "2026-06-24 21:00:00",
+      "lugar": "Marma Casa de Arte",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Mulholland Drive",
+      "fecha": "2026-06-24 22:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-06-25 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-06-25 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Rojos globos rojos",
+      "fecha": "2026-06-25 20:00:00",
+      "lugar": "Teatro y Museo Coliseo Podestá",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Fabio Lione + Christian Bertoncelli",
+      "fecha": "2026-06-25 20:00:00",
+      "lugar": "Teatro René Favaloro",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Corridas club + m4ly + Maia Dros",
+      "fecha": "2026-06-25 20:00:00",
+      "lugar": "Ciudad de Gatos",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Mártires (Dir. Pascal Laugier - 2008)",
+      "fecha": "2026-06-25 20:30:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "¿Donde hay un mango? - Edición especial homenaje al Indio",
+      "fecha": "2026-06-25 21:00:00",
+      "lugar": "Casa Cuchá - Asociación Profesional de Músicos (APM)",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Gatillero (2025) Dir. Cris Tapia Marchiori",
+      "fecha": "2026-06-25 21:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Show de Humor Astuto",
+      "fecha": "2026-06-25 21:30:00",
+      "lugar": "Lázuli",
+      "direccion": "",
+      "categoria": "stand-up",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Juegos Bonaerenses 2026 Cultura - Cierre",
+      "fecha": "2026-06-26 09:00:00",
+      "lugar": "Centro Cultural Islas Malvinas - Museo Y Galería Fotográfica Mugafo",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-06-26 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-06-26 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Zamana + Ensayo sobre la miopía + Conversatorio con Juliana Schwindt",
+      "fecha": "2026-06-26 16:00:00",
+      "lugar": "Centro de Arte UNLP",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Si me pierdo en un día nublado (Dir. Lara Novomisky)",
+      "fecha": "2026-06-26 18:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Jacob's Ladder (1990) de Adrian Lyne",
+      "fecha": "2026-06-26 19:00:00",
+      "lugar": "Espacio Satélite",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Observación astronómica",
+      "fecha": "2026-06-26 20:00:00",
+      "lugar": "Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Ramiro Sagasti (Pérez)",
+      "fecha": "2026-06-26 20:00:00",
+      "lugar": "1/2 Galon Beer Store",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Paralapsus + Fuego fatuo",
+      "fecha": "2026-06-26 20:00:00",
+      "lugar": "Casa Unclan",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Peña la Luna Cautiva",
+      "fecha": "2026-06-26 20:00:00",
+      "lugar": "Casa Metro",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Bandurria",
+      "fecha": "2026-06-26 20:00:00",
+      "lugar": "Esquina América",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Laberinto Borges",
+      "fecha": "2026-06-26 20:30:00",
+      "lugar": "Teatro Espacio 44",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Adela, todavía estoy acá",
+      "fecha": "2026-06-26 20:30:00",
+      "lugar": "Teatro El Escape",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Lo mejor de Queen y Elton John, por Martin Babenco",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Espacio Live",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El maletín rojo",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "La Lechuza Teatro",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Fuerza Profes",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Teatro La Nonna",
+      "direccion": "",
+      "categoria": "stand-up",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Pandora",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Casa Hereje",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Consagrado a Marte + Sync rodeos",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Mush Room",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Las fiebres polares + Kalaharired",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Casa Unclan",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Modo Tester - Cimon y los caballeros - San Francisco al sur",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Teatro Bar Cultural La Ferretería",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Made In Lanús",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "Teatro y Museo Coliseo Podestá",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Sweet Lovers",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "CENTRO CULTURAL VIEJO ALMACEN EL OBRERO",
+      "direccion": "Av 13 1900 esquina 71, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas97404-sweet-lovers?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "En la orilla",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "TEATRO ABIERTO",
+      "direccion": "38 e/ 20 y 21 n 1263, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas100153-en-la-orilla?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "El puente azul",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "LA MERCERIA TEATRO",
+      "direccion": "Calle 1 Nº 210, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas100397-el-puente-azul?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Volcada",
+      "fecha": "2026-06-26 21:00:00",
+      "lugar": "ÁREA CHICA",
+      "direccion": "Boulevard 83 403, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101161-volcada?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Sociedad Platense de Stand Up",
+      "fecha": "2026-06-26 21:30:00",
+      "lugar": "TRES EMPANADAS COMEDIA",
+      "direccion": "Calle 43 N°1349, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra85003-sociedad-platense-de-stand-up",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Cronopios III",
+      "fecha": "2026-06-26 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101284-cronopios-iii?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Inland Empire",
+      "fecha": "2026-06-26 23:55:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Hay escarcha + Los posibles + Lape",
+      "fecha": "2026-06-26 23:55:00",
+      "lugar": "Casa Unclan",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Feria de Artesanos Manos Platenses",
+      "fecha": "2026-06-27 10:00:00",
+      "lugar": "Calle Cantilo - City Bell",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Feria del Playón – Meridiano V",
+      "fecha": "2026-06-27 11:00:00",
+      "lugar": "Meridiano V",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Feria de Parque Saavedra",
+      "fecha": "2026-06-27 12:00:00",
+      "lugar": "Jardín Botánico del Parque Saavedra - Casa histórica Pedro Benoit - Biblioteca Del otro lado del Arb",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Un viaje por el aire y el tiempo - Animales del pasado y el presente",
+      "fecha": "2026-06-27 13:30:00",
+      "lugar": "Museo de Ciencias Naturales de La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-06-27 15:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Encuentro de la escuela abierta del arroyo El Pescado",
+      "fecha": "2026-06-27 15:00:00",
+      "lugar": "Club Unidos por Villa Garibaldi",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Ciencia y fútbol - Cátedra de fisiología humana con actividades - Intercambio de figuritas - Juegos y trivias",
+      "fecha": "2026-06-27 15:00:00",
+      "lugar": "Museo de Fisica",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Sant Joan - Fiesta Catalana - Ron cremat y quema de deseos",
+      "fecha": "2026-06-27 16:00:00",
+      "lugar": "Centro Cultural Islas Malvinas - Museo Y Galería Fotográfica Mugafo",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Gamer",
+      "fecha": "2026-06-27 16:00:00",
+      "lugar": "Teatro La Nonna",
+      "direccion": "",
+      "categoria": "infantil",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Entrelazamiento Cuántico y su relación con la Filosofía Zen - Monje Zen y Doctor en Física Alan Boette",
+      "fecha": "2026-06-27 18:00:00",
+      "lugar": "Espacio Moliere",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Destino circular - juntarse, desarmar, armar",
+      "fecha": "2026-06-27 18:00:00",
+      "lugar": "Azulunala",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Hágase el favor de hacerse una pregunta",
+      "fecha": "2026-06-27 18:00:00",
+      "lugar": "Centro de Arte UNLP",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Casa Pulsar le canta al Indio Solari",
+      "fecha": "2026-06-27 19:00:00",
+      "lugar": "Casa Pulsar",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Mora y los metegoles + Chicobruja",
+      "fecha": "2026-06-27 19:00:00",
+      "lugar": "Guajira Bar",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El vuelo de las brujas",
+      "fecha": "2026-06-27 19:00:00",
+      "lugar": "CENTRO CULTURAL VIEJO ALMACEN EL OBRERO",
+      "direccion": "Av 13 1900 esquina 71, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas94808-el-vuelo-de-las-brujas?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Héroe lírico & pop",
+      "fecha": "2026-06-27 20:30:00",
+      "lugar": "Teatro y Museo Coliseo Podestá",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Nona",
+      "fecha": "2026-06-27 21:00:00",
+      "lugar": "Teatro UNLP y Biblioteca Popular Teatral de La Plata \"Alberto Mediza\"",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El maletín rojo",
+      "fecha": "2026-06-27 21:00:00",
+      "lugar": "La Lechuza Teatro",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Flema - Nunca seré policía",
+      "fecha": "2026-06-27 21:00:00",
+      "lugar": "Pura Vida",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Lo quiero ya",
+      "fecha": "2026-06-27 21:00:00",
+      "lugar": "Teatro Estudio",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La cantante calva",
+      "fecha": "2026-06-27 21:00:00",
+      "lugar": "LA MERCERIA TEATRO",
+      "direccion": "Calle 1 Nº 210, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas97717-la-cantante-calva?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Argentina en pantalla grande",
+      "fecha": "2026-06-27 23:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Feria del Playón – Meridiano V",
+      "fecha": "2026-06-28 11:00:00",
+      "lugar": "Meridiano V",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Feria de Parque Saavedra",
+      "fecha": "2026-06-28 12:00:00",
+      "lugar": "Jardín Botánico del Parque Saavedra - Casa histórica Pedro Benoit - Biblioteca Del otro lado del Arb",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La plata al piso X bajitos - Evento de autos",
+      "fecha": "2026-06-28 13:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Un viaje por el aire y el tiempo - Animales del pasado y el presente",
+      "fecha": "2026-06-28 13:30:00",
+      "lugar": "Museo de Ciencias Naturales de La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Clarita y sus Princesas",
+      "fecha": "2026-06-28 16:00:00",
+      "lugar": "Teatro La Nonna",
+      "direccion": "",
+      "categoria": "infantil",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Merienda y mosaiquismo",
+      "fecha": "2026-06-28 16:00:00",
+      "lugar": "Lázuli",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "El pibe Materia - Desatanudos - Poderes extraños - Tranza - Las olas rompen - No Fumar",
+      "fecha": "2026-06-28 17:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Cortado Doble",
+      "fecha": "2026-06-28 17:00:00",
+      "lugar": "Espacio Medusa",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Pequeño pez",
+      "fecha": "2026-06-28 17:00:00",
+      "lugar": "Teatro Metro",
+      "direccion": "",
+      "categoria": "infantil",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Gatillero (2025) Dir. Cris Tapia Marchiori",
+      "fecha": "2026-06-28 19:00:00",
+      "lugar": "Cine Club Proyecciones Terrestres",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Carles - El eslabón perdido del rock nacional",
+      "fecha": "2026-06-28 19:00:00",
+      "lugar": "Teatro Abierto",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Con tu propio miedo",
+      "fecha": "2026-06-28 19:00:00",
+      "lugar": "ESPACIO 44",
+      "direccion": "Av. 44 N° 496 entre 4 y 5, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas86399-con-tu-propio-miedo?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Primera noche",
+      "fecha": "2026-06-28 19:00:00",
+      "lugar": "LA MERCERIA TEATRO",
+      "direccion": "Calle 1 Nº 210, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas100201-primera-noche?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Petit hotel, el último suspiro - Un hospedaje clownesco",
+      "fecha": "2026-06-28 19:30:00",
+      "lugar": "Casa Hereje",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Maldita felicidad",
+      "fecha": "2026-06-28 20:00:00",
+      "lugar": "Teatro y Museo Coliseo Podestá",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La parte del león - Dir. Adolfo Aristarain",
+      "fecha": "2026-06-28 20:00:00",
+      "lugar": "Cine Select (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Terciopelo azul",
+      "fecha": "2026-06-28 20:00:00",
+      "lugar": "Cine Ecoselect (Espacio INCAA)",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La casa de Bernarda Alba",
+      "fecha": "2026-06-28 20:00:00",
+      "lugar": "CENTRO CULTURAL VIEJO ALMACEN EL OBRERO",
+      "direccion": "Av 13 1900 esquina 71, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas95366-la-casa-de-bernarda-alba?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Narices negras",
+      "fecha": "2026-06-28 20:00:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101293-narices-negras?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Un maldito embrollo (Pietro Germi, 1959)",
+      "fecha": "2026-06-30 16:00:00",
+      "lugar": "Asociación de Jubilados y Pensionados de la Caja de Previsión Social para Abogados de la Prov de Bs",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La música está en el poema",
+      "fecha": "2026-06-30 18:00:00",
+      "lugar": "Museo Almafuerte",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Luna Violeta - Ensamble de mujeres y disidencias",
+      "fecha": "2026-06-30 18:30:00",
+      "lugar": "Macá Cultura",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Sorry to Bother You (Boots Riley, 2018)",
+      "fecha": "2026-06-30 20:30:00",
+      "lugar": "Refugio 62",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-07-01 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-07-01 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Curso de magia",
+      "fecha": "2026-07-01 17:30:00",
+      "lugar": "Escenario 40",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Sembrando ilusiones (Luigi Comencini - 1972)",
+      "fecha": "2026-07-01 17:30:00",
+      "lugar": "Teatro Bar Cultural La Ferretería",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-07-02 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-07-02 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Mitos y leyendas de mi ciudad - Narración oral + Música",
+      "fecha": "2026-07-02 18:00:00",
+      "lugar": "La Peña de las Bellas Artes",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "¡BANG! ¡BANG!… Estás en La Plata (Un homenaje platense a la obra del Indio)",
+      "fecha": "2026-07-02 18:00:00",
+      "lugar": "Ciudad de Gatos",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Acassuso",
+      "fecha": "2026-07-02 20:00:00",
+      "lugar": "Teatro y Museo Coliseo Podestá",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Gordillo 20 años + 1",
+      "fecha": "2026-07-02 21:00:00",
+      "lugar": "Teatro Metro",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-07-03 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-07-03 11:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "4ta Edición de #LaPlataComic - Invitado especial: Trukini",
+      "fecha": "2026-07-03 12:00:00",
+      "lugar": "Pasaje Dardo Rocha",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tésis (1996) de Alejandro Amenábar",
+      "fecha": "2026-07-03 19:00:00",
+      "lugar": "Espacio Satélite",
+      "direccion": "",
+      "categoria": "cine",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Observación astronómica",
+      "fecha": "2026-07-03 20:00:00",
+      "lugar": "Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Nonpalidese - Nonpalidesenchufado",
+      "fecha": "2026-07-03 20:00:00",
+      "lugar": "Teatro Opera",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "13 y Martes",
+      "fecha": "2026-07-03 20:00:00",
+      "lugar": "Teatro El Escape",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Tinta + Kalahari Red Bazz",
+      "fecha": "2026-07-03 21:00:00",
+      "lugar": "Guajira Bar",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Lula Bertoldi",
+      "fecha": "2026-07-03 21:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "She loves 90s",
+      "fecha": "2026-07-03 21:00:00",
+      "lugar": "El Teatro BAR",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "NONPALIDECE",
+      "fecha": "2026-07-03 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Cronopios IV",
+      "fecha": "2026-07-03 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101285-cronopios-iv?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Feria de Artesanos Manos Platenses",
+      "fecha": "2026-07-04 10:00:00",
+      "lugar": "Calle Cantilo - City Bell",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La Feria del Playón – Meridiano V",
+      "fecha": "2026-07-04 11:00:00",
+      "lugar": "Meridiano V",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Feria de Parque Saavedra",
+      "fecha": "2026-07-04 12:00:00",
+      "lugar": "Jardín Botánico del Parque Saavedra - Casa histórica Pedro Benoit - Biblioteca Del otro lado del Arb",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "4ta Edición de #LaPlataComic - Invitado especial: Trukini",
+      "fecha": "2026-07-04 12:00:00",
+      "lugar": "Pasaje Dardo Rocha",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La imaginación geométrica",
+      "fecha": "2026-07-04 15:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Centro de Arte UNLP",
+      "fecha": "2026-07-04 15:00:00",
+      "lugar": "La Plata",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Café literario",
+      "fecha": "2026-07-04 16:30:00",
+      "lugar": "La Peña de las Bellas Artes",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Húmedas historias platenses",
+      "fecha": "2026-07-04 18:00:00",
+      "lugar": "El Galpón de fierro",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Festejamos los aniversarios de Cádiz, Nápoles & RB - Flash Tatto - Serigrafía - Feria de pilchas, vinilos & libros",
+      "fecha": "2026-07-04 19:00:00",
+      "lugar": "Club Ateneo Popular",
+      "direccion": "",
+      "categoria": "a-plasticas",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Insurrectxs",
+      "fecha": "2026-07-04 20:00:00",
+      "lugar": "Dynamo Teatro",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Luzbelito (tributo a Patricio Rey)",
+      "fecha": "2026-07-04 20:00:00",
+      "lugar": "Casa Suiza",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Las ligas menores",
+      "fecha": "2026-07-04 20:00:00",
+      "lugar": "Ciudad de Gatos",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Entre todos es posible - Show solidario por Santino",
+      "fecha": "2026-07-04 20:00:00",
+      "lugar": "Teatro René Favaloro",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Lluvia Verde",
+      "fecha": "2026-07-04 20:30:00",
+      "lugar": "Teatro El Escape",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Todas Somos YO?",
+      "fecha": "2026-07-04 20:30:00",
+      "lugar": "ESPACIO 44",
+      "direccion": "Av. 44 N° 496 entre 4 y 5, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas100545-todas-somos-yo?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "La risa",
+      "fecha": "2026-07-04 20:30:00",
+      "lugar": "TELON NEGRO TEATRO",
+      "direccion": "13 e/ 32 y 33, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra101374-la-risa",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "La Nona",
+      "fecha": "2026-07-04 21:00:00",
+      "lugar": "Teatro UNLP y Biblioteca Popular Teatral de La Plata \"Alberto Mediza\"",
+      "direccion": "",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Poncio Pilatos",
+      "fecha": "2026-07-04 21:00:00",
+      "lugar": "Casa Pulsar",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Los pararrayos",
+      "fecha": "2026-07-04 21:00:00",
+      "lugar": "Esquina América",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "La H no murió",
+      "fecha": "2026-07-04 21:00:00",
+      "lugar": "Teatro Opera",
+      "direccion": "",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "genda"
+    },
+    {
+      "titulo": "Cronopios V",
+      "fecha": "2026-07-04 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101286-cronopios-v?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Poema criollo. Versos del subsuelo",
+      "fecha": "2026-07-05 19:00:00",
+      "lugar": "ESPACIO 44",
+      "direccion": "Av. 44 N° 496 entre 4 y 5, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra101398-poema-criollo-versos-del-subsuelo",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Laberinto Podestá, el último aplauso",
+      "fecha": "2026-07-06 20:30:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "teatro",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/teatro-inmersivo/laberinto-podesta-el-ultimo-aplauso-0",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "MATCH- TEATRO DEPORTE Y HUMOR",
+      "fecha": "2026-07-10 21:00:00",
+      "lugar": "SALA 420",
+      "direccion": "Calle 42 N° 571 entre 6 y 7, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas83453-match-teatro-deporte-y-humor?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "ALEJANDRA UNA PERFORACIÓN A CIELO ABIERTO",
+      "fecha": "2026-07-10 21:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "teatro",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/comedia/alejandra-una-perforacion-cielo-abierto-2",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Cronopios VI",
+      "fecha": "2026-07-10 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101287-cronopios-vi?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "TAREA FINA",
+      "fecha": "2026-07-11 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "PALITO ORTEGA",
+      "fecha": "2026-07-11 21:00:00",
+      "lugar": "Teatro Argentino La Plata",
+      "direccion": "Av. 51 entre 9 y 10, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Empoederadas",
+      "fecha": "2026-07-11 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas84037-empoederadas?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Bergman y Liv Correspondencia Amorosa",
+      "fecha": "2026-07-17 21:00:00",
+      "lugar": "SALA 420",
+      "direccion": "Calle 42 N° 571 entre 6 y 7, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas74191-bergman-y-liv-correspondencia-amorosa?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Monstruos",
+      "fecha": "2026-07-17 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas95391-monstruos?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "VOZ",
+      "fecha": "2026-07-18 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "VOZ EN ACCIÓN LA FIESTA",
+      "fecha": "2026-07-18 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "teatro",
+      "url": "",
+      "fuente": "opera"
+    },
+    {
+      "titulo": "El hijo del superhéroe",
+      "fecha": "2026-07-20 17:00:00",
+      "lugar": "TEATRO LA LECHUZA",
+      "direccion": "Calle 58 e/ 10 y 11, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101533-el-hijo-del-superheroe?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "LAS AVENTURAS DE MARIO SUPERHEROES AL RESCATE",
+      "fecha": "2026-07-22 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/las-aventuras-de-mario-superheroes-al-rescate",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "JUGUETES EN APUROS UNA NUEVA AVENTURA",
+      "fecha": "2026-07-22 17:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/juguetes-en-apuros-una-nueva-aventura",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Chispa y Estela. La máquina de ser yo",
+      "fecha": "2026-07-23 16:00:00",
+      "lugar": "TEATRO ABIERTO",
+      "direccion": "38 e/ 20 y 21 n 1263, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra101537-chispa-y-estela-la-maquina-de-ser-yo",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "EL CORAZÓN DEL OCÉANO",
+      "fecha": "2026-07-24 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/el-corazon-del-oceano-0",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "ESCUADRÓN AL RESCATE",
+      "fecha": "2026-07-24 17:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/escuadron-al-rescate",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "SKAY Y LOS FAKIRES",
+      "fecha": "2026-07-25 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Plim Plim. Energía Musical Recargada",
+      "fecha": "2026-07-26 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/plim-plim-energia-musical-recargada",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Donde estaré atrapado",
+      "fecha": "2026-07-26 19:00:00",
+      "lugar": "TEATRO EL ESCAPE",
+      "direccion": "44 1443 entre 23 y 24, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra101592-donde-estare-atrapado",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "HÉROE LÍRICO POP, CINEMA LÍRICO",
+      "fecha": "2026-07-26 20:30:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "musica",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/recital/heroe-lirico-pop-cinema-lirico-0",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "MUNDO K-POP CAZADORAS DE DEMONIOS",
+      "fecha": "2026-07-26 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "CANTICUÉNTICOS",
+      "fecha": "2026-07-28 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/canticuenticos-5",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Amazonana",
+      "fecha": "2026-07-28 16:00:00",
+      "lugar": "CENTRO CULTURAL VIEJO ALMACEN EL OBRERO",
+      "direccion": "Av 13 1900 esquina 71, La Plata",
+      "categoria": "teatro",
+      "url": "https://www.alternativateatral.com.ar/obra65505-amazonana",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "LAS GUARDIANAS KPOP, THE OFFICIAL TOUR 2026",
+      "fecha": "2026-07-29 17:30:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/las-guardianas-kpop-official-tour-2026",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "EL BOSQUE ENCANTADO",
+      "fecha": "2026-07-31 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/el-bosque-encantado",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "SONICO RECARGADO",
+      "fecha": "2026-07-31 17:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/sonico-recargado-0",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "LUCAS LAURIENTE STAND UP",
+      "fecha": "2026-07-31 21:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "stand-up",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/stand-humoristico/lucas-lauriente-stand",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Cuentos y canciones de María Elena Walsh",
+      "fecha": "2026-08-01 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/cuentos-y-canciones-de-maria-elena-walsh",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "VIRUS",
+      "fecha": "2026-08-01 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Fiesta PIM PAU",
+      "fecha": "2026-08-02 15:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "infantil",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/infantiles/fiesta-pim-pau",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "DANTE SPINETTA",
+      "fecha": "2026-08-07 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "LA CHIRICHOTA - Vuelven los clásicos",
+      "fecha": "2026-08-07 21:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "stand-up",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/stand-humoristico/la-chirichota-vuelven-los-clasicos",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "Cronopios VII",
+      "fecha": "2026-08-07 21:30:00",
+      "lugar": "ESCENARIO-40",
+      "direccion": "Calle 40 #1180, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas101288-cronopios-vii?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "Noelia Pace. Presenta: Mediumnidad",
+      "fecha": "2026-08-08 20:00:00",
+      "lugar": "Teatro Coliseo Podestá",
+      "direccion": "Calle 10 entre 46 y 47, La Plata",
+      "categoria": "teatro",
+      "url": "https://coliseopodesta.laplata.gob.ar/actividad/evento/noelia-pace-presenta-mediumnidad-2",
+      "fuente": "coliseo"
+    },
+    {
+      "titulo": "LOS PÉREZ GARCÍA",
+      "fecha": "2026-08-08 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Murga: Esa Te La Debo",
+      "fecha": "2026-08-08 21:00:00",
+      "lugar": "COLIBRI ARTE Y CULTURA",
+      "direccion": "Diagonal 77 # 444, La Plata",
+      "categoria": "teatro",
+      "url": "https://publico.alternativateatral.com/entradas74360-murga-esa-te-la-debo?o=6",
+      "fuente": "alternativa"
+    },
+    {
+      "titulo": "JUANSE",
+      "fecha": "2026-08-14 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "LA CUMPARSITA",
+      "fecha": "2026-08-16 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "FALTA Y RESTO",
+      "fecha": "2026-08-18 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "BHAVI",
+      "fecha": "2026-08-23 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "CIELO RAZZO",
+      "fecha": "2026-08-28 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "LOS TIPITOS",
+      "fecha": "2026-08-29 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "SOFIA MORA",
+      "fecha": "2026-09-04 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "JAURIA + LUCHO AL ATTAQUE",
+      "fecha": "2026-09-05 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Valeria Lynch",
+      "fecha": "2026-09-05 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "GUSTAVO SANTAOLALLA",
+      "fecha": "2026-09-12 21:00:00",
+      "lugar": "Teatro Argentino La Plata",
+      "direccion": "Av. 51 entre 9 y 10, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "PASTILLAS DEL ABUELO",
+      "fecha": "2026-09-12 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "DIEGO TORRES",
+      "fecha": "2026-09-19 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "LA CHANCHA MUDA",
+      "fecha": "2026-09-26 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "EMANERO",
+      "fecha": "2026-10-02 21:00:00",
+      "lugar": "Teatro Argentino La Plata",
+      "direccion": "Av. 51 entre 9 y 10, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "CONOCIENDO RUSIA",
+      "fecha": "2026-10-03 21:00:00",
+      "lugar": "Teatro Argentino La Plata",
+      "direccion": "Av. 51 entre 9 y 10, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "Pimpinela",
+      "fecha": "2026-10-03 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "BABASONICOS",
+      "fecha": "2026-11-14 21:00:00",
+      "lugar": "Hipódromo de La Plata",
+      "direccion": "Av. 44 y 115, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    },
+    {
+      "titulo": "BENJAMIN AMADEO",
+      "fecha": "2026-11-21 21:00:00",
+      "lugar": "Teatro Ópera La Plata",
+      "direccion": "Calle 58 entre 10 y 11, La Plata",
+      "categoria": "musica",
+      "url": "",
+      "fuente": "livepass"
+    }
+  ]
+}

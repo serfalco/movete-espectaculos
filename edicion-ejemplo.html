@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qué hacer en La Plata · del 18/6 al 24/6 · MoVeTe</title>
+<meta name="description" content="Agenda de espectáculos del Gran La Plata, del 18/6 al 24/6. Teatro, música, stand-up y los grandes eventos que se vienen.">
+<link rel="stylesheet" href="style.css">
+<style>
+/* --- Solo lo NUEVO de la edición; el resto sale de style.css --- */
+.movete-edicion-hero {
+  background: var(--ink); color: var(--paper);
+  padding: 64px 24px 40px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.movete-edicion-hero::before {
+  content:""; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(255,81,40,0.12) 0%, transparent 70%);
+}
+.movete-edicion-hero h1 {
+  font-family: var(--ff-serif); font-weight: 900;
+  font-size: clamp(36px, 7vw, 84px); margin: 0 0 14px; color: var(--paper);
+  position: relative;
+}
+.movete-edicion-hero h1 .italic { font-style: italic; color: var(--accent); }
+.movete-edicion-hero .rango {
+  font-family: var(--ff-mono); font-size: 13px; text-transform: uppercase;
+  letter-spacing: 0.18em; color: rgba(245,241,232,0.6); margin: 0; position: relative;
+}
+
+.nav-sticky {
+  position: sticky; top: 0; z-index: 90;
+  background: var(--paper); border-bottom: 1px solid var(--border);
+  padding: 12px 16px; display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center; justify-content: center;
+}
+.nav-sticky a.salto {
+  font-family: var(--ff-serif); font-weight: 700; font-size: 14px;
+  text-decoration: none; color: var(--ink); padding: 6px 14px;
+  border: 1.5px solid var(--ink); border-radius: var(--r);
+}
+.nav-sticky a.salto:hover { background: var(--ink); color: var(--paper); }
+.nav-sep { width:1px; height:22px; background: var(--border); margin: 0 4px; }
+.filtro-cat {
+  font-family: var(--ff-mono); font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 5px 12px; cursor: pointer; transition: all 0.15s;
+}
+.filtro-cat:hover { color: var(--ink); border-color: var(--ink); }
+.filtro-cat.activa { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.seccion { max-width: 900px; margin: 0 auto; padding: 48px 24px 8px; }
+.seccion-titulo {
+  font-family: var(--ff-serif); font-weight: 900; font-size: clamp(28px,5vw,44px);
+  margin: 0 0 4px; letter-spacing: -0.02em;
+}
+.seccion-sub {
+  font-family: var(--ff-mono); font-size: 12px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--muted); margin: 0 0 8px;
+}
+.dia-grupo { padding: 0 24px; max-width: 900px; margin: 0 auto; }
+.dia-titulo {
+  font-family: var(--ff-mono); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent);
+  margin: 24px 0 0; padding-top: 16px; border-top: 2px solid var(--ink);
+}
+.movete-event-item.oculto { display: none; }
+.movete-event-title a { color: inherit; text-decoration: none; }
+.movete-event-title a:hover { color: var(--accent); }
+
+footer.movete-footer {
+  background: var(--ink); color: rgba(245,241,232,0.6);
+  text-align: center; padding: 40px 24px; margin-top: 60px;
+  font-family: var(--ff-mono); font-size: 12px;
+}
+footer.movete-footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header" style="background:var(--ink);position:sticky;top:0;z-index:100">
+  <div class="inside-header" style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1200px;margin:0 auto">
+    <a href="/espectaculos/" style="color:var(--paper);font-family:var(--ff-serif);font-weight:900;font-size:28px;text-decoration:none;letter-spacing:-0.02em">MoVeTe<span style="color:var(--accent)">.</span></a>
+    <nav style="font-family:var(--ff-mono);font-size:13px">
+      <a href="/cine/" style="color:rgba(245,241,232,0.7);text-decoration:none;margin-left:18px">Cine</a>
+      <a href="/espectaculos/" style="color:var(--paper);text-decoration:none;margin-left:18px">En vivo</a>
+    </nav>
+  </div>
+</header>
+
+<section class="movete-edicion-hero">
+  <h1>Qué hacer en <span class="italic">La Plata</span></h1>
+  <p class="rango">Edición del 18/6 al 24/6 · 30 eventos esta semana</p>
+</section>
+
+<nav class="nav-sticky">
+  <a class="salto" href="#esta-semana">Esta semana</a>
+  <a class="salto" href="#lo-que-se-viene">Lo que se viene</a>
+  <span class="nav-sep"></span>
+  <button class="filtro-cat activa" data-cat="todas">Todas</button>
+        <button class="filtro-cat" data-cat="a-plasticas">Artes plásticas</button>
+        <button class="filtro-cat" data-cat="teatro">Teatro</button>
+        <button class="filtro-cat" data-cat="stand-up">Stand-up</button>
+        <button class="filtro-cat" data-cat="infantil">Infantil</button>
+        <button class="filtro-cat" data-cat="musica">Música</button>
+</nav>
+
+<section class="seccion" id="esta-semana">
+  <h2 class="seccion-titulo">Esta semana</h2>
+  <p class="seccion-sub">Agenda del del 18/6 al 24/6</p>
+</section>
+<div id="contenedor-semana">
+    <div class="dia-grupo">
+      <h3 class="dia-titulo">Domingo 21 de junio</h3>
+      <div class="movete-event-list">
+      <div class="movete-event-item" data-cat="a-plasticas">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">La Feria del Playón – Meridiano V</h3>
+          <div class="movete-event-meta">11:00 hs · Meridiano V</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-a-plasticas,#393e41);color:#fff">Artes plásticas</span>
+      </div>
+      <div class="movete-event-item" data-cat="a-plasticas">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Feria de Parque Saavedra</h3>
+          <div class="movete-event-meta">12:00 hs · Jardín Botánico del Parque Saavedra - Casa histórica Pedro Benoit - Biblioteca Del otro lado del Arb</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-a-plasticas,#393e41);color:#fff">Artes plásticas</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Ciencia y juego para las infancias</h3>
+          <div class="movete-event-meta">13:00 hs · República de los Niños</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Un viaje por el aire y el tiempo - Animales del pasado y el presente</h3>
+          <div class="movete-event-meta">13:30 hs · Museo de Ciencias Naturales de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title"><a href="https://publico.alternativateatral.com/entradas101243-los-hornos-1103-pasos?o=6" target="_blank" rel="noopener">Los hornos 1103 pasos</a></h3>
+          <div class="movete-event-meta">14:00 hs · AV. 66 Y 173, LOS HORNOS</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="stand-up">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Metro y medio - humor físico, absurdo y delirante de Maku Fanchulini</h3>
+          <div class="movete-event-meta">15:00 hs · República de los Niños</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-stand-up,#393e41);color:#fff">Stand-up</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Funciones en el planetario</h3>
+          <div class="movete-event-meta">15:00 hs · Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">José maría muscari</h3>
+          <div class="movete-event-meta">15:00 hs · Escenario 40</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="infantil">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Chingalepa</h3>
+          <div class="movete-event-meta">17:00 hs · Teatro Metro</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-infantil,#393e41);color:#fff">Infantil</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Jam de Dibujo con Modelo Vivo, ¡y la temática es geisha samurai!</h3>
+          <div class="movete-event-meta">17:30 hs · La Culturosa</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Isa Kremer</h3>
+          <div class="movete-event-meta">18:00 hs · Teatro de Cámara City Bell</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Señorita argentina</h3>
+          <div class="movete-event-meta">19:00 hs · Pasaje Dardo Rocha</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Greyville, nuevo country</h3>
+          <div class="movete-event-meta">19:00 hs · Casa Hereje</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Carles - El eslabón perdido del rock nacional</h3>
+          <div class="movete-event-meta">19:00 hs · Teatro Abierto</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Noches de observación: La Luna</h3>
+          <div class="movete-event-meta">19:05 hs · Observatorio de La Plata - Museo de Astronomía y Geofísica - Planetario</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Édoras Folk</h3>
+          <div class="movete-event-meta">20:00 hs · La Peña de las Bellas Artes</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Boa noite banda - Canciones rioplatenses y brasileras</h3>
+          <div class="movete-event-meta">20:00 hs · Desafinado Club</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title"><a href="https://www.alternativateatral.com.ar/obra101524-bajo-la-tormenta" target="_blank" rel="noopener">Bajo la Tormenta</a></h3>
+          <div class="movete-event-meta">20:00 hs · TEATRO ARMANDO DISCEPOLO</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Valentina Zapata</h3>
+          <div class="movete-event-meta">21:00 hs · Entre Pueblos</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Leona + Santina avendaño + Livia</h3>
+          <div class="movete-event-meta">21:00 hs · Pura Vida</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">21</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Matías Martín Hargo cuarteto - Homenaje a Charlie Parker</h3>
+          <div class="movete-event-meta">22:00 hs · Desafinado Club</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      </div>
+    </div>
+    <div class="dia-grupo">
+      <h3 class="dia-titulo">Lunes 22 de junio</h3>
+      <div class="movete-event-list">
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">22</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Memoria, rock y resistencia en el sótano de diagonal 77</h3>
+          <div class="movete-event-meta">17:00 hs · La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">22</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title"><a href="https://coliseopodesta.laplata.gob.ar/actividad/teatro-inmersivo/laberinto-podesta-el-ultimo-aplauso" target="_blank" rel="noopener">Laberinto Podestá, el último aplauso</a></h3>
+          <div class="movete-event-meta">20:30 hs · Teatro Coliseo Podestá</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      </div>
+    </div>
+    <div class="dia-grupo">
+      <h3 class="dia-titulo">Martes 23 de junio</h3>
+      <div class="movete-event-list">
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">23</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Encuentro ajedrecístico</h3>
+          <div class="movete-event-meta">17:00 hs · La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">23</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">La música está en el poema</h3>
+          <div class="movete-event-meta">18:00 hs · Museo Almafuerte</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">23</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title"><a href="https://publico.alternativateatral.com/entradas101265-muestra-del-taller-del-match-de-improvisacion?o=6" target="_blank" rel="noopener">Muestra del taller del match de improvisacion</a></h3>
+          <div class="movete-event-meta">20:00 hs · SALA 420</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      </div>
+    </div>
+    <div class="dia-grupo">
+      <h3 class="dia-titulo">Miércoles 24 de junio</h3>
+      <div class="movete-event-list">
+      <div class="movete-event-item" data-cat="a-plasticas">
+        <div class="movete-event-date">
+          <span class="day">24</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">La imaginación geométrica</h3>
+          <div class="movete-event-meta">11:00 hs · La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-a-plasticas,#393e41);color:#fff">Artes plásticas</span>
+      </div>
+      <div class="movete-event-item" data-cat="teatro">
+        <div class="movete-event-date">
+          <span class="day">24</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Centro de Arte UNLP</h3>
+          <div class="movete-event-meta">11:00 hs · La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-teatro,#393e41);color:#fff">Teatro</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">24</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Nina Suárez</h3>
+          <div class="movete-event-meta">20:00 hs · Guajira Bar</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">24</span>
+          <span class="month">JUN</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Joana Queiroz y Rafael Martini</h3>
+          <div class="movete-event-meta">21:00 hs · Marma Casa de Arte</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--cat-musica,#393e41);color:#fff">Música</span>
+      </div>
+      </div>
+    </div>
+</div>
+
+<section class="seccion" id="lo-que-se-viene">
+  <h2 class="seccion-titulo">Lo que se viene</h2>
+  <p class="seccion-sub">Grandes eventos en los estadios y teatros mayores</p>
+</section>
+    <div class="movete-event-list">
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">11</span>
+          <span class="month">JUL</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">PALITO ORTEGA</h3>
+          <div class="movete-event-meta">Teatro Argentino de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">25</span>
+          <span class="month">JUL</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">SKAY Y LOS FAKIRES</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">5</span>
+          <span class="month">SEP</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Valeria Lynch</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">12</span>
+          <span class="month">SEP</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">GUSTAVO SANTAOLALLA</h3>
+          <div class="movete-event-meta">Teatro Argentino de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">12</span>
+          <span class="month">SEP</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">PASTILLAS DEL ABUELO</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">19</span>
+          <span class="month">SEP</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">DIEGO TORRES</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">2</span>
+          <span class="month">OCT</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">EMANERO</h3>
+          <div class="movete-event-meta">Teatro Argentino de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">3</span>
+          <span class="month">OCT</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">CONOCIENDO RUSIA</h3>
+          <div class="movete-event-meta">Teatro Argentino de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">3</span>
+          <span class="month">OCT</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">Pimpinela</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+      <div class="movete-event-item" data-cat="musica">
+        <div class="movete-event-date">
+          <span class="day">14</span>
+          <span class="month">NOV</span>
+        </div>
+        <div>
+          <h3 class="movete-event-title">BABASONICOS</h3>
+          <div class="movete-event-meta">Hipódromo de La Plata</div>
+        </div>
+        <span class="movete-event-cat" style="background:var(--accent);color:#fff">Gran evento</span>
+      </div>
+    </div>
+
+<footer class="movete-footer">
+  <p>MoVeTe · Agenda cultural del Gran La Plata · Edición 2026-06-18</p>
+  <p>Datos actualizados 2026-06-21T09:15:03 · <a href="/espectaculos/">Ver todas las ediciones</a></p>
+</footer>
+
+<script>
+// Filtro de categorías: mantiene el agrupado por día, oculta lo que no matchea.
+(function() {
+  const botones = document.querySelectorAll('.filtro-cat');
+  const items = document.querySelectorAll('#contenedor-semana .movete-event-item');
+  const grupos = document.querySelectorAll('#contenedor-semana .dia-grupo');
+
+  function aplicar(cat) {
+    items.forEach(it => {
+      const match = cat === 'todas' || it.dataset.cat === cat;
+      it.classList.toggle('oculto', !match);
+    });
+    // Ocultar días que quedaron vacíos
+    grupos.forEach(g => {
+      const visibles = g.querySelectorAll('.movete-event-item:not(.oculto)').length;
+      g.style.display = visibles ? '' : 'none';
+    });
+  }
+
+  botones.forEach(b => b.addEventListener('click', () => {
+    botones.forEach(x => x.classList.remove('activa'));
+    b.classList.add('activa');
+    aplicar(b.dataset.cat);
+  }));
+})();
+</script>
+
+</body>
+</html>
