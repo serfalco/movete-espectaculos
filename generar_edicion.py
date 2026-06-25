@@ -90,7 +90,7 @@ def render_evento(ev: dict) -> str:
     titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
 
     return f"""
-    <article class="event-card">
+    <article class="event-card" data-category="{esc(cat)}">
       <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
       <h3>{titulo_html}</h3>
       <p class="event-meta">{esc(meta)}</p>
@@ -120,7 +120,7 @@ def render_esta_semana(eventos_semana: list[dict]) -> str:
         )
         bloques.append(
             f"""
-            <section class="day-block">
+            <section class="day-block" data-filter-section>
               <h2>{esc(etiqueta_dia(dia))}</h2>
               <div class="grid cards">{filas}</div>
             </section>
@@ -202,7 +202,7 @@ def render_html(eventos: list[dict], generado: str, hoy: date | None = None) -> 
 
     cats = categorias_presentes(semana)
     botones_cat = "\n".join(
-        f'<span class="pill">{esc(cat_label(c))}</span>' for c in cats
+        f'<button class="filter-button" type="button" data-filter="{esc(c)}" aria-pressed="false">{esc(cat_label(c))}</button>' for c in cats
     )
 
     rango = etiqueta_rango(jueves)
@@ -260,42 +260,44 @@ PLANTILLA = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Agenda de espectáculos en La Plata · {rango} · MoVeTe</title>
-  <meta name="description" content="Agenda de espectáculos en La Plata. Teatro, música, stand up, danza y eventos en vivo. Edición {rango}.">
+  <title>Cartelera en vivo en La Plata · {rango} · MoVeTe</title>
+  <meta name="description" content="Cartelera en vivo de La Plata para encontrar tu salida: teatro, música, stand up, danza, talleres y eventos. Edición semanal {rango}.">
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
-<body>
+<body id="top">
   <header class="site-header">
     <a class="brand" href="/">MoVeTe<span>●</span></a>
-    <nav>
+    <nav class="site-nav" aria-label="Secciones principales">
+      <a href="/">Inicio</a>
       <a href="/cine/">Cine</a>
-      <a href="/en-vivo/">En vivo</a>
+      <a href="/en-vivo/" aria-current="page">En vivo</a>
     </nav>
   </header>
 
   <main>
     <section class="hero compact">
       <p class="eyebrow">En vivo · Edición {slug}</p>
-      <h1>Agenda de espectáculos en La Plata</h1>
-      <p class="lead">Edición {rango}. Teatro, música, stand up, danza y eventos en vivo.</p>
-      <div class="actions">
+      <h1>Cartelera en vivo en La Plata</h1>
+      <p class="lead">Edición {rango}. Teatro, música, stand up, danza, talleres y planes para compartir, cruzarte y encontrarte.</p>
+      <div class="actions quick-nav">
         <a class="button" href="#esta-semana">Esta semana</a>
         <a class="button secondary" href="#lo-que-se-viene">Lo que se viene</a>
+        <button class="button small" type="button" data-share-page>Compartir</button>
       </div>
     </section>
 
     <section class="card edition-summary">
       <p class="tag">Esta edición</p>
-      <h2>{total} eventos esta semana</h2>
-      <p>Las ediciones anteriores quedan archivadas y la portada de En Vivo muestra siempre la edición vigente.</p>
-      <div class="pill-row">
-        <span class="pill">Todas</span>
+      <h2>{total} propuestas para esta semana</h2>
+      <p>La cartelera se ordena de jueves a miércoles para que encuentres tu salida sin perderte en mil historias sueltas.</p>
+      <div class="pill-row filter-bar" data-filter-group data-filter-target=".event-card:not(.future)">
+        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">Todas</button>
         {botones_cat}
       </div>
     </section>
 
     <section id="esta-semana" class="section">
-      <p class="eyebrow">Agenda semanal</p>
+      <p class="eyebrow">Cartelera semanal</p>
       <h2>Esta semana</h2>
       {bloque_semana}
     </section>
@@ -303,7 +305,7 @@ PLANTILLA = """<!doctype html>
     <section id="lo-que-se-viene" class="section">
       <p class="eyebrow">Anticipadas</p>
       <h2>Lo que se viene</h2>
-      <p>Grandes eventos anunciados en estadios y teatros mayores, para mirar con tiempo.</p>
+      <p>Fechas para mirar con tiempo, avisar en el grupo y armar plan antes de que se agote.</p>
       {bloque_futuro}
     </section>
 
@@ -317,15 +319,34 @@ PLANTILLA = """<!doctype html>
     <section class="card">
       <p class="tag">También en MoVeTe</p>
       <h2>Cartelera de cine</h2>
-      <p>Películas, salas y funciones de la semana en La Plata.</p>
-      <a href="/cine/">Ver cine →</a>
+      <p>Películas en salas, ciclos, cineclubes y funciones especiales para cortar la semana o armar plan.</p>
+      <a href="/cine/">Ver cartelera de cine →</a>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>MoVeTe · Agenda cultural del Gran La Plata · Edición {slug}</p>
-    <p>Datos actualizados {generado}</p>
+    <div class="footer-inner">
+      <div>
+        <p class="footer-title">MoVeTe.info</p>
+        <p>Cartelera en vivo en La Plata · Edición {slug}</p>
+        <p>Datos actualizados {generado}</p>
+      </div>
+      <div class="footer-links" aria-label="Links del pie">
+        <a href="#top">Arriba</a>
+        <a href="#esta-semana">Esta semana</a>
+        <a href="#lo-que-se-viene">Lo que se viene</a>
+        <a href="/cine/">Cine</a>
+        <button type="button" data-share-page>Compartir</button>
+      </div>
+    </div>
   </footer>
+  <nav class="mobile-nav" aria-label="Navegación rápida">
+    <a href="/">Inicio</a>
+    <a href="/cine/">Cine</a>
+    <a href="/en-vivo/" aria-current="page">En vivo</a>
+    <button type="button" data-share-page>Compartir</button>
+  </nav>
+  <script src="/assets/js/movete.js" defer></script>
 </body>
 </html>
 """
