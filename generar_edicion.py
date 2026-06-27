@@ -292,7 +292,6 @@ PLANTILLA = """<!doctype html>
     <section class="hero compact">
       <p class="eyebrow">En vivo · Edición {slug}</p>
       <h1>Cartelera en vivo en La Plata</h1>
-      <p class="lead">Edición {rango}. Teatro, música, stand up, danza, talleres y planes para compartir, cruzarte y encontrarte.</p>
       <div class="actions quick-nav">
         <a class="button" href="#esta-semana">Esta semana</a>
         <a class="button secondary" href="#lo-que-se-viene">Lo que viene</a>
@@ -300,15 +299,10 @@ PLANTILLA = """<!doctype html>
       </div>
     </section>
 
-    <section class="card edition-summary">
-      <p class="tag">Esta edición</p>
-      <h2>{total} propuestas para esta semana</h2>
-      <p>La cartelera se ordena de jueves a miércoles para que encuentres tu salida sin perderte en mil historias sueltas.</p>
-      <div class="pill-row filter-bar" data-filter-group data-filter-target=".event-card:not(.future)">
-        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">Todas</button>
-        {botones_cat}
-      </div>
-    </section>
+    <div class="pill-row filter-bar edition-filters" data-filter-group data-filter-target=".event-card:not(.future)" aria-label="Filtrar cartelera">
+      <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">Todas</button>
+      {botones_cat}
+    </div>
 
     <section id="esta-semana" class="section">
       <p class="eyebrow">Cartelera semanal</p>
@@ -319,7 +313,6 @@ PLANTILLA = """<!doctype html>
     <section id="lo-que-se-viene" class="section">
       <p class="eyebrow">Anticipadas</p>
       <h2>Lo que viene</h2>
-      <p>Fechas para mirar con tiempo, avisar en el grupo y armar plan antes de que se agote.</p>
       {bloque_futuro}
     </section>
 
@@ -333,17 +326,16 @@ PLANTILLA = """<!doctype html>
     <section class="card">
       <p class="tag">También en MoVeTe</p>
       <h2>Cartelera de cine</h2>
-      <p>Películas en salas, ciclos, cineclubes y funciones especiales para cortar la semana o armar plan.</p>
       <a href="/cine/">Ver cartelera de cine →</a>
     </section>
+
+    <p class="site-notice">La info puede cambiar. Confirmá horarios y disponibilidad con cada sala o espacio; reservá o sacá entradas según corresponda.</p>
   </main>
 
   <footer class="site-footer">
     <div class="footer-inner">
       <div>
         <p class="footer-title">MoVeTe.info</p>
-        <p>Cartelera en vivo en La Plata · Edición {slug}</p>
-        <p>Datos actualizados {generado}</p>
       </div>
       <div class="footer-links" aria-label="Links del pie">
         <a href="#top">Arriba</a>
