@@ -295,7 +295,7 @@ PLANTILLA = """<!doctype html>
       <div class="actions quick-nav">
         <a class="button" href="#esta-semana">Esta semana</a>
         <a class="button secondary" href="#lo-que-se-viene">Lo que viene</a>
-        <button class="button small" type="button" data-share-page>WhatsApp</button>
+        <button class="button small" type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
       </div>
     </section>
 
@@ -342,7 +342,7 @@ PLANTILLA = """<!doctype html>
         <a href="#esta-semana">Esta semana</a>
         <a href="#lo-que-se-viene">Lo que viene</a>
         <a href="/cine/">Cine</a>
-        <button type="button" data-share-page>WhatsApp</button>
+        <button type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
       </div>
     </div>
   </footer>
@@ -350,7 +350,7 @@ PLANTILLA = """<!doctype html>
     <a href="/">Inicio</a>
     <a href="/cine/">Cine</a>
     <a href="/en-vivo/" aria-current="page">En vivo</a>
-    <button type="button" data-share-page>WhatsApp</button>
+    <button type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
   </nav>
   <script src="/assets/js/movete.js" defer></script>
 </body>
