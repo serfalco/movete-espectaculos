@@ -33,7 +33,7 @@ from venues import venue_masivo
 CAT_LABEL = {
     "teatro": "Teatro",
     "musica": "Música",
-    "stand-up": "Stand-up",
+    "stand-up": "Stand Up",
     "danza": "Danza",
     "cine": "Cine",
     "infantil": "Infantil",
@@ -43,6 +43,19 @@ CAT_LABEL = {
     "humor": "Humor",
     "otros": "Otros",
 }
+
+CATEGORY_ORDER = [
+    "stand-up",
+    "teatro",
+    "musica",
+    "danza",
+    "infantil",
+    "taller",
+    "impro",
+    "humor",
+    "a-plasticas",
+    "otros",
+]
 
 
 def esc(s: object) -> str:
@@ -181,7 +194,8 @@ def categorias_presentes(eventos_semana: list[dict]) -> list[str]:
         c = ev.get("categoria", "otros")
         if c not in cats:
             cats.append(c)
-    return cats
+    prioridad = {cat: i for i, cat in enumerate(CATEGORY_ORDER)}
+    return sorted(cats, key=lambda cat: (prioridad.get(cat, len(prioridad)), cat_label(cat)))
 
 
 def cargar_eventos(path: str | Path) -> tuple[list[dict], str]:
@@ -281,7 +295,7 @@ PLANTILLA = """<!doctype html>
       <p class="lead">Edición {rango}. Teatro, música, stand up, danza, talleres y planes para compartir, cruzarte y encontrarte.</p>
       <div class="actions quick-nav">
         <a class="button" href="#esta-semana">Esta semana</a>
-        <a class="button secondary" href="#lo-que-se-viene">Lo que se viene</a>
+        <a class="button secondary" href="#lo-que-se-viene">Lo que viene</a>
         <button class="button small" type="button" data-share-page>Compartir</button>
       </div>
     </section>
@@ -304,7 +318,7 @@ PLANTILLA = """<!doctype html>
 
     <section id="lo-que-se-viene" class="section">
       <p class="eyebrow">Anticipadas</p>
-      <h2>Lo que se viene</h2>
+      <h2>Lo que viene</h2>
       <p>Fechas para mirar con tiempo, avisar en el grupo y armar plan antes de que se agote.</p>
       {bloque_futuro}
     </section>
@@ -334,7 +348,7 @@ PLANTILLA = """<!doctype html>
       <div class="footer-links" aria-label="Links del pie">
         <a href="#top">Arriba</a>
         <a href="#esta-semana">Esta semana</a>
-        <a href="#lo-que-se-viene">Lo que se viene</a>
+        <a href="#lo-que-se-viene">Lo que viene</a>
         <a href="/cine/">Cine</a>
         <button type="button" data-share-page>Compartir</button>
       </div>
