@@ -205,34 +205,107 @@ def cargar_eventos(path: str | Path) -> tuple[list[dict], str]:
     return data.get("eventos", []), data.get("generado", "")
 
 
-def render_html(eventos: list[dict], generado: str, hoy: date | None = None) -> tuple[str, dict]:
+def category_nav(
+    categoria_activa: str | None = None,
+    categorias_disponibles: list[str] | None = None,
+) -> str:
+    principales = ["stand-up", "teatro", "musica"]
+    disponibles = set(categorias_disponibles or [])
+    adicionales = [
+        cat for cat in CATEGORY_ORDER
+        if cat not in principales and (cat in disponibles or cat == categoria_activa)
+    ]
+    links = [
+        '<a class="filter-button{}" href="/en-vivo/"{}>Todas</a>'.format(
+            " is-active" if categoria_activa is None else "",
+            ' aria-current="page"' if categoria_activa is None else "",
+        )
+    ]
+    for categoria in principales:
+        activa = categoria == categoria_activa
+        links.append(
+            '<a class="filter-button{}" href="/en-vivo/{}/"{}>{}</a>'.format(
+                " is-active" if activa else "",
+                esc(categoria),
+                ' aria-current="page"' if activa else "",
+                esc(cat_label(categoria)),
+            )
+        )
+    if adicionales:
+        extra_links = []
+        for categoria in adicionales:
+            activa = categoria == categoria_activa
+            extra_links.append(
+                '<a class="filter-button{}" href="/en-vivo/{}/"{}>{}</a>'.format(
+                    " is-active" if activa else "",
+                    esc(categoria),
+                    ' aria-current="page"' if activa else "",
+                    esc(cat_label(categoria)),
+                )
+            )
+        extra_activo = categoria_activa in adicionales
+        links.append(
+            '<details class="category-more">'
+            f'<summary class="filter-button{" is-active" if extra_activo else ""}">Más</summary>'
+            f'<div class="category-more-menu">{"".join(extra_links)}</div>'
+            '</details>'
+        )
+    return "\n".join(links)
+
+
+def render_html(
+    eventos: list[dict],
+    generado: str,
+    hoy: date | None = None,
+    categoria: str | None = None,
+) -> tuple[str, dict]:
     hoy = hoy or date.today()
     jueves = jueves_de_edicion(hoy)
     slug = slug_edicion(jueves)
 
     eventos = [ev for ev in eventos if ev.get("categoria") != "cine" and ev.get("fecha")]
+    categorias_disponibles = categorias_presentes(eventos)
+    if categoria:
+        eventos = [ev for ev in eventos if ev.get("categoria", "otros") == categoria]
     semana = [ev for ev in eventos if en_esta_semana(ev["fecha"], jueves)]
     semana.sort(key=lambda e: e.get("fecha", ""))
 
-    cats = categorias_presentes(semana)
-    botones_cat = "\n".join(
-        f'<button class="filter-button" type="button" data-filter="{esc(c)}" aria-pressed="false">{esc(cat_label(c))}</button>' for c in cats
-    )
-
     rango = etiqueta_rango(jueves)
+    categoria_label = cat_label(categoria) if categoria else ""
+    page_title = (
+        f"{categoria_label} en La Plata · {rango} · MoVeTe"
+        if categoria
+        else f"Cartelera en vivo en La Plata · {rango} · MoVeTe"
+    )
+    page_description = (
+        f"Cartelera de {categoria_label.lower()} en La Plata. Edición semanal {rango}."
+        if categoria
+        else f"Cartelera en vivo de La Plata: teatro, música, stand up, danza, talleres y eventos. Edición semanal {rango}."
+    )
+    h1 = f"{categoria_label} en La Plata" if categoria else "Cartelera en vivo en La Plata"
+    eyebrow = f"{categoria_label} · Edición {slug}" if categoria else f"En vivo · Edición {slug}"
 
     html_doc = PLANTILLA.format(
         slug=esc(slug),
         rango=esc(rango),
         total=len(semana),
-        botones_cat=botones_cat,
+        category_nav=category_nav(categoria, categorias_disponibles),
         bloque_semana=render_esta_semana(semana),
         bloque_futuro=render_lo_que_se_viene(eventos, jueves),
         generado=esc(generado),
         anio=jueves.year,
+        page_title=esc(page_title),
+        page_description=esc(page_description),
+        h1=esc(h1),
+        eyebrow=esc(eyebrow),
     )
 
-    return html_doc, {"slug": slug, "rango": rango, "esta_semana": len(semana)}
+    return html_doc, {
+        "slug": slug,
+        "rango": rango,
+        "esta_semana": len(semana),
+        "categoria": categoria or "todas",
+    }
 
 
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
@@ -249,10 +322,24 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
     archive_index.write_text(html_doc, encoding="utf-8")
     current_index.write_text(html_doc, encoding="utf-8")
 
+    salidas_categoria = []
+    for categoria in CATEGORY_ORDER:
+        categoria_html, _ = render_html(
+            eventos,
+            generado,
+            hoy=hoy,
+            categoria=categoria,
+        )
+        categoria_index = out / categoria / "index.html"
+        categoria_index.parent.mkdir(parents=True, exist_ok=True)
+        categoria_index.write_text(categoria_html, encoding="utf-8")
+        salidas_categoria.append(str(categoria_index))
+
     return {
         **info,
         "salida_actual": str(current_index),
         "salida_archivo": str(archive_index),
+        "salidas_categoria": salidas_categoria,
     }
 
 
@@ -274,8 +361,8 @@ PLANTILLA = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cartelera en vivo en La Plata · {rango} · MoVeTe</title>
-  <meta name="description" content="Cartelera en vivo de La Plata para encontrar tu salida: teatro, música, stand up, danza, talleres y eventos. Edición semanal {rango}.">
+  <title>{page_title}</title>
+  <meta name="description" content="{page_description}">
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
 <body id="top">
@@ -288,20 +375,29 @@ PLANTILLA = """<!doctype html>
     </nav>
   </header>
 
+  <nav id="categorias" class="pill-row filter-bar edition-filters sticky-category-nav" aria-label="Categorías de la cartelera">
+    {category_nav}
+  </nav>
+
   <main>
     <section class="hero compact">
-      <p class="eyebrow">En vivo · Edición {slug}</p>
-      <h1>Cartelera en vivo en La Plata</h1>
+      <p class="eyebrow">{eyebrow}</p>
+      <h1>{h1}</h1>
       <div class="actions quick-nav">
-        <a class="button" href="#esta-semana">Esta semana</a>
-        <a class="button secondary" href="#lo-que-se-viene">Lo que viene</a>
         <button class="button small" type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
       </div>
     </section>
 
-    <div class="pill-row filter-bar edition-filters" data-filter-group data-filter-target=".event-card:not(.future)" aria-label="Filtrar cartelera">
-      <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">Todas</button>
-      {botones_cat}
+    <section class="ad-box live-sponsor">
+      <p class="ad-label">Espacio promocional</p>
+      <h2>Tres Empanadas Comedia</h2>
+      <p>Stand up en La Plata. Shows a la gorra, todos los viernes.</p>
+      <a class="button small" href="https://tresempanadas.com.ar/reservas">Reservar</a>
+    </section>
+
+    <div class="section-shortcuts" aria-label="Saltos de la edición">
+      <a href="#esta-semana">Esta semana</a>
+      <a href="#lo-que-se-viene">Lo que viene</a>
     </div>
 
     <section id="esta-semana" class="section">
@@ -314,13 +410,6 @@ PLANTILLA = """<!doctype html>
       <p class="eyebrow">Anticipadas</p>
       <h2>Lo que viene</h2>
       {bloque_futuro}
-    </section>
-
-    <section class="ad-box">
-      <p class="ad-label">Espacio promocional</p>
-      <h2>Tres Empanadas Comedia</h2>
-      <p>Stand up en La Plata. Shows a la gorra, todos los viernes.</p>
-      <a class="button small" href="https://tresempanadas.com.ar/reservas">Reservar</a>
     </section>
 
     <section class="card">
@@ -346,12 +435,6 @@ PLANTILLA = """<!doctype html>
       </div>
     </div>
   </footer>
-  <nav class="mobile-nav" aria-label="Navegación rápida">
-    <a href="/">Inicio</a>
-    <a href="/cine/">Cine</a>
-    <a href="/en-vivo/" aria-current="page">En vivo</a>
-    <button type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
-  </nav>
   <script src="/assets/js/movete.js" defer></script>
 </body>
 </html>
