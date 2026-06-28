@@ -18,6 +18,7 @@ import json
 from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from edicion import (
     MESES_ABR,
@@ -27,7 +28,7 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
-from venues import venue_masivo
+from venues import venue_info, venue_masivo
 
 
 CAT_LABEL = {
@@ -98,17 +99,32 @@ def render_evento(ev: dict) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
     titulo = esc(evento_titulo(ev))
-    lugar = esc(evento_lugar(ev))
+    datos_lugar = venue_info(evento_lugar(ev))
+    lugar = esc(datos_lugar["nombre"])
+    direccion = str(ev.get("direccion") or datos_lugar["direccion"] or "").strip()
     hora = f.strftime("%H:%M")
     url = esc(evento_url(ev))
     meta = " · ".join(p for p in [f"{hora} hs", lugar] if p.strip())
     titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
+    mapa_html = ""
+    if direccion:
+        maps_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(direccion)}"
+        mapa_html = f"""
+      <a class="map-link event-map-link" href="{esc(maps_url)}" target="_blank" rel="noopener"
+         aria-label="Cómo llegar a {lugar} en Google Maps">
+        <img class="map-icon" src="/assets/icons/google-maps.svg" alt="">
+        <span class="map-copy">
+          <span class="map-label">Cómo llegar</span>
+          <span class="map-address">{esc(direccion)}</span>
+        </span>
+      </a>"""
 
     return f"""
     <article class="event-card" data-category="{esc(cat)}">
       <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
       <h3>{titulo_html}</h3>
       <p class="event-meta">{esc(meta)}</p>
+      {mapa_html}
       <p class="pill">{esc(cat_label(cat))}</p>
     </article>
     """
