@@ -39,6 +39,7 @@ CAT_LABEL = {
     "infantil": "Infantil",
     "taller": "Taller",
     "a-plasticas": "Artes plásticas",
+    "actividades": "Actividades",
     "impro": "Impro",
     "humor": "Humor",
     "otros": "Otros",
@@ -54,6 +55,7 @@ CATEGORY_ORDER = [
     "impro",
     "humor",
     "a-plasticas",
+    "actividades",
     "otros",
 ]
 
