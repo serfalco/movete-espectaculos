@@ -121,11 +121,13 @@ def render_evento(ev: dict) -> str:
 
     return f"""
     <article class="event-card" data-category="{esc(cat)}">
-      <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
+      <div class="event-card-topline">
+        <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
+        <p class="pill">{esc(cat_label(cat))}</p>
+      </div>
       <h3>{titulo_html}</h3>
       <p class="event-meta">{esc(meta)}</p>
       {mapa_html}
-      <p class="pill">{esc(cat_label(cat))}</p>
     </article>
     """
 
@@ -189,16 +191,19 @@ def render_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
     cards = []
     for ev, (_clave_venue, nombre_venue) in futuros[:16]:
         f = parse_fecha(ev["fecha"])
+        cat = ev.get("categoria", "otros")
         url = esc(evento_url(ev))
         titulo = esc(evento_titulo(ev))
         titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
         cards.append(
             f"""
-            <article class="event-card future">
-              <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
+            <article class="event-card future" data-category="{esc(cat)}">
+              <div class="event-card-topline">
+                <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
+                <p class="pill">{esc(cat_label(cat))}</p>
+              </div>
               <h3>{titulo_html}</h3>
               <p class="event-meta">{esc(nombre_venue)}</p>
-              <p class="pill">Gran evento</p>
             </article>
             """
         )
@@ -406,8 +411,11 @@ PLANTILLA = """<!doctype html>
       </div>
     </section>
 
-    <section class="ad-box live-sponsor">
-      <p class="ad-label">Espacio promocional</p>
+    <section class="ad-box sponsor-card">
+      <div class="sponsor-kicker">
+        <img class="sponsor-logo" src="/assets/images/tres-empanadas-comedia.png" alt="">
+        <p class="ad-label">Espacio promocional</p>
+      </div>
       <h2>Tres Empanadas Comedia</h2>
       <p>Stand up en La Plata. Shows a la gorra, todos los viernes.</p>
       <a class="button small" href="https://tresempanadas.com.ar/reservas">Reservar</a>
