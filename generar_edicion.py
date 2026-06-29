@@ -16,7 +16,7 @@ import argparse
 import html
 import json
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -95,6 +95,32 @@ def evento_titulo(ev: dict) -> str:
     return ev.get("titulo") or ev.get("title") or ev.get("Title") or "Sin título"
 
 
+def evento_fijo_stand_up(referencia: date) -> dict:
+    dias_hasta_viernes = (4 - referencia.weekday()) % 7
+    viernes = referencia + timedelta(days=dias_hasta_viernes)
+    return {
+        "titulo": "Tres Empanadas Comedia",
+        "fecha": f"{viernes.isoformat()} 21:30:00",
+        "lugar": "Sociedad Platense de Stand Up",
+        "categoria": "stand-up",
+        "url": "https://tresempanadas.com.ar/reservas",
+        "destacado": True,
+    }
+
+
+def agregar_evento_fijo_stand_up(eventos: list[dict], referencia: date) -> list[dict]:
+    fijo = evento_fijo_stand_up(referencia)
+    fecha_fija = fijo["fecha"][:10]
+    sin_duplicado = [
+        ev for ev in eventos
+        if not (
+            "tres empanadas" in evento_titulo(ev).casefold()
+            and str(ev.get("fecha", ""))[:10] == fecha_fija
+        )
+    ]
+    return [fijo, *sin_duplicado]
+
+
 def render_evento(ev: dict) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
@@ -146,10 +172,21 @@ def render_esta_semana(eventos_semana: list[dict]) -> str:
 
     bloques = []
 
-    for dia in sorted(por_dia):
+    dias_ordenados = sorted(
+        por_dia,
+        key=lambda dia: (
+            0 if any(ev.get("destacado") for ev in por_dia[dia]) else 1,
+            dia,
+        ),
+    )
+
+    for dia in dias_ordenados:
         filas = "\n".join(
             render_evento(ev)
-            for ev in sorted(por_dia[dia], key=lambda e: e.get("fecha", ""))
+            for ev in sorted(
+                por_dia[dia],
+                key=lambda e: (0 if e.get("destacado") else 1, e.get("fecha", "")),
+            )
         )
         bloques.append(
             f"""
@@ -290,8 +327,13 @@ def render_html(
     categorias_disponibles = categorias_presentes(eventos)
     if categoria:
         eventos = [ev for ev in eventos if ev.get("categoria", "otros") == categoria]
-    semana = [ev for ev in eventos if en_esta_semana(ev["fecha"], jueves)]
-    semana.sort(key=lambda e: e.get("fecha", ""))
+    if categoria == "stand-up":
+        eventos = agregar_evento_fijo_stand_up(eventos, hoy)
+    semana = [
+        ev for ev in eventos
+        if ev.get("destacado") or en_esta_semana(ev["fecha"], jueves)
+    ]
+    semana.sort(key=lambda e: (0 if e.get("destacado") else 1, e.get("fecha", "")))
 
     rango = etiqueta_rango(jueves)
     categoria_label = cat_label(categoria) if categoria else ""

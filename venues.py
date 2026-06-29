@@ -115,9 +115,14 @@ VENUES_DIRECCIONES = {
         'Telón Negro Teatro', 'Calle 13 entre 32 y 33, La Plata',
         ['telon negro teatro', 'telon negro'],
     ),
-    'tres_empanadas': (
-        'Tres Empanadas Comedia', 'Calle 43 N° 1349, La Plata',
-        ['tres empanadas comedia'],
+    'sociedad_platense_stand_up': (
+        'Sociedad Platense de Stand Up',
+        'Calle 43 N° 1349 esquina 22, La Plata',
+        [
+            'sociedad platense de stand up',
+            'sociedad platense stand up',
+            'tres empanadas comedia',
+        ],
     ),
 }
 
