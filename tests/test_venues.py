@@ -1,6 +1,7 @@
 import unittest
+from datetime import date
 
-from generar_edicion import render_evento
+from generar_edicion import render_evento, render_html
 from venues import venue_info
 
 
@@ -45,6 +46,47 @@ class VenueInfoTests(unittest.TestCase):
         bloque_superior = html.split("</div>", 1)[0]
         self.assertIn("event-date", bloque_superior)
         self.assertIn("Teatro", bloque_superior)
+
+    def test_sociedad_platense_de_stand_up_tiene_direccion(self):
+        info = venue_info("Sociedad Platense de Stand Up")
+        self.assertEqual(info["nombre"], "Sociedad Platense de Stand Up")
+        self.assertEqual(
+            info["direccion"],
+            "Calle 43 N° 1349 esquina 22, La Plata",
+        )
+
+    def test_tres_empanadas_abre_la_cartelera_de_stand_up(self):
+        html, info = render_html(
+            [
+                {
+                    "titulo": "Otra fecha de humor",
+                    "fecha": "2026-06-25 20:00:00",
+                    "lugar": "Espacio 44",
+                    "categoria": "stand-up",
+                },
+                {
+                    "titulo": "Tres Empanadas Comedia",
+                    "fecha": "2026-07-03 22:00:00",
+                    "lugar": "Lugar duplicado",
+                    "categoria": "stand-up",
+                },
+            ],
+            generado="2026-06-25T10:00:00",
+            hoy=date(2026, 6, 28),
+            categoria="stand-up",
+        )
+        cartelera = html.split('<section id="esta-semana"', 1)[1].split(
+            '<section id="lo-que-se-viene"', 1
+        )[0]
+
+        self.assertEqual(info["esta_semana"], 2)
+        self.assertEqual(cartelera.count("Tres Empanadas Comedia"), 1)
+        self.assertLess(
+            cartelera.index("Viernes 3 de julio"),
+            cartelera.index("Jueves 25 de junio"),
+        )
+        self.assertIn("21:30 hs · Sociedad Platense de Stand Up", cartelera)
+        self.assertIn("Calle+43+N%C2%B0+1349+esquina+22%2C+La+Plata", cartelera)
 
 
 if __name__ == "__main__":
