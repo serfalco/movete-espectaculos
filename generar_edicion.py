@@ -99,9 +99,9 @@ def evento_fijo_stand_up(referencia: date) -> dict:
     dias_hasta_viernes = (4 - referencia.weekday()) % 7
     viernes = referencia + timedelta(days=dias_hasta_viernes)
     return {
-        "titulo": "Tres Empanadas Comedia",
+        "titulo": "Sociedad Platense de Stand Up",
         "fecha": f"{viernes.isoformat()} 21:30:00",
-        "lugar": "Sociedad Platense de Stand Up",
+        "lugar": "Tres Empanadas Comedia",
         "categoria": "stand-up",
         "url": "https://tresempanadas.com.ar/reservas",
         "destacado": True,
@@ -114,7 +114,11 @@ def agregar_evento_fijo_stand_up(eventos: list[dict], referencia: date) -> list[
     sin_duplicado = [
         ev for ev in eventos
         if not (
-            "tres empanadas" in evento_titulo(ev).casefold()
+            (
+                "sociedad platense de stand up" in evento_titulo(ev).casefold()
+                or "tres empanadas" in evento_titulo(ev).casefold()
+                or "tres empanadas" in evento_lugar(ev).casefold()
+            )
             and str(ev.get("fecha", ""))[:10] == fecha_fija
         )
     ]
@@ -490,18 +494,7 @@ PLANTILLA = """<!doctype html>
   </main>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <p class="footer-title">MoVeTe.info</p>
-      </div>
-      <div class="footer-links" aria-label="Links del pie">
-        <a href="#top">Arriba</a>
-        <a href="#esta-semana">Esta semana</a>
-        <a href="#lo-que-se-viene">Lo que viene</a>
-        <a href="/cine/">Cine</a>
-        <button type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
-      </div>
-    </div>
+    <p class="footer-title">MoVeTe<span>.</span></p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>
 </body>
