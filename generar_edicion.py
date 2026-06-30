@@ -40,7 +40,6 @@ CAT_LABEL = {
     "infantil": "Infantil",
     "taller": "Taller",
     "a-plasticas": "Artes plásticas",
-    "actividades": "Actividades",
     "impro": "Impro",
     "humor": "Humor",
     "otros": "Otros",
@@ -56,9 +55,18 @@ CATEGORY_ORDER = [
     "impro",
     "humor",
     "a-plasticas",
-    "actividades",
     "otros",
 ]
+
+
+def normalizar_categorias(eventos: list[dict]) -> list[dict]:
+    """Conserva compatibilidad con datos viejos sin publicar Actividades."""
+    return [
+        {**ev, "categoria": "otros"}
+        if ev.get("categoria") == "actividades"
+        else ev
+        for ev in eventos
+    ]
 
 
 def esc(s: object) -> str:
@@ -274,11 +282,7 @@ def category_nav(
     categorias_disponibles: list[str] | None = None,
 ) -> str:
     principales = ["stand-up", "teatro", "musica"]
-    disponibles = set(categorias_disponibles or [])
-    adicionales = [
-        cat for cat in CATEGORY_ORDER
-        if cat not in principales and (cat in disponibles or cat == categoria_activa)
-    ]
+    adicionales = ["otros"]
     links = [
         '<a class="filter-button{}" href="/en-vivo/"{}>Todas</a>'.format(
             " is-active" if categoria_activa is None else "",
@@ -324,6 +328,9 @@ def render_html(
     categoria: str | None = None,
 ) -> tuple[str, dict]:
     hoy = hoy or date.today()
+    eventos = normalizar_categorias(eventos)
+    if categoria == "actividades":
+        categoria = "otros"
     jueves = jueves_de_edicion(hoy)
     slug = slug_edicion(jueves)
 
@@ -404,6 +411,24 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         categoria_index.write_text(categoria_html, encoding="utf-8")
         salidas_categoria.append(str(categoria_index))
 
+    legacy_dir = out / "actividades"
+    legacy_dir.mkdir(parents=True, exist_ok=True)
+    (legacy_dir / "index.html").write_text(
+        """<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=/en-vivo/otros/">
+  <link rel="canonical" href="https://movete.info/en-vivo/otros/">
+  <title>Otros en La Plata · MoVeTe</title>
+</head>
+<body><p><a href="/en-vivo/otros/">Ver Otros en MoVeTe</a></p></body>
+</html>
+""",
+        encoding="utf-8",
+    )
+
     return {
         **info,
         "salida_actual": str(current_index),
@@ -452,9 +477,6 @@ PLANTILLA = """<!doctype html>
     <section class="hero compact">
       <p class="eyebrow">{eyebrow}</p>
       <h1>{h1}</h1>
-      <div class="actions quick-nav">
-        <button class="button small" type="button" data-share-page><img class="share-icon" src="/assets/icons/whatsapp.svg" alt="">Compartir</button>
-      </div>
     </section>
 
     <section class="ad-box sponsor-card">
@@ -494,7 +516,15 @@ PLANTILLA = """<!doctype html>
   </main>
 
   <footer class="site-footer">
-    <p class="footer-title">MoVeTe<span>.</span></p>
+    <p class="footer-line">
+      <span class="footer-brand">MoVeTe<span>.</span></span>
+      <span aria-hidden="true">·</span>
+      <span>La Plata</span>
+      <span aria-hidden="true">·</span>
+      <span>{anio}</span>
+      <span aria-hidden="true">·</span>
+      <button class="footer-share" type="button" data-share-page title="Avisá que existimos por WhatsApp" aria-label="Avisá que existimos por WhatsApp">Avisá que existimos <img class="share-icon" src="/assets/icons/whatsapp.svg" alt=""></button>
+    </p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>
 </body>

@@ -76,6 +76,16 @@ VENUES_DIRECCIONES = {
         'La Mercería Teatro', 'Calle 1 N° 210, La Plata',
         ['la merceria teatro', 'merceria teatro'],
     ),
+    'la_chicharra': (
+        'Galpón de La Grieta y Biblioteca Popular La Chicharra',
+        'Calle 71 N° 1138 esquina 18, La Plata',
+        [
+            'galpon de la grieta y biblioteca popular la chicharra',
+            'galpon de la grieta',
+            'biblioteca popular la chicharra',
+            'la chicharra',
+        ],
+    ),
     'sala_420': (
         'Sala 420', 'Calle 42 N° 571 entre 6 y 7, La Plata', ['sala 420'],
     ),
