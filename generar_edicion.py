@@ -59,6 +59,24 @@ CATEGORY_ORDER = [
     "otros",
 ]
 
+CAT_INTRO_MAIN = (
+    "Todo lo que hay para hacer esta semana en La Plata: teatro independiente, "
+    "música en vivo, stand up, danza y más. Una edición nueva cada jueves."
+)
+
+CAT_INTRO = {
+    "teatro": "Cartelera de teatro en La Plata: obras, unipersonales y salas independientes con función esta semana.",
+    "musica": "Recitales, shows y música en vivo en La Plata, semana a semana.",
+    "stand-up": "Stand up en La Plata: los shows de comedia de la semana.",
+    "danza": "Danza en La Plata: espectáculos y funciones de esta semana.",
+    "infantil": "Teatro y espectáculos infantiles en La Plata para disfrutar en familia.",
+    "taller": "Talleres, cursos y clínicas culturales en La Plata.",
+    "impro": "Impro en La Plata: los shows de improvisación de la semana.",
+    "humor": "Humor y comedia en vivo en La Plata, semana a semana.",
+    "a-plasticas": "Muestras, exposiciones y artes plásticas en La Plata.",
+    "otros": "Otras actividades culturales en La Plata para esta semana.",
+}
+
 
 def normalizar_categorias(eventos: list[dict]) -> list[dict]:
     """Conserva compatibilidad con datos viejos sin publicar Actividades."""
@@ -526,6 +544,9 @@ def render_html(
     eyebrow = f"{categoria_label} · Edición {slug}" if categoria else f"En vivo · Edición {slug}"
     page_url = f"https://movete.info/en-vivo/{categoria}/" if categoria else "https://movete.info/en-vivo/"
     og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+    page_intro = CAT_INTRO_MAIN if not categoria else CAT_INTRO.get(
+        categoria, f"Cartelera de {categoria_label.lower()} en La Plata, semana a semana."
+    )
     bloque_schema = render_schema_eventos(semana)
 
     html_doc = PLANTILLA.format(
@@ -546,6 +567,7 @@ def render_html(
         bloque_schema=bloque_schema,
         page_url=esc(page_url),
         og_image=og_image,
+        page_intro=esc(page_intro),
     )
 
     return html_doc, {
@@ -705,6 +727,7 @@ PLANTILLA = """<!doctype html>
     <section class="hero compact">
       <p class="eyebrow">{eyebrow}</p>
       <h1>{h1}</h1>
+      <p class="lead">{page_intro}</p>
     </section>
 
     <section class="ad-box sponsor-card">
@@ -726,7 +749,7 @@ PLANTILLA = """<!doctype html>
 
     <section id="esta-semana" class="section">
       <p class="eyebrow">Cartelera semanal</p>
-      <h2>Esta semana</h2>
+      <h2>Qué hay esta semana en La Plata</h2>
       {bloque_semana}
     </section>
 
