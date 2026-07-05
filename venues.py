@@ -133,6 +133,122 @@ VENUES_DIRECCIONES = {
             'tres empanadas',
         ],
     ),
+    # --- Salas chicas / under: direcciones investigadas y confirmadas ---
+    'la_ferreteria': (
+        'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
+        ['teatro bar cultural la ferreteria', 'la ferreteria bar cultural', 'la ferreteria'],
+    ),
+    'ciudad_de_gatos': (
+        'Ciudad de Gatos', 'Calle 71 N° 1099, La Plata',
+        ['ciudad de gatos'],
+    ),
+    'rene_favaloro': (
+        'Teatro René Favaloro', 'Calle 67 e/ 116 y 117, La Plata',
+        ['teatro rene favaloro', 'multiespacio cultural rene favaloro', 'rene favaloro'],
+    ),
+    'dardo_rocha': (
+        'Centro Cultural Pasaje Dardo Rocha', 'Calle 50 e/ 6 y 7, La Plata',
+        ['centro cultural pasaje dardo rocha', 'pasaje dardo rocha'],
+    ),
+    'islas_malvinas': (
+        'Centro Cultural Islas Malvinas', 'Calle 50 N° 1200 (esq. 19), La Plata',
+        ['centro cultural y de la memoria islas malvinas', 'centro cultural islas malvinas', 'islas malvinas'],
+    ),
+    'meridiano_v': (
+        'Meridiano V', 'Av. 71 y 17, La Plata',
+        ['meridiano v', 'estacion provincial'],
+    ),
+    'casa_unclan': (
+        'Casa Unclan', 'Calle 5 N° 1512 e/ 63 y 64, La Plata',
+        ['club cultural casa unclan', 'casa unclan'],
+    ),
+    'casa_pulsar': (
+        'Casa Pulsar', 'Calle 58 N° 512, La Plata',
+        ['casa pulsar'],
+    ),
+    'pena_bellas_artes': (
+        'Peña de las Bellas Artes', 'Calle 49 N° 879, La Plata',
+        ['la pena de las bellas artes', 'pena de las bellas artes', 'pena bellas artes'],
+    ),
+    'museo_almafuerte': (
+        'Museo Almafuerte', 'Av. 66 N° 530, La Plata',
+        ['museo almafuerte'],
+    ),
+    'republica_ninos': (
+        'República de los Niños', 'Camino General Belgrano y 501, Manuel B. Gonnet, La Plata',
+        ['republica de los ninos'],
+    ),
+    'museo_ciencias': (
+        'Museo de Ciencias Naturales de La Plata', 'Paseo del Bosque s/n (Av. 60 y 122), La Plata',
+        ['museo de ciencias naturales de la plata', 'museo de ciencias naturales', 'museo de la plata'],
+    ),
+    'centro_arte_unlp': (
+        'Centro de Arte UNLP', 'Calle 48 N° 575 e/ 6 y 7 (Edificio Karakachoff), La Plata',
+        ['centro de arte unlp', 'centro de arte de la unlp'],
+    ),
+    'observatorio_planetario': (
+        'Observatorio / Planetario de La Plata', 'Paseo del Bosque s/n, La Plata',
+        ['observatorio de la plata', 'museo de astronomia y geofisica', 'planetario'],
+    ),
+    'jardin_botanico': (
+        'Jardín Botánico del Parque Saavedra', 'Parque Saavedra, Calle 66 y 13, La Plata',
+        ['jardin botanico del parque saavedra', 'jardin botanico del parque saavedra de la plata'],
+    ),
+    'espacio_satelite': (
+        'Espacio Satélite', 'Calle 6 N° 1030 e/ 53 y 54, La Plata',
+        ['espacio satelite'],
+    ),
+    'refugio_62': (
+        'Refugio 62', 'Calle 10 esquina 62, La Plata',
+        ['refugio 62'],
+    ),
+    'desafinado_club': (
+        'Desafinado Club', 'Diagonal 93 N° 52, City Bell, La Plata',
+        ['desafinado club', 'desafinado'],
+    ),
+    'asoc_jubilados_abogados': (
+        'Asociación de Jubilados y Pensionados (Caja de Abogados)',
+        'Av. 13 N° 831/833, piso 6, La Plata',
+        ['asociacion de jubilados y pensionados de la caja de prevision social para abogados'],
+    ),
+    'la_maga': (
+        'La Maga Club de Arte', 'Calle 1 N° 177 e/ 35 y 36, La Plata',
+        ['la maga club de arte', 'la maga'],
+    ),
+    'altillo_del_sur': (
+        'Teatro El Altillo del Sur', 'Calle 1 N° 1693 casi esq. 67, La Plata',
+        ['teatro el altillo del sur', 'el altillo del sur'],
+    ),
+    # --- Aportadas por Tres (conocimiento local) ---
+    'guajira_bar': (
+        'Guajira Bar', 'Calle 49 N° 484 e/ 4 y 5, La Plata',
+        ['guajira bar', 'guajira'],
+    ),
+    'teatro_la_nonna': (
+        'Teatro La Nonna', 'Calle 47 N° 395 (esq. 3), La Plata',
+        ['teatro la nonna', 'la nonna'],
+    ),
+    'esquina_america': (
+        'Esquina América', 'Calle 71 y 18, La Plata',
+        ['esquina america'],
+    ),
+    'pura_vida': (
+        'Pura Vida', 'Diagonal 78 N° 733 e/ 8 y 61, La Plata',
+        ['pura vida'],
+    ),
+    'lazuli': (
+        'Lázuli Espacio Cultural', 'Calle 62 N° 468 e/ 4 y 5, La Plata',
+        ['lazuli espacio cultural', 'lazuli'],
+    ),
+    'la_culturosa': (
+        'La Culturosa', 'Calle 8 N° 1092 e/ 54 y 55, La Plata',
+        ['la culturosa'],
+    ),
+    'teatro_unlp_mediza': (
+        'Teatro UNLP y Biblioteca Popular Teatral "Alberto Mediza"',
+        'Calle 10 N° 1076 e/ 54 y 55, La Plata',
+        ['teatro unlp y biblioteca popular teatral', 'teatro unlp', 'alberto mediza'],
+    ),
 }
 
 

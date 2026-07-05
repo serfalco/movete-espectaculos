@@ -278,45 +278,84 @@ def cargar_eventos(path: str | Path) -> tuple[list[dict], str]:
     return data.get("eventos", []), data.get("generado", "")
 
 
-def category_nav(
-    categoria_activa: str | None = None,
-    categorias_disponibles: list[str] | None = None,
-) -> str:
-    principales = ["stand-up", "teatro", "musica"]
-    adicionales = ["otros"]
+def contar_categorias_semana(eventos: list[dict], jueves: date) -> dict:
+    """Cuenta eventos por categoría dentro de la semana de la edición."""
+    cuenta: dict[str, int] = {}
+    for ev in eventos:
+        if en_esta_semana(ev.get("fecha", ""), jueves):
+            cat = ev.get("categoria", "otros")
+            cuenta[cat] = cuenta.get(cat, 0) + 1
+    return cuenta
+
+
+def elegir_antiheroes(eventos: list[dict], jueves: date, cuentas: dict, n: int = 3) -> list[dict]:
+    """Los antihéroes: eventos de las categorías más chicas de la semana
+    (1-2 eventos), elegidos al azar. Le damos la vidriera a lo menos masivo."""
+    chicas = {c for c, q in cuentas.items() if 0 < q <= 2 and c != "otros"}
+    pool = [
+        ev for ev in eventos
+        if en_esta_semana(ev.get("fecha", ""), jueves)
+        and ev.get("categoria", "otros") in chicas
+    ]
+    if not pool:
+        return []
+    rng = random.Random("antiheroes-" + jueves.isoformat())
+    rng.shuffle(pool)
+    return pool[:n]
+
+
+def render_antiheroes(eventos_ah: list[dict]) -> str:
+    if not eventos_ah:
+        return ""
+    cards = "\n".join(render_evento(ev) for ev in eventos_ah)
+    return f"""
+    <section id="antiheroes" class="section antiheroes" aria-label="Antihéroes de la semana">
+      <p class="eyebrow antiheroes-eyebrow">★ Antihéroes de la semana</p>
+      <h2>Los que casi nadie mira</h2>
+      <p class="antiheroes-sub">Lo más chico y menos masivo de la semana, elegido al azar. Bancá la escena. 💛</p>
+      <div class="grid cards">{cards}</div>
+    </section>
+    """
+
+
+def category_nav(categoria_activa: str | None = None, cuentas: dict | None = None) -> str:
+    """Menú dinámico: solo las categorías con eventos esta semana. Las grandes
+    van de botón; las chicas (y 'otros') se agrupan en 'Más'."""
+    cuentas = cuentas or {}
+    presentes = [c for c in CATEGORY_ORDER if cuentas.get(c, 0) > 0]
+
+    botones = [c for c in presentes if cuentas.get(c, 0) >= 3 and c != "otros"]
+    if len(botones) < 3:
+        for c in sorted(presentes, key=lambda x: -cuentas.get(x, 0)):
+            if c not in botones and c != "otros" and len(botones) < 3:
+                botones.append(c)
+    botones = [c for c in CATEGORY_ORDER if c in botones]
+    en_mas = [c for c in presentes if c not in botones]
+    if categoria_activa and categoria_activa not in botones and categoria_activa not in en_mas:
+        en_mas.append(categoria_activa)
+
+    def link(c):
+        activa = c == categoria_activa
+        return '<a class="filter-button{}" href="/en-vivo/{}/"{}>{}</a>'.format(
+            " is-active" if activa else "",
+            esc(c),
+            ' aria-current="page"' if activa else "",
+            esc(cat_label(c)),
+        )
+
     links = [
         '<a class="filter-button{}" href="/en-vivo/"{}>Todas</a>'.format(
             " is-active" if categoria_activa is None else "",
             ' aria-current="page"' if categoria_activa is None else "",
         )
     ]
-    for categoria in principales:
-        activa = categoria == categoria_activa
-        links.append(
-            '<a class="filter-button{}" href="/en-vivo/{}/"{}>{}</a>'.format(
-                " is-active" if activa else "",
-                esc(categoria),
-                ' aria-current="page"' if activa else "",
-                esc(cat_label(categoria)),
-            )
-        )
-    if adicionales:
-        extra_links = []
-        for categoria in adicionales:
-            activa = categoria == categoria_activa
-            extra_links.append(
-                '<a class="filter-button{}" href="/en-vivo/{}/"{}>{}</a>'.format(
-                    " is-active" if activa else "",
-                    esc(categoria),
-                    ' aria-current="page"' if activa else "",
-                    esc(cat_label(categoria)),
-                )
-            )
-        extra_activo = categoria_activa in adicionales
+    links += [link(c) for c in botones]
+    if en_mas:
+        extra_activo = categoria_activa in en_mas
         links.append(
             '<details class="category-more">'
             f'<summary class="filter-button{" is-active" if extra_activo else ""}">Más</summary>'
-            f'<div class="category-more-menu">{"".join(extra_links)}</div>'
+            f'<div class="category-more-menu">{"".join(link(c) for c in en_mas)}</div>'
             '</details>'
         )
     return "\n".join(links)
@@ -402,10 +441,40 @@ def render_destacado_under(ev: dict | None) -> str:
         <h2 class="destacado-title">{titulo_html}</h2>
         <p class="destacado-venue">{lugar}</p>
         {mapa}
-        <p class="destacado-note">Elegido al azar entre la escena independiente de la semana. Banquemos lo chico.</p>
       </article>
     </section>
 """
+
+
+def render_schema_eventos(eventos_semana: list[dict]) -> str:
+    """JSON-LD (Schema.org) con los eventos de la semana, para que Google los
+    entienda y los muestre como resultados ricos."""
+    items = []
+    for i, ev in enumerate(eventos_semana[:40], 1):
+        try:
+            f = parse_fecha(ev["fecha"])
+        except Exception:
+            continue
+        datos = venue_info(evento_lugar(ev))
+        lugar_ld = {"@type": "Place", "name": datos["nombre"]}
+        addr = str(ev.get("direccion") or datos["direccion"] or "").strip()
+        if addr:
+            lugar_ld["address"] = addr
+        ev_ld = {
+            "@type": "Event",
+            "name": evento_titulo(ev),
+            "startDate": f.isoformat(),
+            "eventStatus": "https://schema.org/EventScheduled",
+            "location": lugar_ld,
+        }
+        url = evento_url(ev)
+        if url:
+            ev_ld["url"] = url
+        items.append({"@type": "ListItem", "position": i, "item": ev_ld})
+    if not items:
+        return ""
+    data = {"@context": "https://schema.org", "@type": "ItemList", "itemListElement": items}
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False) + "</script>"
 
 
 def render_html(
@@ -422,9 +491,13 @@ def render_html(
     slug = slug_edicion(jueves)
 
     eventos = [ev for ev in eventos if ev.get("categoria") != "cine" and ev.get("fecha")]
-    categorias_disponibles = categorias_presentes(eventos)
+    cuentas = contar_categorias_semana(eventos, jueves)
     bloque_destacado = (
         render_destacado_under(elegir_destacado_under(eventos, jueves))
+        if not categoria else ""
+    )
+    bloque_antiheroes = (
+        render_antiheroes(elegir_antiheroes(eventos, jueves, cuentas))
         if not categoria else ""
     )
     if categoria:
@@ -451,12 +524,15 @@ def render_html(
     )
     h1 = f"{categoria_label} en La Plata" if categoria else "Cartelera en vivo en La Plata"
     eyebrow = f"{categoria_label} · Edición {slug}" if categoria else f"En vivo · Edición {slug}"
+    page_url = f"https://movete.info/en-vivo/{categoria}/" if categoria else "https://movete.info/en-vivo/"
+    og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+    bloque_schema = render_schema_eventos(semana)
 
     html_doc = PLANTILLA.format(
         slug=esc(slug),
         rango=esc(rango),
         total=len(semana),
-        category_nav=category_nav(categoria, categorias_disponibles),
+        category_nav=category_nav(categoria, cuentas),
         bloque_semana=render_esta_semana(semana),
         bloque_futuro=render_lo_que_se_viene(eventos, jueves),
         generado=esc(generado),
@@ -466,6 +542,10 @@ def render_html(
         h1=esc(h1),
         eyebrow=esc(eyebrow),
         bloque_destacado=bloque_destacado,
+        bloque_antiheroes=bloque_antiheroes,
+        bloque_schema=bloque_schema,
+        page_url=esc(page_url),
+        og_image=og_image,
     )
 
     return html_doc, {
@@ -476,9 +556,53 @@ def render_html(
     }
 
 
+def _pagina_categoria_vacia(categoria: str, jueves: date) -> str:
+    """Página noindex para una categoría sin eventos esta semana: evita
+    404 en links viejos y no genera contenido flaco que a Google no le gusta."""
+    label = cat_label(categoria)
+    return f"""<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://movete.info/en-vivo/">
+  <title>{esc(label)} en La Plata · MoVeTe</title>
+  <meta name="description" content="Esta semana no hay {esc(label.lower())} en la cartelera en vivo de La Plata. Mirá el resto en MoVeTe.">
+  <link rel="stylesheet" href="/assets/css/movete.css">
+</head>
+<body id="top">
+  <header class="site-header">
+    <a class="brand" href="/">MoVeTe<span>●</span></a>
+    <nav class="site-nav" aria-label="Secciones principales">
+      <a href="/">Inicio</a>
+      <a href="/cine/">Cine</a>
+      <a href="/en-vivo/" aria-current="page">En vivo</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero compact">
+      <p class="eyebrow">En vivo</p>
+      <h1>{esc(label)} en La Plata</h1>
+    </section>
+    <p class="empty">Esta semana no hay {esc(label.lower())} en cartelera. Volvé a mirar la semana que viene, o descubrí el resto de la movida.</p>
+    <p><a class="button small" href="/en-vivo/">Ver toda la cartelera</a></p>
+  </main>
+</body>
+</html>
+"""
+
+
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
     eventos, generado = cargar_eventos(eventos_json_path)
     html_doc, info = render_html(eventos, generado, hoy=hoy)
+
+    jueves = jueves_de_edicion(hoy or date.today())
+    eventos_semana = [
+        e for e in normalizar_categorias(eventos)
+        if e.get("categoria") != "cine" and e.get("fecha")
+    ]
+    cuentas = contar_categorias_semana(eventos_semana, jueves)
 
     out = Path(output_dir)
     slug_dir = out / info["slug"]
@@ -492,12 +616,15 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
 
     salidas_categoria = []
     for categoria in CATEGORY_ORDER:
-        categoria_html, _ = render_html(
-            eventos,
-            generado,
-            hoy=hoy,
-            categoria=categoria,
-        )
+        if cuentas.get(categoria, 0) > 0:
+            categoria_html, _ = render_html(
+                eventos,
+                generado,
+                hoy=hoy,
+                categoria=categoria,
+            )
+        else:
+            categoria_html = _pagina_categoria_vacia(categoria, jueves)
         categoria_index = out / categoria / "index.html"
         categoria_index.parent.mkdir(parents=True, exist_ok=True)
         categoria_index.write_text(categoria_html, encoding="utf-8")
@@ -549,6 +676,15 @@ PLANTILLA = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{page_title}</title>
   <meta name="description" content="{page_description}">
+  <link rel="canonical" href="{page_url}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MoVeTe">
+  <meta property="og:title" content="{page_title}">
+  <meta property="og:description" content="{page_description}">
+  <meta property="og:url" content="{page_url}">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
+  {bloque_schema}
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
 <body id="top">
@@ -599,6 +735,8 @@ PLANTILLA = """<!doctype html>
       <h2>Lo que viene</h2>
       {bloque_futuro}
     </section>
+
+    {bloque_antiheroes}
 
     <section class="card">
       <p class="tag">También en MoVeTe</p>
