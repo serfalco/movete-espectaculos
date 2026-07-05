@@ -16,6 +16,7 @@ import argparse
 import html
 import json
 import random
+import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -615,6 +616,56 @@ def _pagina_categoria_vacia(categoria: str, jueves: date) -> str:
 """
 
 
+def generar_sitemap(en_vivo_dir: Path) -> None:
+    """Regenera sitemap.xml: páginas fijas, categorías vigentes (indexables) y
+    TODAS las ediciones archivadas de cine y en-vivo (URLs permanentes)."""
+    root = Path(en_vivo_dir).parent
+    base = "https://movete.info"
+
+    def es_fecha(nombre: str) -> bool:
+        return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", nombre))
+
+    urls: list[tuple[str, str]] = [("/", ""), ("/cine/", ""), ("/en-vivo/", "")]
+
+    # Categorías de en-vivo con página indexable (se saltan las noindex/vacías)
+    envivo = root / "en-vivo"
+    if envivo.is_dir():
+        for sub in sorted(envivo.iterdir()):
+            if not sub.is_dir() or es_fecha(sub.name) or sub.name == "actividades":
+                continue
+            idx = sub / "index.html"
+            if idx.exists() and "noindex" not in idx.read_text(encoding="utf-8")[:900]:
+                urls.append((f"/en-vivo/{sub.name}/", ""))
+
+    # Ediciones archivadas (URLs permanentes) de cine y en-vivo
+    for seccion in ("cine", "en-vivo"):
+        d = root / seccion
+        if not d.is_dir():
+            continue
+        for sub in sorted(d.iterdir()):
+            if sub.is_dir() and es_fecha(sub.name):
+                urls.append((f"/{seccion}/{sub.name}/", sub.name))
+
+    vistos: set[str] = set()
+    lineas = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for loc, lastmod in urls:
+        if loc in vistos:
+            continue
+        vistos.add(loc)
+        if lastmod:
+            lineas.append(f"  <url><loc>{base}{loc}</loc><lastmod>{lastmod}</lastmod></url>")
+        else:
+            lineas.append(f"  <url><loc>{base}{loc}</loc></url>")
+    lineas.append("</urlset>")
+    try:
+        (root / "sitemap.xml").write_text("\n".join(lineas) + "\n", encoding="utf-8")
+    except OSError as e:
+        print(f"[sitemap] no se pudo escribir: {e}")
+
+
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
     eventos, generado = cargar_eventos(eventos_json_path)
     html_doc, info = render_html(eventos, generado, hoy=hoy)
@@ -669,6 +720,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
 """,
         encoding="utf-8",
     )
+
+    generar_sitemap(out)
 
     return {
         **info,
