@@ -522,7 +522,7 @@ def render_html(
     if categoria:
         eventos = [ev for ev in eventos if ev.get("categoria", "otros") == categoria]
     if categoria == "stand-up":
-        eventos = agregar_evento_fijo_stand_up(eventos, hoy)
+        eventos = agregar_evento_fijo_stand_up(eventos, jueves + timedelta(days=1))
     semana = [
         ev for ev in eventos
         if ev.get("destacado") or en_esta_semana(ev["fecha"], jueves)
@@ -689,7 +689,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
 
     salidas_categoria = []
     for categoria in CATEGORY_ORDER:
-        if cuentas.get(categoria, 0) > 0:
+        if cuentas.get(categoria, 0) > 0 or categoria == "stand-up":
             categoria_html, _ = render_html(
                 eventos,
                 generado,
