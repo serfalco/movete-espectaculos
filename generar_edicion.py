@@ -625,7 +625,7 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
     def es_fecha(nombre: str) -> bool:
         return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", nombre))
 
-    urls: list[tuple[str, str]] = [("/", ""), ("/cine/", ""), ("/en-vivo/", "")]
+    urls: list[tuple[str, str]] = [("/", ""), ("/cine/", ""), ("/cine/pelis/", ""), ("/en-vivo/", "")]
 
     # Categorías de en-vivo con página indexable (se saltan las noindex/vacías)
     envivo = root / "en-vivo"
