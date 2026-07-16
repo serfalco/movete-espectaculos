@@ -61,21 +61,21 @@ CATEGORY_ORDER = [
 ]
 
 CAT_INTRO_MAIN = (
-    "Todo lo que hay para hacer esta semana en La Plata: teatro independiente, "
-    "música en vivo, stand up, danza y más. Una edición nueva cada jueves."
+    "Qué hacer en La Plata esta semana: teatro, música en vivo, stand up, "
+    "danza y más espectáculos. Una cartelera cultural nueva cada jueves."
 )
 
 CAT_INTRO = {
-    "teatro": "Cartelera de teatro en La Plata: obras, unipersonales y salas independientes con función esta semana.",
-    "musica": "Recitales, shows y música en vivo en La Plata, semana a semana.",
-    "stand-up": "Stand up en La Plata: los shows de comedia de la semana.",
-    "danza": "Danza en La Plata: espectáculos y funciones de esta semana.",
-    "infantil": "Teatro y espectáculos infantiles en La Plata para disfrutar en familia.",
-    "taller": "Talleres, cursos y clínicas culturales en La Plata.",
-    "impro": "Impro en La Plata: los shows de improvisación de la semana.",
-    "humor": "Humor y comedia en vivo en La Plata, semana a semana.",
-    "a-plasticas": "Muestras, exposiciones y artes plásticas en La Plata.",
-    "otros": "Otras actividades culturales en La Plata para esta semana.",
+    "teatro": "Teatro en La Plata esta semana: obras, unipersonales, salas independientes y funciones para agendar.",
+    "musica": "Música en vivo en La Plata: recitales, bandas, conciertos y shows para salir esta semana.",
+    "stand-up": "Stand up en La Plata: shows de comedia, ciclos y funciones para reírse esta semana.",
+    "danza": "Danza en La Plata: espectáculos, funciones y propuestas escénicas de la semana.",
+    "infantil": "Espectáculos infantiles en La Plata: teatro, títeres y propuestas para disfrutar en familia.",
+    "taller": "Talleres y cursos culturales en La Plata: clínicas, encuentros y capacitaciones de la semana.",
+    "impro": "Impro en La Plata: shows de improvisación, humor y teatro espontáneo para esta semana.",
+    "humor": "Humor en vivo en La Plata: comedia, monólogos y propuestas para salir a reírse.",
+    "a-plasticas": "Artes plásticas en La Plata: muestras, exposiciones, fotografía y artes visuales.",
+    "otros": "Más cosas para hacer en La Plata: actividades culturales, encuentros y propuestas de la semana.",
 }
 
 
@@ -531,17 +531,36 @@ def render_html(
 
     rango = etiqueta_rango(jueves)
     categoria_label = cat_label(categoria) if categoria else ""
+    seo_titles = {
+        "teatro": f"Teatro en La Plata esta semana · Obras, salas y funciones · MoVeTe",
+        "musica": f"Música en vivo en La Plata · Recitales y shows · MoVeTe",
+        "stand-up": f"Stand up en La Plata · Shows de comedia esta semana · MoVeTe",
+        "otros": f"Más cosas para hacer en La Plata · Cartelera cultural · MoVeTe",
+    }
+    seo_descriptions = {
+        "teatro": f"Cartelera de teatro en La Plata para la semana del {rango}: obras, salas independientes, unipersonales y funciones.",
+        "musica": f"Música en vivo en La Plata para la semana del {rango}: recitales, bandas, conciertos y shows.",
+        "stand-up": f"Stand up en La Plata para la semana del {rango}: shows de comedia, ciclos y funciones.",
+        "otros": f"Más cosas para hacer en La Plata durante la semana del {rango}: actividades culturales, encuentros y propuestas.",
+    }
+    seo_h1 = {
+        "teatro": "Teatro en La Plata esta semana",
+        "musica": "Música en vivo en La Plata",
+        "stand-up": "Stand up en La Plata",
+        "otros": "Más cosas para hacer en La Plata",
+    }
+
     page_title = (
-        f"{categoria_label} en La Plata · {rango} · MoVeTe"
+        seo_titles.get(categoria, f"{categoria_label} en La Plata · {rango} · MoVeTe")
         if categoria
-        else f"Cartelera en vivo en La Plata · {rango} · MoVeTe"
+        else f"Qué hacer en La Plata esta semana · Teatro, música, stand up y más · MoVeTe"
     )
     page_description = (
-        f"Cartelera de {categoria_label.lower()} en La Plata. Edición semanal {rango}."
+        seo_descriptions.get(categoria, f"Cartelera de {categoria_label.lower()} en La Plata. Edición semanal {rango}.")
         if categoria
-        else f"Cartelera en vivo de La Plata: teatro, música, stand up, danza, talleres y eventos. Edición semanal {rango}."
+        else f"Qué hacer en La Plata esta semana: teatro, música en vivo, stand up, danza, talleres y espectáculos. Edición semanal {rango}."
     )
-    h1 = f"{categoria_label} en La Plata" if categoria else "Cartelera en vivo en La Plata"
+    h1 = seo_h1.get(categoria, f"{categoria_label} en La Plata") if categoria else "Qué hacer en La Plata esta semana"
     eyebrow = f"{categoria_label} · Edición {slug}" if categoria else f"En vivo · Edición {slug}"
     page_url = f"https://movete.info/en-vivo/{categoria}/" if categoria else "https://movete.info/en-vivo/"
     og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
