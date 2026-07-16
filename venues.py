@@ -249,6 +249,39 @@ VENUES_DIRECCIONES = {
         'Calle 10 N° 1076 e/ 54 y 55, La Plata',
         ['teatro unlp y biblioteca popular teatral', 'teatro unlp', 'alberto mediza'],
     ),
+    # --- Exportadas desde MoVeTe-venues ---
+    'estudio_71': (
+        'Estudio 71', 'Calle 71 N° 576, La Plata',
+        ['estudio 71', 'estudio7 1'],
+    ),
+    'entre_pueblos': (
+        'Entre Pueblos', 'Calle 13C N° 372, City Bell, La Plata',
+        ['entre pueblos', 'entrepueblos', 'entrepueblos citybell'],
+    ),
+    'ruda': (
+        'RUDA Red Ultrapotente de Amistad', 'Calle 70 N° 1136, La Plata',
+        ['ruda', 'red ultrapotente de amistad', 'ruda red ultrapotente de amistad'],
+    ),
+    'espacio_sudaka': (
+        'Espacio Sudaka', 'Av. 7 N° 1789, La Plata',
+        ['espacio sudaka', 'sudaka'],
+    ),
+    'comunidad_raices': (
+        'Comunidad Raíces - FM Raíces Rock', 'Calle 139 entre 40 y 41, La Plata',
+        ['comunidad raices', 'comunidad raices lp', 'fm raices rock', 'raices rock'],
+    ),
+    'la_hormiguera': (
+        'Espacio Cultural La Hormiguera', 'Calle 8 entre 61 y 62, La Plata',
+        ['espacio cultural la hormiguera', 'la hormiguera', 'la hormiguera espacio'],
+    ),
+    'espacio_live': (
+        'Espacio Live', 'Calle 56 N° 685, La Plata',
+        ['espacio live', 'espacio live la plata'],
+    ),
+    'tcb_berisso': (
+        'TCB - Teatro Comunitario de Berisso', 'Nueva York y Marsella N° 4711, Berisso',
+        ['tcb', 'teatro comunitario de berisso', 'tcb berisso'],
+    ),
 }
 
 
