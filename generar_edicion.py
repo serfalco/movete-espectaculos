@@ -275,7 +275,7 @@ def render_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
                 <p class="pill">{esc(cat_label(cat))}</p>
               </div>
               <h3>{titulo_html}</h3>
-              <p class="event-meta">{esc(nombre_venue)}</p>
+              <p class="event-meta"><a href="/en-vivo/sala/{venue_slug(nombre_venue)}/">{esc(nombre_venue)}</a></p>
             </article>
             """
         )
@@ -756,6 +756,36 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
     )
 
 
+def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
+    """Página evergreen con TODOS los grandes shows anunciados (venues masivos,
+    fechas futuras): /en-vivo/lo-que-se-viene/. Imán de SEO para 'recitales La Plata'."""
+    cuerpo = render_lo_que_se_viene(eventos, jueves)
+    futuros = [
+        ev for ev in eventos
+        if ev.get("fecha") and not en_esta_semana(ev["fecha"], jueves)
+        and venue_masivo(evento_lugar(ev))
+    ]
+    futuros.sort(key=lambda e: e.get("fecha", ""))
+    schema = render_schema_eventos(futuros[:30]) if futuros else ""
+    page_url = "https://movete.info/en-vivo/lo-que-se-viene/"
+    return PLANTILLA_VENUE.format(
+        page_title=esc("Grandes shows y recitales en La Plata · Próximas fechas · MoVeTe"),
+        page_description=esc(
+            "Todos los grandes shows y recitales anunciados en La Plata: Hipódromo, "
+            "Teatro Argentino, Estadio Único y más. Fechas, artistas y cómo llegar."
+        ),
+        page_url=esc(page_url),
+        og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
+        bloque_schema=schema,
+        eyebrow=esc("La Plata · Grandes shows anunciados"),
+        h1=esc("Lo que se viene en La Plata"),
+        bloque_mapa="",
+        titulo_agenda=esc("Próximos grandes shows"),
+        bloque_eventos=cuerpo,
+        anio=jueves.year,
+    )
+
+
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
     eventos, generado = cargar_eventos(eventos_json_path)
     html_doc, info = render_html(eventos, generado, hoy=hoy)
@@ -832,6 +862,14 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(pagina, encoding="utf-8")
         salidas_venue.append(str(destino))
+
+    # Página evergreen "Lo que se viene" (grandes shows anticipados)
+    lqsv_dir = out / "lo-que-se-viene"
+    lqsv_dir.mkdir(parents=True, exist_ok=True)
+    (lqsv_dir / "index.html").write_text(
+        render_pagina_lo_que_se_viene(normalizar_categorias(eventos), jueves),
+        encoding="utf-8",
+    )
 
     generar_sitemap(out)
 
