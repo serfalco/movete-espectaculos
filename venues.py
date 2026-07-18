@@ -140,6 +140,28 @@ VENUES_DIRECCIONES = {
         'Calle 43 N° 1349 esquina 22, La Plata',
         ['sociedad platense de stand up'],
     ),
+    # Salas de cine-club / Espacio INCAA que aparecen en En Vivo. Direcciones
+    # tomadas del catalogo real de cine (movete-cine/espacios_cine.json).
+    'proyecciones_terrestres': (
+        'Cine Club Proyecciones Terrestres',
+        'Calle 3 entre 66 y 67, La Plata',
+        ['cine club proyecciones terrestres', 'proyecciones terrestres'],
+    ),
+    'cine_ecoselect': (
+        'Cine Ecoselect (Espacio INCAA)',
+        'Calle 50 N° 1200 (Centro Cultural Islas Malvinas), La Plata',
+        ['cine ecoselect espacio incaa', 'cine ecoselect', 'ecoselect', 'cine eco select'],
+    ),
+    'cine_select': (
+        'Cine Select (Espacio INCAA)',
+        'Calle 50 entre 6 y 7 (Pasaje Dardo Rocha), La Plata',
+        ['cine select espacio incaa', 'cine select', 'select espacio incaa'],
+    ),
+    'ciie': (
+        'Centro de Capacitación, Información e Investigación Educativa (CIIE)',
+        'Calle 57 N° 670 entre 8 y 9, La Plata',
+        ['centro de capacitacion informacion e investigacion educativa', 'ciie'],
+    ),
     # --- Salas chicas / under: direcciones investigadas y confirmadas ---
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
