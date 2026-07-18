@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 
 from generar_edicion import render_evento, render_html
-from venues import venue_info
+from venues import venue_info, venue_slug, venue_canonico
 
 
 class VenueInfoTests(unittest.TestCase):
@@ -91,6 +91,30 @@ class VenueInfoTests(unittest.TestCase):
         )
         self.assertIn("21:30 hs · Tres Empanadas Comedia", cartelera)
         self.assertIn("Calle+43+N%C2%B0+1349+esquina+22%2C+La+Plata", cartelera)
+
+
+class VenueCanonicoTests(unittest.TestCase):
+    def test_slug_seo_friendly(self):
+        self.assertEqual(venue_slug("Teatro Coliseo Podestá"), "teatro-coliseo-podesta")
+        self.assertEqual(venue_slug("Tres Empanadas Comedia"), "tres-empanadas-comedia")
+
+    def test_sala_con_direccion_tiene_pagina(self):
+        info = venue_canonico("Tres Empanadas Comedia")
+        self.assertIsNotNone(info)
+        self.assertEqual(info["slug"], "tres-empanadas-comedia")
+        self.assertFalse(info["masivo"])
+        self.assertIn("Calle 43", info["direccion"])
+
+    def test_masivo_tiene_pagina_pero_sin_direccion(self):
+        info = venue_canonico("Estadio Único Diego Maradona")
+        self.assertIsNotNone(info)
+        self.assertTrue(info["masivo"])
+        self.assertEqual(info["direccion"], "")
+        self.assertEqual(info["slug"], "estadio-unico-diego-maradona")
+
+    def test_lugar_generico_no_tiene_pagina(self):
+        self.assertIsNone(venue_canonico("La Plata"))
+        self.assertIsNone(venue_canonico("Lugar todavía sin verificar"))
 
 
 if __name__ == "__main__":

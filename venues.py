@@ -360,3 +360,30 @@ def venue_info(lugar: str) -> dict:
             if re.search(rf'(^|\s){re.escape(alias_norm)}(\s|$)', norm):
                 return {'nombre': nombre, 'direccion': direccion}
     return {'nombre': original, 'direccion': ''}
+
+
+def venue_slug(nombre: str) -> str:
+    """Slug SEO-friendly y estable a partir del nombre canonico de una sala.
+
+    'Teatro Coliseo Podestá' -> 'teatro-coliseo-podesta'
+    """
+    return re.sub(r'\s+', '-', _normalizar(nombre)).strip('-')
+
+
+def venue_canonico(lugar: str):
+    """Identidad canonica de una sala para armar su pagina propia.
+
+    Devuelve dict {slug, nombre, direccion, masivo} si la sala esta en el
+    catalogo (masiva o con direccion confirmada); None si no la reconocemos
+    (no vale la pena una pagina para un lugar suelto o generico como 'La Plata').
+    """
+    vm = venue_masivo(lugar)
+    if vm:
+        _clave, nombre = vm
+        return {'slug': venue_slug(nombre), 'nombre': nombre,
+                'direccion': '', 'masivo': True}
+    info = venue_info(lugar)
+    if info['direccion']:
+        return {'slug': venue_slug(info['nombre']), 'nombre': info['nombre'],
+                'direccion': info['direccion'], 'masivo': False}
+    return None
