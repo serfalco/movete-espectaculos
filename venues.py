@@ -162,6 +162,12 @@ VENUES_DIRECCIONES = {
         'Calle 57 N° 670 entre 8 y 9, La Plata',
         ['centro de capacitacion informacion e investigacion educativa', 'ciie'],
     ),
+    'jubilados_abogados': (
+        'Asociación de Jubilados y Pensionados (Caja de Abogados)',
+        'Av. 13 N° 831/833, piso 6, La Plata',
+        ['asociacion de jubilados y pensionados', 'caja de abogados',
+         'jubilados de la caja de abogados'],
+    ),
     # --- Salas chicas / under: direcciones investigadas y confirmadas ---
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
