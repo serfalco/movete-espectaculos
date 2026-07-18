@@ -961,6 +961,7 @@ PLANTILLA = """<!doctype html>
       <p class="eyebrow">Anticipadas</p>
       <h2>Lo que viene</h2>
       {bloque_futuro}
+      <p class="mas-shows"><a href="/en-vivo/lo-que-se-viene/">Ver todos los grandes shows anunciados en La Plata →</a></p>
     </section>
 
     {bloque_antiheroes}
