@@ -133,6 +133,13 @@ VENUES_DIRECCIONES = {
             'tres empanadas',
         ],
     ),
+    # El show fijo de los viernes. Algunas fuentes lo nombran por el show y no
+    # por la sala; mantiene su nombre propio pero comparte la direccion de la sala.
+    'sociedad_platense_stand_up': (
+        'Sociedad Platense de Stand Up',
+        'Calle 43 N° 1349 esquina 22, La Plata',
+        ['sociedad platense de stand up'],
+    ),
     # --- Salas chicas / under: direcciones investigadas y confirmadas ---
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',

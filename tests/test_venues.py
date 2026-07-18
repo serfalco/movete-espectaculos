@@ -56,6 +56,8 @@ class VenueInfoTests(unittest.TestCase):
         )
 
     def test_tres_empanadas_abre_la_cartelera_de_stand_up(self):
+        # El segundo evento es el mismo show fijo que una fuente publica el
+        # mismo viernes (26/6): no debe generar una segunda tarjeta.
         html, info = render_html(
             [
                 {
@@ -65,9 +67,9 @@ class VenueInfoTests(unittest.TestCase):
                     "categoria": "stand-up",
                 },
                 {
-                    "titulo": "Tres Empanadas Comedia",
-                    "fecha": "2026-07-03 22:00:00",
-                    "lugar": "Lugar duplicado",
+                    "titulo": "Sociedad Platense de Stand Up",
+                    "fecha": "2026-06-26 21:30:00",
+                    "lugar": "Tres Empanadas Comedia",
                     "categoria": "stand-up",
                 },
             ],
@@ -80,12 +82,14 @@ class VenueInfoTests(unittest.TestCase):
         )[0]
 
         self.assertEqual(info["esta_semana"], 2)
-        self.assertEqual(cartelera.count("Tres Empanadas Comedia"), 1)
+        # El show fijo aparece una sola vez pese al duplicado de la fuente,
+        # y abre la cartelera (destacado, viernes) antes del evento del jueves.
+        self.assertEqual(cartelera.count("Sociedad Platense de Stand Up"), 1)
         self.assertLess(
-            cartelera.index("Viernes 3 de julio"),
+            cartelera.index("Viernes 26 de junio"),
             cartelera.index("Jueves 25 de junio"),
         )
-        self.assertIn("21:30 hs · Sociedad Platense de Stand Up", cartelera)
+        self.assertIn("21:30 hs · Tres Empanadas Comedia", cartelera)
         self.assertIn("Calle+43+N%C2%B0+1349+esquina+22%2C+La+Plata", cartelera)
 
 
