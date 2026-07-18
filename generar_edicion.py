@@ -30,7 +30,7 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
-from venues import venue_info, venue_masivo
+from venues import venue_info, venue_masivo, venue_canonico, venue_slug
 
 
 CAT_LABEL = {
@@ -162,7 +162,10 @@ def render_evento(ev: dict) -> str:
     direccion = str(ev.get("direccion") or datos_lugar["direccion"] or "").strip()
     hora = f.strftime("%H:%M")
     url = esc(evento_url(ev))
-    meta = " · ".join(p for p in [f"{hora} hs", lugar] if p.strip())
+    # Si la sala esta en el catalogo, su nombre linkea a su pagina propia.
+    vc = venue_canonico(evento_lugar(ev))
+    lugar_html = f'<a href="/en-vivo/sala/{vc["slug"]}/">{lugar}</a>' if vc else lugar
+    meta = " · ".join(p for p in [f"{hora} hs", lugar_html] if p.strip())
     titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
     mapa_html = ""
     if direccion:
@@ -184,7 +187,7 @@ def render_evento(ev: dict) -> str:
         <p class="pill">{esc(cat_label(cat))}</p>
       </div>
       <h3>{titulo_html}</h3>
-      <p class="event-meta">{esc(meta)}</p>
+      <p class="event-meta">{meta}</p>
       {mapa_html}
     </article>
     """
@@ -665,6 +668,13 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
             if sub.is_dir() and es_fecha(sub.name):
                 urls.append((f"/{seccion}/{sub.name}/", sub.name))
 
+    # Páginas por sala (evergreen, indexables)
+    sala_dir = root / "en-vivo" / "sala"
+    if sala_dir.is_dir():
+        for sub in sorted(sala_dir.iterdir()):
+            if sub.is_dir() and (sub / "index.html").exists():
+                urls.append((f"/en-vivo/sala/{sub.name}/", ""))
+
     vistos: set[str] = set()
     lineas = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -683,6 +693,67 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         (root / "sitemap.xml").write_text("\n".join(lineas) + "\n", encoding="utf-8")
     except OSError as e:
         print(f"[sitemap] no se pudo escribir: {e}")
+
+
+def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> str:
+    """Pagina evergreen de una sala: /en-vivo/sala/<slug>/."""
+    nombre = venue["nombre"]
+    slug = venue["slug"]
+    direccion = (venue.get("direccion") or "").strip()
+    page_url = f"https://movete.info/en-vivo/sala/{slug}/"
+    n = len(eventos_sala)
+
+    page_title = f"Qué hay en {nombre} · La Plata · MoVeTe"
+    page_description = (
+        f"Agenda de {nombre} en La Plata: próximas funciones, shows y eventos."
+        + (f" Dirección: {direccion}." if direccion else "")
+    )
+    eyebrow = "Espacio en La Plata" if venue.get("masivo") else "Sala en La Plata"
+
+    bloque_mapa = ""
+    if direccion:
+        maps_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(direccion)}"
+        bloque_mapa = f"""
+      <a class="map-link event-map-link" href="{esc(maps_url)}" target="_blank" rel="noopener"
+         aria-label="Cómo llegar a {esc(nombre)} en Google Maps">
+        <img class="map-icon" src="/assets/icons/google-maps.svg" alt="">
+        <span class="map-copy">
+          <span class="map-label">Cómo llegar</span>
+          <span class="map-address">{esc(direccion)}</span>
+        </span>
+      </a>"""
+
+    if eventos_sala:
+        bloque_eventos = "".join(render_evento(e) for e in eventos_sala)
+        titulo_agenda = f"Próximas funciones ({n})"
+    else:
+        bloque_eventos = ('<p class="empty">Por ahora no hay funciones cargadas en '
+                          'esta sala. Volvé a mirar la semana que viene.</p>')
+        titulo_agenda = "Agenda"
+
+    place = {"@context": "https://schema.org", "@type": "Place",
+             "name": nombre, "url": page_url}
+    if direccion:
+        place["address"] = {"@type": "PostalAddress", "streetAddress": direccion,
+                            "addressLocality": "La Plata", "addressRegion": "Buenos Aires",
+                            "addressCountry": "AR"}
+    schema = '<script type="application/ld+json">' + json.dumps(place, ensure_ascii=False) + "</script>"
+    if eventos_sala:
+        schema += render_schema_eventos(eventos_sala)
+
+    return PLANTILLA_VENUE.format(
+        page_title=esc(page_title),
+        page_description=esc(page_description),
+        page_url=esc(page_url),
+        og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
+        bloque_schema=schema,
+        eyebrow=esc(eyebrow),
+        h1=esc(nombre),
+        bloque_mapa=bloque_mapa,
+        titulo_agenda=esc(titulo_agenda),
+        bloque_eventos=bloque_eventos,
+        anio=jueves.year,
+    )
 
 
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
@@ -740,6 +811,28 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         encoding="utf-8",
     )
 
+    # Páginas por sala (evergreen): agrupar todos los eventos futuros por venue
+    # del catálogo. Las salas no cataloguadas o genéricas ('La Plata') no generan página.
+    eventos_por_sala: dict[str, dict] = {}
+    for ev in normalizar_categorias(eventos):
+        if ev.get("categoria") == "cine" or not ev.get("fecha"):
+            continue
+        vc = venue_canonico(evento_lugar(ev))
+        if not vc:
+            continue
+        entrada = eventos_por_sala.setdefault(vc["slug"], {"venue": vc, "eventos": []})
+        entrada["eventos"].append(ev)
+
+    salidas_venue = []
+    sala_root = out / "sala"
+    for slug, data in eventos_por_sala.items():
+        evs = sorted(data["eventos"], key=lambda e: e.get("fecha", ""))
+        pagina = render_pagina_venue(data["venue"], evs, jueves)
+        destino = sala_root / slug / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(pagina, encoding="utf-8")
+        salidas_venue.append(str(destino))
+
     generar_sitemap(out)
 
     return {
@@ -747,6 +840,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         "salida_actual": str(current_index),
         "salida_archivo": str(archive_index),
         "salidas_categoria": salidas_categoria,
+        "salidas_venue": salidas_venue,
     }
 
 
@@ -851,6 +945,65 @@ PLANTILLA = """<!doctype html>
       <span>{anio}</span>
       <span aria-hidden="true">·</span>
       <button class="footer-share" type="button" data-share-page title="Avisá que existimos por WhatsApp" aria-label="Avisá que existimos por WhatsApp">Avisá que existimos <img class="share-icon" src="/assets/icons/whatsapp.svg" alt=""></button>
+    </p>
+  </footer>
+  <script src="/assets/js/movete.js" defer></script>
+</body>
+</html>
+"""
+
+
+PLANTILLA_VENUE = """<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{page_title}</title>
+  <meta name="description" content="{page_description}">
+  <link rel="canonical" href="{page_url}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MoVeTe">
+  <meta property="og:title" content="{page_title}">
+  <meta property="og:description" content="{page_description}">
+  <meta property="og:url" content="{page_url}">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
+  {bloque_schema}
+  <link rel="stylesheet" href="/assets/css/movete.css">
+</head>
+<body id="top">
+  <header class="site-header">
+    <a class="brand" href="/">MoVeTe<span>●</span></a>
+    <nav class="site-nav" aria-label="Secciones principales">
+      <a href="/">Inicio</a>
+      <a href="/cine/">Cine</a>
+      <a href="/en-vivo/" aria-current="page">En vivo</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero compact">
+      <p class="eyebrow">{eyebrow}</p>
+      <h1>{h1}</h1>
+      {bloque_mapa}
+    </section>
+
+    <section class="section">
+      <h2>{titulo_agenda}</h2>
+      {bloque_eventos}
+    </section>
+
+    <p class="site-notice">La info puede cambiar. Confirmá horarios y disponibilidad con la sala.</p>
+    <p style="margin-top:24px"><a href="/en-vivo/">← Volver a la cartelera de En Vivo</a></p>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-line">
+      <span class="footer-brand">MoVeTe<span>.</span></span>
+      <span aria-hidden="true">·</span>
+      <span>La Plata</span>
+      <span aria-hidden="true">·</span>
+      <span>{anio}</span>
     </p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>

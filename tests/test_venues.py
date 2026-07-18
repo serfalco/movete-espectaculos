@@ -89,7 +89,9 @@ class VenueInfoTests(unittest.TestCase):
             cartelera.index("Viernes 26 de junio"),
             cartelera.index("Jueves 25 de junio"),
         )
-        self.assertIn("21:30 hs · Tres Empanadas Comedia", cartelera)
+        self.assertIn("21:30 hs", cartelera)
+        # El nombre de la sala ahora linkea a su pagina propia.
+        self.assertIn("/en-vivo/sala/tres-empanadas-comedia/", cartelera)
         self.assertIn("Calle+43+N%C2%B0+1349+esquina+22%2C+La+Plata", cartelera)
 
 
