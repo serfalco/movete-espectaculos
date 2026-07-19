@@ -168,6 +168,12 @@ VENUES_DIRECCIONES = {
         ['asociacion de jubilados y pensionados', 'caja de abogados',
          'jubilados de la caja de abogados'],
     ),
+    # City Bell (Gran La Plata). Direccion tomada de la data real de Eventbrite.
+    'teatro_camara_city_bell': (
+        'Teatro de Cámara de City Bell',
+        'Diagonal 4 (Urquiza) N° 347, City Bell, La Plata',
+        ['teatro de camara de city bell', 'teatro de camara city bell'],
+    ),
     # --- Salas chicas / under: direcciones investigadas y confirmadas ---
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
