@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 
 from generar_edicion import render_evento, render_html
-from venues import venue_info
+from venues import venue_info, venue_slug, venue_canonico
 
 
 class VenueInfoTests(unittest.TestCase):
@@ -56,6 +56,8 @@ class VenueInfoTests(unittest.TestCase):
         )
 
     def test_tres_empanadas_abre_la_cartelera_de_stand_up(self):
+        # El segundo evento es el mismo show fijo que una fuente publica el
+        # mismo viernes (26/6): no debe generar una segunda tarjeta.
         html, info = render_html(
             [
                 {
@@ -65,9 +67,9 @@ class VenueInfoTests(unittest.TestCase):
                     "categoria": "stand-up",
                 },
                 {
-                    "titulo": "Tres Empanadas Comedia",
-                    "fecha": "2026-07-03 22:00:00",
-                    "lugar": "Lugar duplicado",
+                    "titulo": "Sociedad Platense de Stand Up",
+                    "fecha": "2026-06-26 21:30:00",
+                    "lugar": "Tres Empanadas Comedia",
                     "categoria": "stand-up",
                 },
             ],
@@ -80,13 +82,41 @@ class VenueInfoTests(unittest.TestCase):
         )[0]
 
         self.assertEqual(info["esta_semana"], 2)
-        self.assertEqual(cartelera.count("Tres Empanadas Comedia"), 1)
+        # El show fijo aparece una sola vez pese al duplicado de la fuente,
+        # y abre la cartelera (destacado, viernes) antes del evento del jueves.
+        self.assertEqual(cartelera.count("Sociedad Platense de Stand Up"), 1)
         self.assertLess(
-            cartelera.index("Viernes 3 de julio"),
+            cartelera.index("Viernes 26 de junio"),
             cartelera.index("Jueves 25 de junio"),
         )
-        self.assertIn("21:30 hs · Sociedad Platense de Stand Up", cartelera)
+        self.assertIn("21:30 hs", cartelera)
+        # El nombre de la sala ahora linkea a su pagina propia.
+        self.assertIn("/en-vivo/sala/tres-empanadas-comedia/", cartelera)
         self.assertIn("Calle+43+N%C2%B0+1349+esquina+22%2C+La+Plata", cartelera)
+
+
+class VenueCanonicoTests(unittest.TestCase):
+    def test_slug_seo_friendly(self):
+        self.assertEqual(venue_slug("Teatro Coliseo Podestá"), "teatro-coliseo-podesta")
+        self.assertEqual(venue_slug("Tres Empanadas Comedia"), "tres-empanadas-comedia")
+
+    def test_sala_con_direccion_tiene_pagina(self):
+        info = venue_canonico("Tres Empanadas Comedia")
+        self.assertIsNotNone(info)
+        self.assertEqual(info["slug"], "tres-empanadas-comedia")
+        self.assertFalse(info["masivo"])
+        self.assertIn("Calle 43", info["direccion"])
+
+    def test_masivo_tiene_pagina_pero_sin_direccion(self):
+        info = venue_canonico("Estadio Único Diego Maradona")
+        self.assertIsNotNone(info)
+        self.assertTrue(info["masivo"])
+        self.assertEqual(info["direccion"], "")
+        self.assertEqual(info["slug"], "estadio-unico-diego-maradona")
+
+    def test_lugar_generico_no_tiene_pagina(self):
+        self.assertIsNone(venue_canonico("La Plata"))
+        self.assertIsNone(venue_canonico("Lugar todavía sin verificar"))
 
 
 if __name__ == "__main__":

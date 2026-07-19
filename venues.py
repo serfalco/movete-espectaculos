@@ -133,6 +133,47 @@ VENUES_DIRECCIONES = {
             'tres empanadas',
         ],
     ),
+    # El show fijo de los viernes. Algunas fuentes lo nombran por el show y no
+    # por la sala; mantiene su nombre propio pero comparte la direccion de la sala.
+    'sociedad_platense_stand_up': (
+        'Sociedad Platense de Stand Up',
+        'Calle 43 N° 1349 esquina 22, La Plata',
+        ['sociedad platense de stand up'],
+    ),
+    # Salas de cine-club / Espacio INCAA que aparecen en En Vivo. Direcciones
+    # tomadas del catalogo real de cine (movete-cine/espacios_cine.json).
+    'proyecciones_terrestres': (
+        'Cine Club Proyecciones Terrestres',
+        'Calle 3 entre 66 y 67, La Plata',
+        ['cine club proyecciones terrestres', 'proyecciones terrestres'],
+    ),
+    'cine_ecoselect': (
+        'Cine Ecoselect (Espacio INCAA)',
+        'Calle 50 N° 1200 (Centro Cultural Islas Malvinas), La Plata',
+        ['cine ecoselect espacio incaa', 'cine ecoselect', 'ecoselect', 'cine eco select'],
+    ),
+    'cine_select': (
+        'Cine Select (Espacio INCAA)',
+        'Calle 50 entre 6 y 7 (Pasaje Dardo Rocha), La Plata',
+        ['cine select espacio incaa', 'cine select', 'select espacio incaa'],
+    ),
+    'ciie': (
+        'Centro de Capacitación, Información e Investigación Educativa (CIIE)',
+        'Calle 57 N° 670 entre 8 y 9, La Plata',
+        ['centro de capacitacion informacion e investigacion educativa', 'ciie'],
+    ),
+    'jubilados_abogados': (
+        'Asociación de Jubilados y Pensionados (Caja de Abogados)',
+        'Av. 13 N° 831/833, piso 6, La Plata',
+        ['asociacion de jubilados y pensionados', 'caja de abogados',
+         'jubilados de la caja de abogados'],
+    ),
+    # City Bell (Gran La Plata). Direccion tomada de la data real de Eventbrite.
+    'teatro_camara_city_bell': (
+        'Teatro de Cámara de City Bell',
+        'Diagonal 4 (Urquiza) N° 347, City Bell, La Plata',
+        ['teatro de camara de city bell', 'teatro de camara city bell'],
+    ),
     # --- Salas chicas / under: direcciones investigadas y confirmadas ---
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
@@ -325,3 +366,48 @@ def venue_info(lugar: str) -> dict:
             if re.search(rf'(^|\s){re.escape(alias_norm)}(\s|$)', norm):
                 return {'nombre': nombre, 'direccion': direccion}
     return {'nombre': original, 'direccion': ''}
+
+
+VENUES_INSTAGRAM = {
+    'casa-hereje': '@casahereje',
+    'comunidad-raices-fm-raices-rock': '@comunidadraices.lp',
+    'entre-pueblos': '@entrepueblos_citybell',
+    'espacio-cultural-la-hormiguera': '@lahormiguera_espacio',
+    'espacio-live': '@espaciolivelaplata',
+    'espacio-sudaka': '@espaciosudaka_',
+    'estudio-71': '@estudio7.1',
+    'ruda-red-ultrapotente-de-amistad': '@redultrapotentedeamistad',
+    'tcb-teatro-comunitario-de-berisso': '@tcberisso',
+}
+
+
+def venue_instagram(slug: str) -> str:
+    """Handle de Instagram de una sala (o '' si no tiene), por slug."""
+    return VENUES_INSTAGRAM.get(slug, '')
+
+
+def venue_slug(nombre: str) -> str:
+    """Slug SEO-friendly y estable a partir del nombre canonico de una sala.
+
+    'Teatro Coliseo Podestá' -> 'teatro-coliseo-podesta'
+    """
+    return re.sub(r'\s+', '-', _normalizar(nombre)).strip('-')
+
+
+def venue_canonico(lugar: str):
+    """Identidad canonica de una sala para armar su pagina propia.
+
+    Devuelve dict {slug, nombre, direccion, masivo} si la sala esta en el
+    catalogo (masiva o con direccion confirmada); None si no la reconocemos
+    (no vale la pena una pagina para un lugar suelto o generico como 'La Plata').
+    """
+    vm = venue_masivo(lugar)
+    if vm:
+        _clave, nombre = vm
+        return {'slug': venue_slug(nombre), 'nombre': nombre,
+                'direccion': '', 'masivo': True}
+    info = venue_info(lugar)
+    if info['direccion']:
+        return {'slug': venue_slug(info['nombre']), 'nombre': info['nombre'],
+                'direccion': info['direccion'], 'masivo': False}
+    return None
