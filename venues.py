@@ -368,6 +368,24 @@ def venue_info(lugar: str) -> dict:
     return {'nombre': original, 'direccion': ''}
 
 
+VENUES_INSTAGRAM = {
+    'casa-hereje': '@casahereje',
+    'comunidad-raices-fm-raices-rock': '@comunidadraices.lp',
+    'entre-pueblos': '@entrepueblos_citybell',
+    'espacio-cultural-la-hormiguera': '@lahormiguera_espacio',
+    'espacio-live': '@espaciolivelaplata',
+    'espacio-sudaka': '@espaciosudaka_',
+    'estudio-71': '@estudio7.1',
+    'ruda-red-ultrapotente-de-amistad': '@redultrapotentedeamistad',
+    'tcb-teatro-comunitario-de-berisso': '@tcberisso',
+}
+
+
+def venue_instagram(slug: str) -> str:
+    """Handle de Instagram de una sala (o '' si no tiene), por slug."""
+    return VENUES_INSTAGRAM.get(slug, '')
+
+
 def venue_slug(nombre: str) -> str:
     """Slug SEO-friendly y estable a partir del nombre canonico de una sala.
 

@@ -30,7 +30,7 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
-from venues import venue_info, venue_masivo, venue_canonico, venue_slug
+from venues import venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram
 
 
 CAT_LABEL = {
@@ -722,6 +722,14 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
           <span class="map-address">{esc(direccion)}</span>
         </span>
       </a>"""
+
+    ig = venue_instagram(slug)
+    if ig:
+        handle = ig.lstrip("@")
+        bloque_mapa += (
+            f'\n      <p class="venue-social"><a href="https://instagram.com/{esc(handle)}"'
+            f' target="_blank" rel="noopener">Instagram @{esc(handle)}</a></p>'
+        )
 
     if eventos_sala:
         bloque_eventos = "".join(render_evento(e) for e in eventos_sala)
