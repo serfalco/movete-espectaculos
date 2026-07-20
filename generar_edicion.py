@@ -824,7 +824,16 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
     archive_index = slug_dir / "index.html"
     current_index = out / "index.html"
 
-    archive_index.write_text(html_doc, encoding="utf-8")
+    # En las ediciones archivadas va un enlace a la edición vigente, para que
+    # quien caiga en una vieja pase a la de esta semana. En la vigente no va.
+    banner = (
+        '<div class="edicion-vigente-bar">'
+        '<a href="/en-vivo/">Ver la edición de esta semana →</a>'
+        '</div>'
+    )
+    html_archivo = html_doc.replace('<main>', f'<main>\n  {banner}', 1)
+
+    archive_index.write_text(html_archivo, encoding="utf-8")
     current_index.write_text(html_doc, encoding="utf-8")
 
     salidas_categoria = []
