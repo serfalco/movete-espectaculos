@@ -180,8 +180,20 @@ def render_evento(ev: dict) -> str:
         </span>
       </a>"""
 
+    # Imagen del evento (si la fuente la trajo). Si falla al cargar, el propio
+    # onerror saca el bloque y la tarjeta queda de texto, sin imagen rota.
+    imagen = str(ev.get("imagen") or "").strip()
+    media_html = ""
+    if imagen:
+        media_html = f"""
+      <div class="event-card-media">
+        <img src="{esc(imagen)}" alt="" loading="lazy" decoding="async"
+             onerror="this.closest('.event-card-media').remove()">
+      </div>"""
+
     return f"""
-    <article class="event-card" data-category="{esc(cat)}">
+    <article class="event-card{' has-media' if imagen else ''}" data-category="{esc(cat)}">
+      {media_html}
       <div class="event-card-topline">
         <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
         <p class="pill">{esc(cat_label(cat))}</p>
