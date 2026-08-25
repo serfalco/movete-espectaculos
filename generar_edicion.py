@@ -490,17 +490,31 @@ def render_schema_eventos(eventos_semana: list[dict]) -> str:
         except Exception:
             continue
         datos = venue_info(evento_lugar(ev))
+        # PostalAddress en vez de un string suelto: es lo que Google espera
+        # para poder mostrar el evento con su ubicación.
         lugar_ld = {"@type": "Place", "name": datos["nombre"]}
         addr = str(ev.get("direccion") or datos["direccion"] or "").strip()
         if addr:
-            lugar_ld["address"] = addr
+            lugar_ld["address"] = {
+                "@type": "PostalAddress",
+                "streetAddress": addr.replace(", La Plata", "").strip(", "),
+                "addressLocality": "La Plata",
+                "addressRegion": "Buenos Aires",
+                "addressCountry": "AR",
+            }
         ev_ld = {
             "@type": "Event",
             "name": evento_titulo(ev),
             "startDate": f.isoformat(),
             "eventStatus": "https://schema.org/EventScheduled",
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
             "location": lugar_ld,
         }
+        # La imagen ya venía en el pipeline y se mostraba en la tarjeta, pero
+        # no llegaba al JSON-LD. Google la pide para el resultado enriquecido.
+        imagen = str(ev.get("imagen") or "").strip()
+        if imagen:
+            ev_ld["image"] = imagen
         url = evento_url(ev)
         if url:
             ev_ld["url"] = url
@@ -516,7 +530,14 @@ def render_html(
     generado: str,
     hoy: date | None = None,
     categoria: str | None = None,
+    page_url: str | None = None,
 ) -> tuple[str, dict]:
+    """page_url fuerza el canonical y el og:url de la pagina.
+
+    Sin este parametro, la edicion archivada salia con el canonical de la
+    portada: le decia a Google "no me indexes, indexa /en-vivo/" justo en las
+    URLs permanentes que son la apuesta SEO del proyecto.
+    """
     hoy = hoy or date.today()
     eventos = normalizar_categorias(eventos)
     if categoria == "actividades":
@@ -553,10 +574,10 @@ def render_html(
         "otros": f"Más cosas para hacer en La Plata · Cartelera cultural · MoVeTe",
     }
     seo_descriptions = {
-        "teatro": f"Cartelera de teatro en La Plata para la semana del {rango}: obras, salas independientes, unipersonales y funciones.",
-        "musica": f"Música en vivo en La Plata para la semana del {rango}: recitales, bandas, conciertos y shows.",
-        "stand-up": f"Stand up en La Plata para la semana del {rango}: shows de comedia, ciclos y funciones.",
-        "otros": f"Más cosas para hacer en La Plata durante la semana del {rango}: actividades culturales, encuentros y propuestas.",
+        "teatro": f"Cartelera de teatro en La Plata para la semana {rango}: obras, salas independientes, unipersonales y funciones.",
+        "musica": f"Música en vivo en La Plata para la semana {rango}: recitales, bandas, conciertos y shows.",
+        "stand-up": f"Stand up en La Plata para la semana {rango}: shows de comedia, ciclos y funciones.",
+        "otros": f"Más cosas para hacer en La Plata durante la semana {rango}: actividades culturales, encuentros y propuestas.",
     }
     seo_h1 = {
         "teatro": "Teatro en La Plata esta semana",
@@ -577,7 +598,10 @@ def render_html(
     )
     h1 = seo_h1.get(categoria, f"{categoria_label} en La Plata") if categoria else "Qué hacer en La Plata esta semana"
     eyebrow = f"{categoria_label} · Edición {slug}" if categoria else f"En vivo · Edición {slug}"
-    page_url = f"https://movete.info/en-vivo/{categoria}/" if categoria else "https://movete.info/en-vivo/"
+    page_url = page_url or (
+        f"https://movete.info/en-vivo/{categoria}/" if categoria
+        else "https://movete.info/en-vivo/"
+    )
     og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
     page_intro = CAT_INTRO_MAIN if not categoria else CAT_INTRO.get(
         categoria, f"Cartelera de {categoria_label.lower()} en La Plata, semana a semana."
@@ -623,9 +647,12 @@ def _pagina_categoria_vacia(categoria: str, jueves: date) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://movete.info/en-vivo/">
+  <link rel="canonical" href="https://movete.info/en-vivo/{esc(categoria)}/">
   <title>{esc(label)} en La Plata · MoVeTe</title>
   <meta name="description" content="Esta semana no hay {esc(label.lower())} en la cartelera en vivo de La Plata. Mirá el resto en MoVeTe.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
 <body id="top">
@@ -831,7 +858,13 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         '<a href="/en-vivo/">Ver la edición de esta semana →</a>'
         '</div>'
     )
-    html_archivo = html_doc.replace('<main>', f'<main>\n  {banner}', 1)
+    # La edicion archivada se re-renderiza con su propio canonical: es una URL
+    # permanente y tiene que poder indexarse por si misma.
+    html_archivo_doc, _ = render_html(
+        eventos, generado, hoy=hoy,
+        page_url=f"https://movete.info/en-vivo/{info['slug']}/",
+    )
+    html_archivo = html_archivo_doc.replace('<main>', f'<main>\n  {banner}', 1)
 
     archive_index.write_text(html_archivo, encoding="utf-8")
     current_index.write_text(html_doc, encoding="utf-8")
@@ -940,6 +973,9 @@ PLANTILLA = """<!doctype html>
   <meta property="og:image" content="{og_image}">
   <meta name="twitter:card" content="summary_large_image">
   {bloque_schema}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
 <body id="top">
@@ -965,7 +1001,7 @@ PLANTILLA = """<!doctype html>
 
     <section class="ad-box sponsor-card">
       <div class="sponsor-kicker">
-        <img class="sponsor-logo" src="/assets/images/tres-empanadas-comedia.png" alt="">
+        <img class="sponsor-logo" src="/assets/images/tres-empanadas-comedia.png" alt="Tres Empanadas Comedia" width="36" height="36" decoding="async">
         <p class="ad-label">Espacio promocional</p>
       </div>
       <h2>Tres Empanadas Comedia</h2>
@@ -1037,6 +1073,9 @@ PLANTILLA_VENUE = """<!doctype html>
   <meta property="og:image" content="{og_image}">
   <meta name="twitter:card" content="summary_large_image">
   {bloque_schema}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/movete.css">
 </head>
 <body id="top">
