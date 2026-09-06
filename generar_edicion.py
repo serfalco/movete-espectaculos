@@ -1005,7 +1005,7 @@ PLANTILLA = """<!doctype html>
         <p class="ad-label">Espacio promocional</p>
       </div>
       <h2>Tres Empanadas Comedia</h2>
-      <p>Stand up en La Plata. Shows a la gorra, todos los viernes.</p>
+      <p>Stand up en La Plata. Shows a la gorra, todos los jueves y viernes.</p>
       <a class="button small" href="https://tresempanadas.com.ar/reservas">Más info</a>
     </section>
 
