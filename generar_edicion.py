@@ -79,6 +79,35 @@ CAT_INTRO = {
 }
 
 
+def postal_address(direccion: str | None) -> dict:
+    """PostalAddress para el JSON-LD, siempre presente.
+
+    Google Search Console marca "Falta el campo address (en location)" cuando
+    el Place sale solo con name. Antes omitiamos el bloque entero si no
+    sabiamos la calle, y eso pasaba con todo lugar que no esta en
+    VENUES_DIRECCIONES (12 de 40 eventos en la edicion del 10/09/2026).
+
+    Ahora la direccion sale siempre: si no tenemos la calle, igual decimos
+    que es en La Plata, Buenos Aires, Argentina. Es cierto, es lo que Google
+    pide, y el streetAddress se suma solo cuando lo conocemos.
+    """
+    addr = {
+        "@type": "PostalAddress",
+        "addressLocality": "La Plata",
+        "addressRegion": "Buenos Aires",
+        "addressCountry": "AR",
+    }
+    calle = str(direccion or "").strip()
+    if calle:
+        # La tabla guarda ", La Plata" al final; en el JSON-LD ya lo dice
+        # addressLocality, repetirlo ensucia el dato.
+        calle = re.sub(r",?\s*La Plata\s*$", "", calle).strip(" ,")
+        calle = re.sub(r",?\s*Buenos Aires\s*$", "", calle).strip(" ,")
+    if calle:
+        addr["streetAddress"] = calle
+    return addr
+
+
 def normalizar_categorias(eventos: list[dict]) -> list[dict]:
     """Conserva compatibilidad con datos viejos sin publicar Actividades."""
     return [
@@ -493,15 +522,8 @@ def render_schema_eventos(eventos_semana: list[dict]) -> str:
         # PostalAddress en vez de un string suelto: es lo que Google espera
         # para poder mostrar el evento con su ubicación.
         lugar_ld = {"@type": "Place", "name": datos["nombre"]}
-        addr = str(ev.get("direccion") or datos["direccion"] or "").strip()
-        if addr:
-            lugar_ld["address"] = {
-                "@type": "PostalAddress",
-                "streetAddress": addr.replace(", La Plata", "").strip(", "),
-                "addressLocality": "La Plata",
-                "addressRegion": "Buenos Aires",
-                "addressCountry": "AR",
-            }
+        lugar_ld["address"] = postal_address(
+            ev.get("direccion") or datos["direccion"])
         ev_ld = {
             "@type": "Event",
             "name": evento_titulo(ev),
@@ -780,10 +802,7 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
 
     place = {"@context": "https://schema.org", "@type": "Place",
              "name": nombre, "url": page_url}
-    if direccion:
-        place["address"] = {"@type": "PostalAddress", "streetAddress": direccion,
-                            "addressLocality": "La Plata", "addressRegion": "Buenos Aires",
-                            "addressCountry": "AR"}
+    place["address"] = postal_address(direccion)
     schema = '<script type="application/ld+json">' + json.dumps(place, ensure_ascii=False) + "</script>"
     if eventos_sala:
         schema += render_schema_eventos(eventos_sala)
