@@ -379,6 +379,11 @@ VENUES_DIRECCIONES = {
         'Calle 34 N° 1618, entre 27 y 28, La Plata',
         ['espacio doble t', 'doble t'],
     ),
+    'el_tiatrito': (
+        'El Tiatrito Espacio Cultural',
+        'Calle 134 entre 531 y 32 (N° 21), La Plata',
+        ['el tiatrito', 'tiatrito', 'el tiatrito espacio cultural'],
+    ),
     'la_compostera': (
         'La Compostera',
         'Calle 60 N° 647, esquina 8, La Plata',
