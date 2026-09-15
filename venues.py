@@ -323,6 +323,67 @@ VENUES_DIRECCIONES = {
         'TCB - Teatro Comunitario de Berisso', 'Nueva York y Marsella N° 4711, Berisso',
         ['tcb', 'teatro comunitario de berisso', 'tcb berisso'],
     ),
+
+    # --- Sumados el 15/09/2026 -------------------------------------------
+    # Salian sin address en el JSON-LD (12 de 40 eventos de la edicion del
+    # 10/09). Direcciones buscadas una por una y confirmadas por Tres.
+    'rayuela': (
+        'Rayuela Libros',
+        'Plaza Italia N° 187, entre Av. 44 y Diag. 77, La Plata',
+        ['rayuela', 'rayuela libros'],
+    ),
+    'blondie_cultural': (
+        'Blondie Cultural',
+        'Calle 11 entre 54 y 55, La Plata',
+        ['blondie cultural', 'blondie'],
+    ),
+    'comunidad_ferroviaria': (
+        'Comunidad Ferroviaria',
+        'Calle 3 y 526, Tolosa, La Plata',
+        ['comunidad ferroviaria', 'club comunidad ferroviaria'],
+    ),
+    'la_macacha': (
+        'La Macacha Centro Cultural',
+        'Calle 69 N° 1545, entre 25 y 26, La Plata',
+        ['la macacha', 'macacha', 'la macacha casa cultural',
+         'centro cultural la macacha'],
+    ),
+    'azulunala': (
+        'Azulunala',
+        'Calle 69 N° 864, entre 12 y 13, La Plata',
+        ['azulunala'],
+    ),
+    'distrito_arte_cultura': (
+        'Distrito de Arte y Cultura',
+        'Calle 46 entre 19 y 20, La Plata',
+        ['distrito de arte y cultura', 'distrito arte y cultura'],
+    ),
+    'casa_suiza': (
+        'Casa Suiza',
+        'Calle 2 N° 621, entre 44 y 45, La Plata',
+        ['casa suiza'],
+    ),
+    'biblioteca_mafalda': (
+        'Biblioteca Popular Mafalda y Libertad',
+        'Diagonal 145 y 414 bis, Arturo Seguí, La Plata',
+        ['biblioteca popular mafalda y libertad', 'biblioteca mafalda',
+         'mafalda y libertad'],
+    ),
+    'la_salamanca': (
+        'La Salamanca Centro de Cultura y Peña',
+        'Calle 5 N° 1422, entre 61 y 62, La Plata',
+        ['la salamanca', 'la salamanca centro de cultura y pena'],
+    ),
+    'doble_t': (
+        'Espacio Doble-T',
+        'Calle 34 N° 1618, entre 27 y 28, La Plata',
+        ['espacio doble t', 'doble t'],
+    ),
+    'la_compostera': (
+        'La Compostera',
+        'Calle 60 N° 647, esquina 8, La Plata',
+        ['la compostera'],
+    ),
 }
 
 
