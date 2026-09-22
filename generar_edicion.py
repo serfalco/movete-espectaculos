@@ -30,7 +30,8 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
-from venues import venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram
+from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram,
+                    VENUES_MASIVOS, VENUES_DIRECCIONES)
 
 
 CAT_LABEL = {
@@ -756,6 +757,62 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         print(f"[sitemap] no se pudo escribir: {e}")
 
 
+_DIAS_CORTOS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+
+
+def _fecha_corta(ev: dict) -> str:
+    """'vie 26/9' a partir de 'YYYY-MM-DD HH:MM:SS'; '' si no se puede."""
+    try:
+        d = date.fromisoformat((ev.get("fecha") or "")[:10])
+    except ValueError:
+        return ""
+    return f"{_DIAS_CORTOS[d.weekday()]} {d.day}/{d.month}"
+
+
+def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[dict]) -> tuple[str, str]:
+    """Title y meta description de la página de una sala.
+
+    Google ya muestra estas páginas (impresiones altas) pero el CTR era ~1 %
+    con un título genérico ("Qué hay en X"). Mostrar lo concreto — cuántas
+    funciones, qué obra y qué día — es lo que hace clickear en el resultado.
+    """
+    titulos = []
+    for ev in eventos_sala:
+        t = (ev.get("titulo") or "").strip()
+        if t and t not in titulos:
+            titulos.append(t)
+    n = len(eventos_sala)
+    # "Teatro X La Plata", salvo que el nombre ya diga La Plata.
+    lugar = nombre if "la plata" in nombre.lower() else f"{nombre} La Plata"
+
+    if n == 0:
+        base, extra = f"{lugar}: agenda y cómo llegar", ""
+        desc = f"Agenda de {nombre} en La Plata: próximas funciones y shows."
+    elif n == 1:
+        cuando = _fecha_corta(eventos_sala[0])
+        base, extra = f"{lugar}: {titulos[0]}", (f" ({cuando})" if cuando else "")
+        desc = (f"Próxima función en {nombre}: {titulos[0]}"
+                + (f", {cuando}" if cuando else "") + ". Horario, entradas y cómo llegar.")
+    else:
+        desde, hasta = _fecha_corta(eventos_sala[0]), _fecha_corta(eventos_sala[-1])
+        base = f"{lugar}: {n} funciones"
+        extra = f" ({desde} al {hasta})" if desde and hasta and desde != hasta else ""
+        muestra = " · ".join(titulos[:3]) + (" y más" if len(titulos) > 3 else "")
+        desc = f"Qué hay en {nombre}: {muestra}. Horarios, entradas y cómo llegar."
+
+    # Google corta el título en ~60 caracteres. Se prueba de más completo a
+    # menos: con fecha y marca, con fecha, sin fecha; y si nada entra, se
+    # recorta el texto base con elipsis (nunca a mitad de la fecha).
+    marca = " · MoVeTe"
+    title = next(
+        (t for t in (base + extra + marca, base + extra, base + marca, base) if len(t) <= 62),
+        base[:61].rstrip(" ,·:(") + "…",
+    )
+    if direccion:
+        desc += f" Dirección: {direccion}."
+    return title, desc
+
+
 def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> str:
     """Pagina evergreen de una sala: /en-vivo/sala/<slug>/."""
     nombre = venue["nombre"]
@@ -764,11 +821,7 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
     page_url = f"https://movete.info/en-vivo/sala/{slug}/"
     n = len(eventos_sala)
 
-    page_title = f"Qué hay en {nombre} · La Plata · MoVeTe"
-    page_description = (
-        f"Agenda de {nombre} en La Plata: próximas funciones, shows y eventos."
-        + (f" Dirección: {direccion}." if direccion else "")
-    )
+    page_title, page_description = titulo_y_descripcion_venue(nombre, direccion, eventos_sala)
     eyebrow = "Espacio en La Plata" if venue.get("masivo") else "Sala en La Plata"
 
     bloque_mapa = ""
@@ -943,6 +996,20 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(pagina, encoding="utf-8")
         salidas_venue.append(str(destino))
+
+    # Salas que ya tenían página pero esta semana no traen eventos: se
+    # regeneran vacías. Si no, la página vieja queda con funciones pasadas
+    # (y Google la sigue mostrando con un título que ya no es verdad).
+    catalogo = {}
+    for nombre, *_ in list(VENUES_MASIVOS.values()) + list(VENUES_DIRECCIONES.values()):
+        vc = venue_canonico(nombre)
+        if vc:
+            catalogo.setdefault(vc["slug"], vc)
+    if sala_root.is_dir():
+        for d in sorted(sala_root.iterdir()):
+            if d.is_dir() and d.name not in eventos_por_sala and d.name in catalogo:
+                (d / "index.html").write_text(
+                    render_pagina_venue(catalogo[d.name], [], jueves), encoding="utf-8")
 
     # Página evergreen "Lo que se viene" (grandes shows anticipados)
     lqsv_dir = out / "lo-que-se-viene"
