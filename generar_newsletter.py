@@ -96,6 +96,22 @@ def armar_email(eventos: list[dict], jueves: date) -> tuple[str, str]:
     return subject, "\n".join(partes)
 
 
+def _alertar(msg: str) -> None:
+    """Deja el error en _alerta.txt: el último paso del workflow lo lee y pone
+    la corrida en rojo, que es lo que hace que GitHub mande un mail. Un
+    ::warning:: solo queda enterrado en Actions (así se perdió el envío del
+    17/09/2026 sin que nadie se enterara)."""
+    print(f"::warning::{msg}")
+    ws = os.environ.get("GITHUB_WORKSPACE", "").strip()
+    if not ws:
+        return
+    try:
+        with open(os.path.join(ws, "_alerta.txt"), "a", encoding="utf-8") as f:
+            f.write(msg + "\n")
+    except OSError:
+        pass
+
+
 def enviar(subject: str, body: str) -> int:
     key = os.environ.get("BUTTONDOWN_API_KEY", "").strip()
     if not key:
@@ -105,7 +121,14 @@ def enviar(subject: str, body: str) -> int:
     payload = json.dumps({"subject": subject, "body": body, "status": status}).encode("utf-8")
     req = urllib.request.Request(
         API, data=payload, method="POST",
-        headers={"Authorization": "Token " + key, "Content-Type": "application/json"},
+        headers={
+            "Authorization": "Token " + key,
+            "Content-Type": "application/json",
+            # Buttondown exige este header para mandar mails por API
+            # (status 'about_to_send'); sin él responde 400
+            # "sending_requires_confirmation" y no sale nada.
+            "X-Buttondown-Live-Dangerously": "true",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
@@ -113,10 +136,10 @@ def enviar(subject: str, body: str) -> int:
             return 0
     except urllib.error.HTTPError as e:
         cuerpo = e.read(400).decode("utf-8", "ignore")
-        print(f"::warning::newsletter: la API respondió {e.code} - {cuerpo}")
-        return 0  # no rompe el workflow
+        _alertar(f"newsletter: la API respondió {e.code} - {cuerpo}")
+        return 0  # no corta el workflow; el aviso lo pone en rojo al final
     except Exception as e:  # noqa: BLE001
-        print(f"::warning::newsletter: error enviando - {e}")
+        _alertar(f"newsletter: error enviando - {e}")
         return 0
 
 
