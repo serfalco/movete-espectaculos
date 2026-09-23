@@ -183,7 +183,25 @@ def agregar_evento_fijo_stand_up(eventos: list[dict], referencia: date) -> list[
     return [fijo, *sin_duplicado]
 
 
-def render_evento(ev: dict) -> str:
+def obra_slug(ev: dict) -> str:
+    """Slug de la página propia de una obra/show: /en-vivo/obra/<slug>/.
+
+    Se arma solo con el título, así la misma obra en dos salas (o en varias
+    fechas) comparte una página. Devuelve '' si el evento no merece página
+    (cine, sin fecha o título demasiado pobre para posicionar).
+    """
+    if ev.get("categoria") == "cine" or not ev.get("fecha"):
+        return ""
+    titulo = evento_titulo(ev)
+    if titulo == "Sin título":
+        return ""
+    slug = venue_slug(titulo)[:70].strip("-")
+    if len(slug.replace("-", "")) < 4:
+        return ""
+    return slug
+
+
+def render_evento(ev: dict, link_obra: bool = True) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
     titulo = esc(evento_titulo(ev))
@@ -196,7 +214,20 @@ def render_evento(ev: dict) -> str:
     vc = venue_canonico(evento_lugar(ev))
     lugar_html = f'<a href="/en-vivo/sala/{vc["slug"]}/">{lugar}</a>' if vc else lugar
     meta = " · ".join(p for p in [f"{hora} hs", lugar_html] if p.strip())
-    titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
+    # El título lleva a la página propia de la obra (enlazado interno: es lo
+    # que hace que Google la encuentre y la posicione). La web externa de
+    # entradas queda como link aparte.
+    oslug = obra_slug(ev) if link_obra else ""
+    if oslug:
+        titulo_html = f'<a href="/en-vivo/obra/{oslug}/">{titulo}</a>'
+    elif url:
+        titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>'
+    else:
+        titulo_html = titulo
+    ticket_html = ""
+    if url and (oslug or not link_obra):
+        ticket_html = (f'\n      <p class="event-ticket"><a class="card-link" href="{url}" '
+                       f'target="_blank" rel="noopener">Entradas y más info →</a></p>')
     mapa_html = ""
     if direccion:
         maps_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(direccion)}"
@@ -229,7 +260,7 @@ def render_evento(ev: dict) -> str:
         <p class="pill">{esc(cat_label(cat))}</p>
       </div>
       <h3>{titulo_html}</h3>
-      <p class="event-meta">{meta}</p>
+      <p class="event-meta">{meta}</p>{ticket_html}
       {mapa_html}
     </article>
     """
@@ -308,7 +339,13 @@ def render_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
         cat = ev.get("categoria", "otros")
         url = esc(evento_url(ev))
         titulo = esc(evento_titulo(ev))
-        titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>' if url else titulo
+        oslug = obra_slug(ev)
+        if oslug:
+            titulo_html = f'<a href="/en-vivo/obra/{oslug}/">{titulo}</a>'
+        elif url:
+            titulo_html = f'<a href="{url}" target="_blank" rel="noopener">{titulo}</a>'
+        else:
+            titulo_html = titulo
         cards.append(
             f"""
             <article class="event-card future" data-category="{esc(cat)}">
@@ -715,7 +752,7 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
     envivo = root / "en-vivo"
     if envivo.is_dir():
         for sub in sorted(envivo.iterdir()):
-            if not sub.is_dir() or es_fecha(sub.name) or sub.name == "actividades":
+            if not sub.is_dir() or es_fecha(sub.name) or sub.name in ("actividades", "obra", "sala"):
                 continue
             idx = sub / "index.html"
             if idx.exists() and "noindex" not in idx.read_text(encoding="utf-8")[:900]:
@@ -736,6 +773,14 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         for sub in sorted(sala_dir.iterdir()):
             if sub.is_dir() and (sub / "index.html").exists():
                 urls.append((f"/en-vivo/sala/{sub.name}/", ""))
+
+    # Páginas por obra con funciones vigentes (las noindex quedan afuera)
+    obra_dir = root / "en-vivo" / "obra"
+    if obra_dir.is_dir():
+        for sub in sorted(obra_dir.iterdir()):
+            idx = sub / "index.html"
+            if sub.is_dir() and idx.exists() and "noindex" not in idx.read_text(encoding="utf-8")[:900]:
+                urls.append((f"/en-vivo/obra/{sub.name}/", ""))
 
     vistos: set[str] = set()
     lineas = [
@@ -875,6 +920,106 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
     )
 
 
+def _sin_gritos(titulo: str) -> str:
+    """'GABRIEL ROLÓN "PALABRA PLENA"' -> 'Gabriel Rolón "Palabra Plena"'.
+    Las fuentes a veces cargan todo en mayúsculas; en el resultado de Google
+    se lee como spam."""
+    letras = [c for c in titulo if c.isalpha()]
+    if len(letras) > 6 and sum(c.isupper() for c in letras) / len(letras) > 0.8:
+        return titulo.title()
+    return titulo
+
+
+def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[str, str]:
+    """Title y description de la página de una obra. Mismo criterio que las
+    salas: lo concreto (qué día, dónde) en el título, que Google corta ~60."""
+    titulo = _sin_gritos(titulo)
+    salas = []
+    for ev in eventos_obra:
+        n = venue_info(evento_lugar(ev))["nombre"]
+        if n and n not in salas:
+            salas.append(n)
+    n = len(eventos_obra)
+    donde = salas[0] if len(salas) == 1 else ("varias salas" if salas else "")
+    if n == 1:
+        cuando = _fecha_corta(eventos_obra[0])
+        extra = f" ({cuando})" if cuando else ""
+        desc = f"{titulo} en La Plata: {cuando}" + (f" en {donde}" if donde else "") + "."
+    else:
+        desde, hasta = _fecha_corta(eventos_obra[0]), _fecha_corta(eventos_obra[-1])
+        extra = f": {n} funciones" + (f" ({desde} al {hasta})" if desde != hasta else "")
+        desc = f"{titulo} en La Plata: {n} funciones" + (f" en {donde}" if donde else "") + "."
+    desc += " Horarios, entradas y cómo llegar."
+    base = f"{titulo} en La Plata"
+    marca = " · MoVeTe"
+    title = next(
+        (t for t in (base + extra + marca, base + extra, base + marca, base) if len(t) <= 62),
+        base[:61].rstrip(" ,·:(") + "…",
+    )
+    return title, desc
+
+
+def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
+                       titulo_viejo: str = "") -> str:
+    """Página propia de una obra/show: /en-vivo/obra/<slug>/.
+
+    Con funciones: todas las fechas y salas, JSON-LD Event por función.
+    Sin funciones (la obra ya pasó): se deja la página para no generar un
+    404, pero con noindex para que Google la saque del índice.
+    """
+    page_url = f"https://movete.info/en-vivo/obra/{slug}/"
+    if eventos_obra:
+        titulo = _sin_gritos(evento_titulo(eventos_obra[0]))
+        cat = eventos_obra[0].get("categoria", "otros")
+        page_title, page_description = titulo_y_descripcion_obra(titulo, eventos_obra)
+        eyebrow = f"{cat_label(cat)} en La Plata"
+        n = len(eventos_obra)
+        titulo_agenda = "Función" if n == 1 else f"Funciones ({n})"
+        # El afiche va una sola vez arriba; en las tarjetas de función se saca.
+        bloque_eventos = "".join(
+            re.sub(r'\s*<div class="event-card-media">.*?</div>', "",
+                   render_evento(e, link_obra=False), flags=re.S).replace(" has-media", "")
+            for e in eventos_obra)
+        schema = render_schema_eventos(eventos_obra)
+        imagen = next((str(e.get("imagen") or "").strip() for e in eventos_obra
+                       if str(e.get("imagen") or "").strip()), "")
+        bloque_intro = ""
+        if imagen:
+            bloque_intro = (f'<img class="obra-afiche" src="{esc(imagen)}" alt="{esc(titulo)}" '
+                            'style="max-width:100%;max-height:420px;border-radius:18px;margin-top:12px" '
+                            'loading="lazy" onerror="this.remove()">')
+        og_image = imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+        robots = ""
+    else:
+        titulo = titulo_viejo or slug.replace("-", " ").capitalize()
+        page_title = f"{titulo} · MoVeTe"
+        page_description = f"{titulo}: por ahora no hay funciones anunciadas en La Plata."
+        eyebrow = "En La Plata"
+        titulo_agenda = "Funciones"
+        bloque_eventos = ('<p class="empty">Por ahora no hay funciones anunciadas. '
+                          '<a href="/en-vivo/">Mirá qué hay esta semana →</a></p>')
+        schema, bloque_intro, robots = "", "", '<meta name="robots" content="noindex">'
+        og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+
+    html = PLANTILLA_VENUE.format(
+        page_title=esc(page_title),
+        page_description=esc(page_description),
+        page_url=esc(page_url),
+        og_image=esc(og_image),
+        bloque_schema=schema,
+        eyebrow=esc(eyebrow),
+        h1=esc(titulo),
+        bloque_mapa=bloque_intro,
+        titulo_agenda=esc(titulo_agenda),
+        bloque_eventos=bloque_eventos,
+        anio=jueves.year,
+    )
+    if robots:
+        html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n  ' + robots, 1)
+    return html.replace("Confirmá horarios y disponibilidad con la sala.",
+                        "Confirmá horarios y disponibilidad con la sala o la ticketera.")
+
+
 def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
     """Página evergreen con TODOS los grandes shows anunciados (venues masivos,
     fechas futuras): /en-vivo/lo-que-se-viene/. Imán de SEO para 'recitales La Plata'."""
@@ -1011,6 +1156,29 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
                 (d / "index.html").write_text(
                     render_pagina_venue(catalogo[d.name], [], jueves), encoding="utf-8")
 
+    # Páginas por obra/show: agrupa todas las funciones futuras por título.
+    eventos_por_obra: dict[str, list[dict]] = defaultdict(list)
+    for ev in normalizar_categorias(eventos):
+        oslug = obra_slug(ev)
+        if oslug:
+            eventos_por_obra[oslug].append(ev)
+    obra_root = out / "obra"
+    salidas_obra = []
+    for oslug, evs in eventos_por_obra.items():
+        evs = sorted(evs, key=lambda e: e.get("fecha", ""))
+        destino = obra_root / oslug / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(render_pagina_obra(oslug, evs, jueves), encoding="utf-8")
+        salidas_obra.append(str(destino))
+    # Obras que ya no tienen funciones: página sin fechas y noindex (no 404).
+    if obra_root.is_dir():
+        for d in sorted(obra_root.iterdir()):
+            idx = d / "index.html"
+            if d.is_dir() and d.name not in eventos_por_obra and idx.exists():
+                m = re.search(r"<h1>(.*?)</h1>", idx.read_text(encoding="utf-8"), re.S)
+                viejo = html.unescape(m.group(1).strip()) if m else ""
+                idx.write_text(render_pagina_obra(d.name, [], jueves, viejo), encoding="utf-8")
+
     # Página evergreen "Lo que se viene" (grandes shows anticipados)
     lqsv_dir = out / "lo-que-se-viene"
     lqsv_dir.mkdir(parents=True, exist_ok=True)
@@ -1027,6 +1195,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
         "salida_archivo": str(archive_index),
         "salidas_categoria": salidas_categoria,
         "salidas_venue": salidas_venue,
+        "salidas_obra": len(salidas_obra),
     }
 
 
