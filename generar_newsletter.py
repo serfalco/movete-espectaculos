@@ -33,10 +33,10 @@ from generar_edicion import (
     evento_lugar,
     elegir_destacado_under,
 )
+from venues import venue_canonico, venue_masivo
 
 BASE = "https://movete.info"
 API = "https://api.buttondown.com/v1/emails"
-MAX_PLANAZOS = 8
 
 
 def eventos_de_la_semana(eventos: list[dict], jueves: date) -> list[dict]:
@@ -49,13 +49,71 @@ def eventos_de_la_semana(eventos: list[dict], jueves: date) -> list[dict]:
     return evs
 
 
+DIAS_CORTOS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+
+# Rubros del mail, en orden: (categorias que entran, titulo, cuantos).
+RUBROS = [
+    (("teatro", "impro"), "🎭 Teatro", 4),
+    (("musica",), "🎵 Música", 4),
+    (("stand-up", "humor"), "😂 Stand up", 3),
+    (("danza", "infantil"), "💃 Danza e infantil", 2),
+]
+TITULOS_VACIOS = {"sin datos", "sin titulo", "sin título", "evento"}
+FUENTES_CON_ENTRADAS = ("livepass", "passline", "plateauno", "eventbrite")
+
+
+def _puntaje(ev: dict) -> int:
+    """Que tan 'para recomendar' es un evento. Sala grande, entradas a la
+    venta, fin de semana e imagen suman; no es un ranking editorial, solo
+    evita que el mail se llene con lo primero que cae en la semana."""
+    p = 0
+    if venue_masivo(evento_lugar(ev)):
+        p += 3
+    if ev.get("fuente") in FUENTES_CON_ENTRADAS:
+        p += 2
+    if ev.get("imagen"):
+        p += 1
+    if parse_fecha(ev["fecha"]).weekday() in (4, 5, 6):  # vie, sab, dom
+        p += 2
+    return p
+
+
+def _elegir(candidatos: list[dict], n: int) -> list[dict]:
+    """Los n mejores, sin repetir titulo ni sala y repartidos entre dias.
+
+    Una sola funcion por sala en cada rubro: sin eso un teatro grande con
+    mucha programacion (o el mismo show cargado con dos titulos) ocupa todo.
+    """
+    elegidos: list[dict] = []
+    titulos: set[str] = set()
+    salas: set[str] = set()
+    por_dia: dict[str, int] = {}
+    # Titulos de relleno que algunas fuentes publican cuando no tienen nombre.
+    candidatos = [e for e in candidatos
+                  if evento_titulo(e).strip().casefold() not in TITULOS_VACIOS]
+    pool = sorted(candidatos, key=lambda e: (-_puntaje(e), e["fecha"]))
+    while pool and len(elegidos) < n:
+        mejor = max(
+            pool,
+            key=lambda e: _puntaje(e) - 2 * por_dia.get(e["fecha"][:10], 0),
+        )
+        pool.remove(mejor)
+        t = evento_titulo(mejor).casefold().strip()
+        vc = venue_canonico(evento_lugar(mejor))
+        sala = vc["slug"] if vc else evento_lugar(mejor).casefold().strip()
+        if t in titulos or sala in salas:
+            continue
+        titulos.add(t)
+        salas.add(sala)
+        por_dia[mejor["fecha"][:10]] = por_dia.get(mejor["fecha"][:10], 0) + 1
+        elegidos.append(mejor)
+    return sorted(elegidos, key=lambda e: e["fecha"])
+
+
 def _linea_evento(ev: dict) -> str:
     f = parse_fecha(ev["fecha"])
-    cuando = f"{f.day} {MESES_ABR[f.month]} {f.strftime('%H:%M')}hs"
-    titulo = evento_titulo(ev)
-    lugar = evento_lugar(ev)
-    cat = cat_label(ev.get("categoria", "otros"))
-    return f"- **{cuando}** · {titulo} — {lugar} _({cat})_"
+    cuando = f"{DIAS_CORTOS[f.weekday()]} {f.day}"
+    return f"- {cuando} · **{evento_titulo(ev)}** — {evento_lugar(ev)}"
 
 
 def armar_email(eventos: list[dict], jueves: date) -> tuple[str, str]:
@@ -67,29 +125,25 @@ def armar_email(eventos: list[dict], jueves: date) -> tuple[str, str]:
 
     subject = f"MoVeTe · Qué hacer en La Plata · semana {rango}"
 
-    partes = [
-        f"## Qué hacer en La Plata\nSemana **{rango}**. Estos son algunos planazos; "
-        f"la cartelera completa está en [movete.info]({BASE}).\n",
-    ]
+    partes = [f"**Semana {rango}** · lo que no te podés perder, por rubro.\n"]
 
     if destacado:
         f = parse_fecha(destacado["fecha"])
         partes.append(
-            "### ⭐ No te lo pierdas\n"
-            f"**{evento_titulo(destacado)}** — {evento_lugar(destacado)} · "
-            f"{f.day} {MESES_ABR[f.month]}\n"
+            f"⭐ **No te lo pierdas:** {evento_titulo(destacado)} — "
+            f"{evento_lugar(destacado)} · {DIAS_CORTOS[f.weekday()]} {f.day}\n"
         )
 
-    if semana:
-        partes.append("### Algunos planazos de la semana")
-        partes.append("\n".join(_linea_evento(e) for e in semana[:MAX_PLANAZOS]))
-        partes.append("")
+    for cats, titulo, n in RUBROS:
+        elegidos = _elegir([e for e in semana if e.get("categoria") in cats], n)
+        if elegidos:
+            partes.append(f"**{titulo}**")
+            partes.append("\n".join(_linea_evento(e) for e in elegidos))
+            partes.append("")
 
     partes.append(
-        "### Mirá todo\n"
-        f"- 🎭 [En Vivo]({BASE}/en-vivo/) — teatro, música, stand up y más\n"
-        f"- 🎬 [Cine]({BASE}/cine/) — cartelera de la semana\n"
-        f"- 🔥 [Grandes shows anunciados]({BASE}/en-vivo/lo-que-se-viene/)\n"
+        f"👉 Todo lo demás: [En vivo]({BASE}/en-vivo/) · [Cine]({BASE}/cine/) · "
+        f"[Grandes shows]({BASE}/en-vivo/lo-que-se-viene/)"
     )
     partes.append(f"\n_Porque la cultura es encontrarnos._ · [MoVeTe]({BASE})")
 
