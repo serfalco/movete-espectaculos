@@ -1050,7 +1050,16 @@ def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
     )
 
 
-def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) -> dict:
+def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
+            solo_fechada: bool = False) -> dict:
+    """Genera En Vivo.
+
+    solo_fechada: escribe UNICAMENTE la edicion fechada (/en-vivo/<jueves>/) y
+    regenera el sitemap. No toca la portada de En Vivo, las categorias, las
+    salas ni las obras. Es la pre-edicion del martes: la semana que viene sale
+    como URL propia para que Google la descubra antes, sin pisar la edicion
+    vigente que sigue en pie hasta el miercoles.
+    """
     eventos, generado = cargar_eventos(eventos_json_path)
     html_doc, info = render_html(eventos, generado, hoy=hoy)
 
@@ -1084,6 +1093,9 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None) ->
     html_archivo = html_archivo_doc.replace('<main>', f'<main>\n  {banner}', 1)
 
     archive_index.write_text(html_archivo, encoding="utf-8")
+    if solo_fechada:
+        generar_sitemap(out)
+        return {**info, "salida_archivo": str(archive_index), "solo_fechada": True}
     current_index.write_text(html_doc, encoding="utf-8")
 
     salidas_categoria = []
@@ -1203,12 +1215,17 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Genera En Vivo para MoVeTe")
     parser.add_argument("--eventos", default="eventos.json")
     parser.add_argument("--output", default="../Movete-info/en-vivo")
+    parser.add_argument("--hoy", default=None,
+                        help="Fecha YYYY-MM-DD que se toma como 'hoy' (pre-edicion: el proximo jueves)")
+    parser.add_argument("--solo-fechada", action="store_true",
+                        help="Escribe solo /en-vivo/<jueves>/ y el sitemap")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    info = generar(args.eventos, args.output)
+    hoy = date.fromisoformat(args.hoy) if args.hoy else None
+    info = generar(args.eventos, args.output, hoy=hoy, solo_fechada=args.solo_fechada)
     print(json.dumps(info, ensure_ascii=False, indent=2))
 
 
