@@ -183,13 +183,8 @@ def agregar_evento_fijo_stand_up(eventos: list[dict], referencia: date) -> list[
     return [fijo, *sin_duplicado]
 
 
-def obra_slug(ev: dict) -> str:
-    """Slug de la página propia de una obra/show: /en-vivo/obra/<slug>/.
-
-    Se arma solo con el título, así la misma obra en dos salas (o en varias
-    fechas) comparte una página. Devuelve '' si el evento no merece página
-    (cine, sin fecha o título demasiado pobre para posicionar).
-    """
+def _obra_slug_base(ev: dict) -> str:
+    """Slug que sale del título tal cual, sin unificar variantes."""
     if ev.get("categoria") == "cine" or not ev.get("fecha"):
         return ""
     titulo = evento_titulo(ev)
@@ -199,6 +194,64 @@ def obra_slug(ev: dict) -> str:
     if len(slug.replace("-", "")) < 4:
         return ""
     return slug
+
+
+# Variantes de un mismo show: {slug_largo: slug_principal}. Se calcula una vez
+# por corrida (calcular_alias_obras) antes de renderizar nada, así las tarjetas
+# de las ediciones enlazan siempre a la misma página.
+_ALIAS_OBRA: dict[str, str] = {}
+
+# Un slug principal necesita este largo (sin guiones) para absorber variantes:
+# evita juntar "la-k" con "la-konga" aunque compartan el comienzo.
+_MIN_LARGO_SLUG_PRINCIPAL = 6
+
+
+def obra_slug(ev: dict) -> str:
+    """Slug de la página propia de una obra/show: /en-vivo/obra/<slug>/.
+
+    Se arma solo con el título, así la misma obra en dos salas (o en varias
+    fechas) comparte una página. Si el título es una variante de otro show de
+    la misma sala ("Elena Roger" y "Elena Roger en concierto"), las dos usan
+    la página del más corto. Devuelve '' si el evento no merece página
+    (cine, sin fecha o título demasiado pobre para posicionar).
+    """
+    base = _obra_slug_base(ev)
+    return _ALIAS_OBRA.get(base, base)
+
+
+def _clave_sala_obra(ev: dict) -> str:
+    """Identidad de la sala de un evento: la del catálogo si la hay, y si no
+    el texto del lugar normalizado."""
+    lugar = evento_lugar(ev)
+    vc = venue_canonico(lugar)
+    return vc["slug"] if vc else venue_slug(lugar)
+
+
+def calcular_alias_obras(eventos: list[dict]) -> dict[str, str]:
+    """{slug_variante: slug_principal} para obras que son el mismo show.
+
+    Dos páginas de obra son el mismo show si el slug de una empieza con el de
+    la otra ("emanero" / "emanero-todo-por-un-beso") Y comparten sala. Cada
+    fuente agrega un subtítulo distinto al mismo espectáculo, y dos páginas
+    para lo mismo se hacen competencia entre sí en Google. Gana el slug más
+    corto: es el que la gente escribe al buscar.
+    """
+    claves: dict[str, set] = {}
+    for ev in eventos:
+        base = _obra_slug_base(ev)
+        if base:
+            claves.setdefault(base, set()).add(_clave_sala_obra(ev))
+    alias: dict[str, str] = {}
+    slugs = sorted(claves, key=lambda x: (len(x), x))
+    for i, largo in enumerate(slugs):
+        for corto in slugs[:i]:
+            if (len(corto.replace("-", "")) >= _MIN_LARGO_SLUG_PRINCIPAL
+                    and largo.startswith(corto + "-")
+                    and claves[corto] & claves[largo]):
+                # Si el corto ya es variante de otro, se sigue hasta el principal.
+                alias[largo] = alias.get(corto, corto)
+                break
+    return alias
 
 
 def render_evento(ev: dict, link_obra: bool = True) -> str:
@@ -960,7 +1013,8 @@ def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[st
 
 
 def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
-                       titulo_viejo: str = "") -> str:
+                       titulo_viejo: str = "", titulo_principal: str = "",
+                       alias_de: str = "") -> str:
     """Página propia de una obra/show: /en-vivo/obra/<slug>/.
 
     Con funciones: todas las fechas y salas, JSON-LD Event por función.
@@ -968,8 +1022,23 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
     404, pero con noindex para que Google la saque del índice.
     """
     page_url = f"https://movete.info/en-vivo/obra/{slug}/"
-    if eventos_obra:
-        titulo = _sin_gritos(evento_titulo(eventos_obra[0]))
+    if alias_de:
+        # Variante de otro show: se deja la URL (no se rompe ningún enlace),
+        # pero no se indexa y manda a la página principal.
+        destino = f"/en-vivo/obra/{alias_de}/"
+        titulo = titulo_viejo or slug.replace("-", " ").capitalize()
+        page_title = f"{titulo} · MoVeTe"
+        page_description = f"{titulo}: las funciones están en la página principal de este show."
+        eyebrow = "En La Plata"
+        titulo_agenda = "Funciones"
+        bloque_eventos = (f'<p class="empty">Las funciones de este show están en '
+                          f'<a href="{esc(destino)}">su página principal →</a></p>')
+        schema, bloque_intro = "", ""
+        robots = (f'<meta name="robots" content="noindex, follow">\n  '
+                  f'<meta http-equiv="refresh" content="0; url={esc(destino)}">')
+        og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+    elif eventos_obra:
+        titulo = _sin_gritos(titulo_principal or evento_titulo(eventos_obra[0]))
         cat = eventos_obra[0].get("categoria", "otros")
         page_title, page_description = titulo_y_descripcion_obra(titulo, eventos_obra)
         eyebrow = f"{cat_label(cat)} en La Plata"
@@ -1061,6 +1130,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     vigente que sigue en pie hasta el miercoles.
     """
     eventos, generado = cargar_eventos(eventos_json_path)
+    _ALIAS_OBRA.clear()
+    _ALIAS_OBRA.update(calcular_alias_obras(normalizar_categorias(eventos)))
     html_doc, info = render_html(eventos, generado, hoy=hoy)
 
     jueves = jueves_de_edicion(hoy or date.today())
@@ -1176,17 +1247,36 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
             eventos_por_obra[oslug].append(ev)
     obra_root = out / "obra"
     salidas_obra = []
+    titulos_por_slug: dict[str, str] = {}
+    for ev in normalizar_categorias(eventos):
+        base = _obra_slug_base(ev)
+        if base and base not in titulos_por_slug:
+            titulos_por_slug[base] = evento_titulo(ev)
     for oslug, evs in eventos_por_obra.items():
         evs = sorted(evs, key=lambda e: e.get("fecha", ""))
         destino = obra_root / oslug / "index.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(render_pagina_obra(oslug, evs, jueves), encoding="utf-8")
+        destino.write_text(
+            render_pagina_obra(oslug, evs, jueves,
+                               titulo_principal=titulos_por_slug.get(oslug, "")),
+            encoding="utf-8")
         salidas_obra.append(str(destino))
+    # Variantes del mismo show: la URL sigue existiendo, sin indexar, y manda
+    # a la página principal.
+    for variante, principal in _ALIAS_OBRA.items():
+        destino = obra_root / variante / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            render_pagina_obra(variante, [], jueves,
+                               titulo_viejo=titulos_por_slug.get(variante, ""),
+                               alias_de=principal),
+            encoding="utf-8")
     # Obras que ya no tienen funciones: página sin fechas y noindex (no 404).
     if obra_root.is_dir():
         for d in sorted(obra_root.iterdir()):
             idx = d / "index.html"
-            if d.is_dir() and d.name not in eventos_por_obra and idx.exists():
+            if (d.is_dir() and d.name not in eventos_por_obra
+                    and d.name not in _ALIAS_OBRA and idx.exists()):
                 m = re.search(r"<h1>(.*?)</h1>", idx.read_text(encoding="utf-8"), re.S)
                 viejo = html.unescape(m.group(1).strip()) if m else ""
                 idx.write_text(render_pagina_obra(d.name, [], jueves, viejo), encoding="utf-8")
