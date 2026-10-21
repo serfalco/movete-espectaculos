@@ -254,6 +254,31 @@ def calcular_alias_obras(eventos: list[dict]) -> dict[str, str]:
     return alias
 
 
+# Slugs que nombran un tipo de evento y no un show: "la-fiesta" no es la
+# principal de "la-fiesta-judia-klezmer...".
+_PALABRAS_GENERICAS_OBRA = {
+    "la", "el", "los", "las", "un", "una", "de", "del", "y", "en",
+    "fiesta", "festival", "concierto", "show", "tributo", "gala", "noche",
+    "homenaje", "recital", "taller", "obra", "teatro", "milonga", "pena",
+    "feria", "muestra", "stand", "up", "standup", "humor", "musica", "danza",
+}
+
+
+def principal_existente(slug: str, existentes: set[str]) -> str:
+    """Para una obra que ya no tiene funciones: si hay otra página cuyo slug
+    es el comienzo de éste ("emanero" para "emanero-todo-por-un-beso"), esa es
+    la principal. El alias de calcular_alias_obras dura solo mientras las dos
+    variantes están en cartelera; cuando el show termina, las dos quedaban
+    como páginas sueltas compitiendo entre sí. Devuelve '' si no hay."""
+    candidatos = [
+        s for s in existentes
+        if s != slug and len(s.replace("-", "")) >= _MIN_LARGO_SLUG_PRINCIPAL
+        and slug.startswith(s + "-")
+        and not set(s.split("-")) <= _PALABRAS_GENERICAS_OBRA
+    ]
+    return min(candidatos, key=len) if candidatos else ""
+
+
 def render_evento(ev: dict, link_obra: bool = True) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
@@ -1273,13 +1298,16 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
             encoding="utf-8")
     # Obras que ya no tienen funciones: página sin fechas y noindex (no 404).
     if obra_root.is_dir():
+        existentes = {d.name for d in obra_root.iterdir() if (d / "index.html").exists()}
         for d in sorted(obra_root.iterdir()):
             idx = d / "index.html"
             if (d.is_dir() and d.name not in eventos_por_obra
                     and d.name not in _ALIAS_OBRA and idx.exists()):
                 m = re.search(r"<h1>(.*?)</h1>", idx.read_text(encoding="utf-8"), re.S)
                 viejo = html.unescape(m.group(1).strip()) if m else ""
-                idx.write_text(render_pagina_obra(d.name, [], jueves, viejo), encoding="utf-8")
+                principal = principal_existente(d.name, existentes)
+                idx.write_text(render_pagina_obra(d.name, [], jueves, viejo,
+                                                  alias_de=principal), encoding="utf-8")
 
     # Página evergreen "Lo que se viene" (grandes shows anticipados)
     lqsv_dir = out / "lo-que-se-viene"
