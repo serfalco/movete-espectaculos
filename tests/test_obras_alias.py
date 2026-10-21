@@ -81,3 +81,19 @@ class PaginaAliasTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PrincipalExistenteTests(unittest.TestCase):
+    """Cuando el show termina, la variante sigue apuntando a la principal."""
+
+    def test_variante_va_a_la_principal(self):
+        from generar_edicion import principal_existente
+        existentes = {"emanero", "emanero-todo-por-un-beso", "la-fiesta",
+                      "la-fiesta-judia-klezmer"}
+        self.assertEqual(principal_existente("emanero-todo-por-un-beso", existentes), "emanero")
+        self.assertEqual(principal_existente("emanero", existentes), "")
+
+    def test_slug_generico_no_absorbe(self):
+        from generar_edicion import principal_existente
+        self.assertEqual(principal_existente("la-fiesta-judia-klezmer",
+                                             {"la-fiesta", "la-fiesta-judia-klezmer"}), "")
