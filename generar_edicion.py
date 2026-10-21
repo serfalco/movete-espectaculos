@@ -853,6 +853,13 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
             if sub.is_dir() and es_fecha(sub.name):
                 urls.append((f"/{seccion}/{sub.name}/", sub.name))
 
+    # Páginas fijas por sala de cine (las escribe movete-cine)
+    cine_sala_dir = root / "cine" / "sala"
+    if cine_sala_dir.is_dir():
+        for sub in sorted(cine_sala_dir.iterdir()):
+            if sub.is_dir() and (sub / "index.html").exists():
+                urls.append((f"/cine/sala/{sub.name}/", ""))
+
     # Páginas por sala (evergreen, indexables)
     sala_dir = root / "en-vivo" / "sala"
     if sala_dir.is_dir():
