@@ -447,6 +447,21 @@ VENUES_INSTAGRAM = {
 }
 
 
+# Web oficial de las salas grandes: es lo que la gente busca junto con
+# "cartelera" y lo que Google espera ver enlazado desde una página de sala.
+VENUES_WEB = {
+    'teatro-argentino-de-la-plata': 'https://teatroargentino.gba.gob.ar/',
+    'teatro-coliseo-podesta': 'https://coliseopodesta.laplata.gob.ar/cartelera',
+    'teatro-opera-la-plata': 'https://operalp.com.ar/',
+    'teatro-metro': 'https://www.teatrometrolp.com.ar/entradas/cartelera/',
+}
+
+
+def venue_web(slug: str) -> str:
+    """Web oficial de una sala (o '' si no la tenemos), por slug."""
+    return VENUES_WEB.get(slug, '')
+
+
 def venue_instagram(slug: str) -> str:
     """Handle de Instagram de una sala (o '' si no tiene), por slug."""
     return VENUES_INSTAGRAM.get(slug, '')

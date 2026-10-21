@@ -23,6 +23,7 @@ from pathlib import Path
 from urllib.parse import quote_plus
 
 from edicion import (
+    MESES,
     MESES_ABR,
     en_esta_semana,
     etiqueta_dia,
@@ -30,7 +31,7 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
-from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram,
+from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram, venue_web,
                     VENUES_MASIVOS, VENUES_DIRECCIONES)
 
 
@@ -528,6 +529,10 @@ def category_nav(categoria_activa: str | None = None, cuentas: dict | None = Non
             ' aria-current="page"' if categoria_activa is None else "",
         )
     ]
+    links += [
+        '<a class="filter-button" href="/en-vivo/hoy/">Hoy</a>',
+        '<a class="filter-button" href="/en-vivo/fin-de-semana/">Este finde</a>',
+    ]
     links += [link(c) for c in botones]
     if en_mas:
         extra_activo = categoria_activa in en_mas
@@ -706,20 +711,23 @@ def render_html(
     rango = etiqueta_rango(jueves)
     categoria_label = cat_label(categoria) if categoria else ""
     seo_titles = {
-        "teatro": f"Teatro en La Plata esta semana · Obras, salas y funciones · MoVeTe",
-        "musica": f"Música en vivo en La Plata · Recitales y shows · MoVeTe",
+        "teatro": f"Cartelera de teatro en La Plata · Obras de esta semana · MoVeTe",
+        "musica": f"Recitales en La Plata · Música en vivo esta semana · MoVeTe",
+        "infantil": f"Obras infantiles en La Plata · Teatro para chicos · MoVeTe",
         "stand-up": f"Stand up en La Plata · Shows de comedia esta semana · MoVeTe",
         "otros": f"Más cosas para hacer en La Plata · Cartelera cultural · MoVeTe",
     }
     seo_descriptions = {
         "teatro": f"Cartelera de teatro en La Plata para la semana {rango}: obras, salas independientes, unipersonales y funciones.",
-        "musica": f"Música en vivo en La Plata para la semana {rango}: recitales, bandas, conciertos y shows.",
+        "musica": f"Recitales y música en vivo en La Plata para la semana {rango}: bandas, conciertos y shows.",
+        "infantil": f"Obras infantiles en La Plata para la semana {rango}: teatro, títeres y shows para ir con chicos.",
         "stand-up": f"Stand up en La Plata para la semana {rango}: shows de comedia, ciclos y funciones.",
         "otros": f"Más cosas para hacer en La Plata durante la semana {rango}: actividades culturales, encuentros y propuestas.",
     }
     seo_h1 = {
-        "teatro": "Teatro en La Plata esta semana",
-        "musica": "Música en vivo en La Plata",
+        "teatro": "Cartelera de teatro en La Plata",
+        "musica": "Recitales y música en vivo en La Plata",
+        "infantil": "Obras infantiles en La Plata",
         "stand-up": "Stand up en La Plata",
         "otros": "Más cosas para hacer en La Plata",
     }
@@ -901,34 +909,41 @@ def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[d
     """
     titulos = []
     for ev in eventos_sala:
-        t = (ev.get("titulo") or "").strip()
+        t = _sin_gritos((ev.get("titulo") or "").strip())
         if t and t not in titulos:
             titulos.append(t)
     n = len(eventos_sala)
     # "Teatro X La Plata", salvo que el nombre ya diga La Plata.
     lugar = nombre if "la plata" in nombre.lower() else f"{nombre} La Plata"
 
+    # "cartelera" es la palabra que la gente agrega al buscar una sala
+    # ("teatro argentino la plata cartelera", "pasaje dardo rocha
+    # cartelera"): va siempre en el título. Lo concreto (cuántas funciones,
+    # qué día) queda como cola, que es lo que hace clickear.
     if n == 0:
-        base, extra = f"{lugar}: agenda y cómo llegar", ""
-        desc = f"Agenda de {nombre} en La Plata: próximas funciones y shows."
+        base, extra = f"{lugar}: cartelera y próximas funciones", ""
+        desc = f"Cartelera de {nombre} en La Plata: próximas funciones, shows y cómo llegar."
     elif n == 1:
         cuando = _fecha_corta(eventos_sala[0])
-        base, extra = f"{lugar}: {titulos[0]}", (f" ({cuando})" if cuando else "")
-        desc = (f"Próxima función en {nombre}: {titulos[0]}"
+        base = f"{lugar}: cartelera"
+        extra = f" · {titulos[0]}" + (f" ({cuando})" if cuando else "")
+        desc = (f"Cartelera de {nombre}: {titulos[0]}"
                 + (f", {cuando}" if cuando else "") + ". Horario, entradas y cómo llegar.")
     else:
         desde, hasta = _fecha_corta(eventos_sala[0]), _fecha_corta(eventos_sala[-1])
-        base = f"{lugar}: {n} funciones"
-        extra = f" ({desde} al {hasta})" if desde and hasta and desde != hasta else ""
+        base = f"{lugar}: cartelera"
+        extra = f" · {n} funciones" + (f" ({desde} al {hasta})" if desde and hasta and desde != hasta else "")
         muestra = " · ".join(titulos[:3]) + (" y más" if len(titulos) > 3 else "")
-        desc = f"Qué hay en {nombre}: {muestra}. Horarios, entradas y cómo llegar."
+        desc = f"Cartelera de {nombre}: {muestra}. Horarios, entradas y cómo llegar."
 
     # Google corta el título en ~60 caracteres. Se prueba de más completo a
-    # menos: con fecha y marca, con fecha, sin fecha; y si nada entra, se
-    # recorta el texto base con elipsis (nunca a mitad de la fecha).
+    # menos: con cola y marca, con cola, solo la cola sin fecha, sin cola; y
+    # si nada entra, se recorta el texto base con elipsis.
     marca = " · MoVeTe"
+    cola_corta = re.sub(r"\s*\([^)]*\)$", "", extra)
     title = next(
-        (t for t in (base + extra + marca, base + extra, base + marca, base) if len(t) <= 62),
+        (t for t in (base + extra + marca, base + extra, base + cola_corta, base + marca, base)
+         if len(t) <= 62),
         base[:61].rstrip(" ,·:(") + "…",
     )
     if direccion:
@@ -960,6 +975,12 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
         </span>
       </a>"""
 
+    web = venue_web(slug)
+    if web:
+        bloque_mapa += (
+            f'\n      <p class="venue-social"><a href="{esc(web)}" target="_blank"'
+            f' rel="noopener">Web oficial y entradas de {esc(nombre)} →</a></p>'
+        )
     ig = venue_instagram(slug)
     if ig:
         handle = ig.lstrip("@")
@@ -979,6 +1000,8 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
     place = {"@context": "https://schema.org", "@type": "Place",
              "name": nombre, "url": page_url}
     place["address"] = postal_address(direccion)
+    if web:
+        place["sameAs"] = web
     schema = '<script type="application/ld+json">' + json.dumps(place, ensure_ascii=False) + "</script>"
     if eventos_sala:
         schema += render_schema_eventos(eventos_sala)
@@ -1114,6 +1137,146 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                         "Confirmá horarios y disponibilidad con la sala o la ticketera.")
 
 
+# ---------------------------------------------------------------- hoy / finde
+# Páginas con URL fija para las búsquedas "qué hacer hoy en La Plata" y "qué
+# hacer este fin de semana". Las ediciones fechadas no juntan historia en
+# Google (cada semana es una URL nueva); éstas sí. Se regeneran en cada
+# corrida (martes, jueves y viernes) y un script en la página oculta los días
+# que ya pasaron, así nunca muestran el pasado aunque la corrida sea vieja.
+
+_SCRIPT_DIAS_PASADOS = """
+<script>
+(function () {
+  var hoy = new Date().toLocaleDateString("en-CA", {timeZone: "America/Argentina/Buenos_Aires"});
+  var visibles = 0;
+  document.querySelectorAll("[data-dia]").forEach(function (s) {
+    if (s.getAttribute("data-dia") < hoy) { s.style.display = "none"; } else { visibles++; }
+    if (s.getAttribute("data-dia") === hoy) {
+      var h = s.querySelector("h2"); if (h) { h.textContent = "Hoy · " + h.textContent; }
+    }
+  });
+  if (!visibles) { var v = document.getElementById("agenda-vacia"); if (v) { v.hidden = false; v.style.display = ""; } }
+})();
+</script>"""
+
+_DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+
+def hoy_argentina() -> date:
+    """Fecha de hoy en La Plata (el runner de GitHub corre en UTC)."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")).date()
+    except Exception:
+        return (datetime.utcnow() - timedelta(hours=3)).date()
+
+
+def dias_finde(hoy: date) -> list[date]:
+    """Viernes, sábado y domingo del finde que viene. Si hoy ya es finde,
+    el finde en curso (desde hoy)."""
+    wd = hoy.weekday()
+    if wd >= 4:  # viernes, sábado o domingo
+        viernes = hoy - timedelta(days=wd - 4)
+    else:
+        viernes = hoy + timedelta(days=4 - wd)
+    return [viernes + timedelta(days=i) for i in range(3)]
+
+
+def _bloques_por_dia(eventos: list[dict], dias: list[date]) -> tuple[str, list[dict]]:
+    por_dia: dict[date, list[dict]] = defaultdict(list)
+    for ev in eventos:
+        try:
+            d = parse_fecha(ev["fecha"]).date()
+        except Exception:
+            continue
+        if d in dias:
+            por_dia[d].append(ev)
+    bloques, usados = [], []
+    for d in dias:
+        evs = sorted(por_dia.get(d, []), key=lambda e: e.get("fecha", ""))
+        if not evs:
+            continue
+        usados += evs
+        filas = "\n".join(render_evento(ev) for ev in evs)
+        bloques.append(
+            f'\n      <section class="day-block" data-dia="{d.isoformat()}">'
+            f'\n        <h2>{esc(etiqueta_dia(d))}</h2>'
+            f'\n        <div class="grid cards">{filas}</div>\n      </section>')
+    return "\n".join(bloques), usados
+
+
+def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
+    """tipo 'hoy' (los próximos 7 días, empezando por hoy) o 'fin-de-semana'."""
+    eventos = [e for e in normalizar_categorias(eventos)
+               if e.get("categoria") != "cine" and e.get("fecha")]
+    if tipo == "hoy":
+        dias = [hoy + timedelta(days=i) for i in range(7)]
+        page_title = "Qué hacer hoy en La Plata · Teatro, recitales y stand up · MoVeTe"
+        h1 = "Qué hacer hoy en La Plata"
+        eyebrow = "La Plata · Agenda del día"
+        intro = ("Teatro, música en vivo, stand up y más para hoy en La Plata. "
+                 "Más abajo, lo de los próximos días.")
+        titulo_agenda = "Agenda día por día"
+        otro = '<a href="/en-vivo/fin-de-semana/">Ver este fin de semana →</a>'
+    else:
+        dias = dias_finde(hoy)
+        v, sab, dom = dias
+        rango = (f"viernes {v.day}, sábado {sab.day} y domingo {dom.day} de {MESES[dom.month]}"
+                 if v.month == dom.month else
+                 f"viernes {v.day}/{v.month}, sábado {sab.day}/{sab.month} y domingo {dom.day}/{dom.month}")
+        page_title = "Qué hacer este fin de semana en La Plata · Shows y salidas · MoVeTe"
+        h1 = "Qué hacer este fin de semana en La Plata"
+        eyebrow = f"La Plata · Finde del {v.day}/{v.month} al {dom.day}/{dom.month}"
+        intro = f"Teatro, recitales, stand up y salidas para el {rango} en La Plata."
+        titulo_agenda = "Viernes, sábado y domingo"
+        otro = '<a href="/en-vivo/hoy/">Ver qué hay hoy →</a>'
+
+    bloques, usados = _bloques_por_dia(eventos, dias)
+    n = len(usados)
+    if tipo == "hoy":
+        page_description = (f"Qué hacer hoy en La Plata: {n} funciones de teatro, música en vivo, "
+                            "stand up y más para hoy y los próximos días. Horarios, salas y entradas.")
+    else:
+        page_description = (f"Qué hacer este fin de semana en La Plata: {n} funciones el {rango}. "
+                            "Teatro, recitales, stand up y salidas, con horarios y entradas.")
+    vacia = ('<p class="empty" id="agenda-vacia"{}>Ya no quedan funciones cargadas para estos días. '
+             '<a href="/en-vivo/">Mirá la cartelera de la semana →</a></p>')
+    cuerpo = (bloques + "\n      " + vacia.format(' hidden style="display:none"') if bloques else vacia.format(""))
+    cuerpo += _SCRIPT_DIAS_PASADOS
+    accesos = (f'<p class="home-lead">{esc(intro)}</p>\n      <p class="venue-social">{otro} · '
+               '<a href="/en-vivo/teatro/">Teatro</a> · <a href="/en-vivo/musica/">Recitales</a> · '
+               '<a href="/en-vivo/stand-up/">Stand up</a> · <a href="/cine/">Cine</a></p>')
+    page_url = f"https://movete.info/en-vivo/{tipo}/"
+    html_doc = PLANTILLA_VENUE.format(
+        page_title=esc(page_title),
+        page_description=esc(page_description),
+        page_url=esc(page_url),
+        og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
+        bloque_schema=render_schema_eventos(usados),
+        eyebrow=esc(eyebrow),
+        h1=esc(h1),
+        bloque_mapa=accesos,
+        titulo_agenda=esc(titulo_agenda),
+        bloque_eventos=cuerpo,
+        anio=hoy.year,
+    )
+    if not usados:
+        html_doc = html_doc.replace('<meta charset="utf-8">',
+                                    '<meta charset="utf-8">\n  <meta name="robots" content="noindex, follow">', 1)
+    return html_doc
+
+
+def escribir_paginas_agenda(eventos: list[dict], out: Path, hoy: date | None = None) -> list[str]:
+    hoy = hoy or hoy_argentina()
+    salidas = []
+    for tipo in ("hoy", "fin-de-semana"):
+        destino = out / tipo / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(render_pagina_agenda(tipo, eventos, hoy), encoding="utf-8")
+        salidas.append(str(destino))
+    return salidas
+
+
 def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
     """Página evergreen con TODOS los grandes shows anunciados (venues masivos,
     fechas futuras): /en-vivo/lo-que-se-viene/. Imán de SEO para 'recitales La Plata'."""
@@ -1145,7 +1308,7 @@ def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
 
 
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
-            solo_fechada: bool = False) -> dict:
+            solo_fechada: bool = False, hoy_real: date | None = None) -> dict:
     """Genera En Vivo.
 
     solo_fechada: escribe UNICAMENTE la edicion fechada (/en-vivo/<jueves>/) y
@@ -1189,6 +1352,9 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     html_archivo = html_archivo_doc.replace('<main>', f'<main>\n  {banner}', 1)
 
     archive_index.write_text(html_archivo, encoding="utf-8")
+    # Hoy y finde se escriben en todas las corridas, también en la
+    # pre-edición del martes: usan la fecha real, no la de la edición.
+    escribir_paginas_agenda(eventos, out, hoy_real)
     if solo_fechada:
         generar_sitemap(out)
         return {**info, "salida_archivo": str(archive_index), "solo_fechada": True}
