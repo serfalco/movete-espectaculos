@@ -444,6 +444,8 @@ VENUES_INSTAGRAM = {
     'estudio-71': '@estudio7.1',
     'ruda-red-ultrapotente-de-amistad': '@redultrapotentedeamistad',
     'tcb-teatro-comunitario-de-berisso': '@tcberisso',
+    'tres-empanadas-comedia': '@tresempanadascomedia',
+    'sociedad-platense-de-stand-up': '@tresempanadascomedia',
 }
 
 
@@ -454,6 +456,8 @@ VENUES_WEB = {
     'teatro-coliseo-podesta': 'https://coliseopodesta.laplata.gob.ar/cartelera',
     'teatro-opera-la-plata': 'https://operalp.com.ar/',
     'teatro-metro': 'https://www.teatrometrolp.com.ar/entradas/cartelera/',
+    'tres-empanadas-comedia': 'https://tresempanadas.com.ar/reservas/',
+    'sociedad-platense-de-stand-up': 'https://tresempanadas.com.ar/reservas/',
 }
 
 
