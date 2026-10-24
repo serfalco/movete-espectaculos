@@ -121,3 +121,18 @@ class VenueCanonicoTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_imagen_por_defecto_de_sala_solo_si_falta():
+    from generar_edicion import completar_imagen_de_sala
+    eventos = [
+        {"lugar": "Tres Empanadas Comedia", "imagen": ""},
+        {"lugar": "Tres Empanadas", "imagen": "https://fuente/afiche.jpg"},
+        {"lugar": "Sociedad Platense de Stand Up"},
+        {"lugar": "Un lugar cualquiera"},
+    ]
+    assert completar_imagen_de_sala(eventos) == 2
+    assert eventos[0]["imagen"].endswith("/salas/tres-empanadas-comedia.webp")
+    assert eventos[1]["imagen"] == "https://fuente/afiche.jpg"
+    assert eventos[2]["imagen"].endswith("/salas/tres-empanadas-comedia.webp")
+    assert not eventos[3].get("imagen")

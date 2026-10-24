@@ -81,7 +81,7 @@ def localizar_imagenes(eventos: list[dict], carpeta: str | Path, hilos: int = 8)
         str(ev.get("imagen") or "").strip()
         for ev in eventos
         if str(ev.get("imagen") or "").strip().startswith(("http://", "https://"))
-        and not str(ev.get("imagen")).startswith(URL_BASE)
+        and not str(ev.get("imagen")).startswith("https://movete.info/")  # ya es propia
     })
     with ThreadPoolExecutor(max_workers=hilos) as pool:
         ok = dict(zip(urls, pool.map(lambda u: _asegurar(u, carpeta), urls)))
