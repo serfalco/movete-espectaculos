@@ -163,7 +163,7 @@ def evento_fijo_stand_up(referencia: date) -> dict:
         "fecha": f"{viernes.isoformat()} 21:30:00",
         "lugar": "Tres Empanadas Comedia",
         "categoria": "stand-up",
-        "url": "https://tresempanadas.com.ar/reservas",
+        "url": "https://tresempanadas.com.ar/reservas/",
         "destacado": True,
     }
 
@@ -1603,7 +1603,8 @@ PLANTILLA = """<!doctype html>
       </div>
       <h2>Tres Empanadas Comedia</h2>
       <p>Stand up en La Plata. Shows a la gorra, todos los jueves y viernes.</p>
-      <a class="button small" href="https://tresempanadas.com.ar/reservas">Más info</a>
+      <a class="button small" href="https://tresempanadas.com.ar/reservas/?utm_source=movete&amp;utm_medium=en-vivo&amp;utm_campaign=sponsor">Reservar lugar</a>
+      <a class="sponsor-sublink" href="https://tresempanadas.com.ar/cursos/?utm_source=movete&amp;utm_medium=en-vivo&amp;utm_campaign=sponsor">Taller de stand up los jueves →</a>
     </section>
 
     {bloque_destacado}
