@@ -31,6 +31,7 @@ from edicion import (
     jueves_de_edicion,
     slug_edicion,
 )
+from imagenes import localizar_imagenes
 from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram, venue_web,
                     VENUES_MASIVOS, VENUES_DIRECCIONES)
 
@@ -1319,7 +1320,8 @@ def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
 
 
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
-            solo_fechada: bool = False, hoy_real: date | None = None) -> dict:
+            solo_fechada: bool = False, hoy_real: date | None = None,
+            afiches_dir: str | Path | None = None) -> dict:
     """Genera En Vivo.
 
     solo_fechada: escribe UNICAMENTE la edicion fechada (/en-vivo/<jueves>/) y
@@ -1327,8 +1329,12 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     salas ni las obras. Es la pre-edicion del martes: la semana que viene sale
     como URL propia para que Google la descubra antes, sin pisar la edicion
     vigente que sigue en pie hasta el miercoles.
+
+    afiches_dir: si viene, las imagenes se bajan una vez, se achican a WebP y
+    se sirven desde /assets/afiches/ (ver imagenes.py). Sin el, URLs originales.
     """
     eventos, generado = cargar_eventos(eventos_json_path)
+    resumen_afiches = localizar_imagenes(eventos, afiches_dir) if afiches_dir else None
     _ALIAS_OBRA.clear()
     _ALIAS_OBRA.update(calcular_alias_obras(normalizar_categorias(eventos)))
     html_doc, info = render_html(eventos, generado, hoy=hoy)
@@ -1368,7 +1374,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     escribir_paginas_agenda(eventos, out, hoy_real)
     if solo_fechada:
         generar_sitemap(out)
-        return {**info, "salida_archivo": str(archive_index), "solo_fechada": True}
+        return {**info, "salida_archivo": str(archive_index), "solo_fechada": True,
+                "afiches": resumen_afiches}
     current_index.write_text(html_doc, encoding="utf-8")
 
     salidas_categoria = []
@@ -1503,6 +1510,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
         "salidas_categoria": salidas_categoria,
         "salidas_venue": salidas_venue,
         "salidas_obra": len(salidas_obra),
+        "afiches": resumen_afiches,
     }
 
 
@@ -1514,13 +1522,20 @@ def parse_args() -> argparse.Namespace:
                         help="Fecha YYYY-MM-DD que se toma como 'hoy' (pre-edicion: el proximo jueves)")
     parser.add_argument("--solo-fechada", action="store_true",
                         help="Escribe solo /en-vivo/<jueves>/ y el sitemap")
+    parser.add_argument("--afiches", default=None,
+                        help="Carpeta de copias livianas de imagenes (default: <output>/../assets/afiches)")
+    parser.add_argument("--sin-afiches", action="store_true",
+                        help="No bajar ni achicar imagenes: usar las URLs originales")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     hoy = date.fromisoformat(args.hoy) if args.hoy else None
-    info = generar(args.eventos, args.output, hoy=hoy, solo_fechada=args.solo_fechada)
+    afiches = None if args.sin_afiches else (
+        args.afiches or Path(args.output).parent / "assets" / "afiches")
+    info = generar(args.eventos, args.output, hoy=hoy, solo_fechada=args.solo_fechada,
+                   afiches_dir=afiches)
     print(json.dumps(info, ensure_ascii=False, indent=2))
 
 
