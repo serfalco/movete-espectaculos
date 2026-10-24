@@ -328,7 +328,7 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
         media_html = f"""
       <div class="event-card-media">
         <img src="{esc(imagen)}" alt="" loading="lazy" decoding="async"
-             onerror="this.closest('.event-card-media').remove()">
+             onerror="this.style.visibility='hidden'">
       </div>"""
 
     return f"""
@@ -1109,9 +1109,13 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                        if str(e.get("imagen") or "").strip()), "")
         bloque_intro = ""
         if imagen:
+            # Alto fijo: el lugar queda reservado antes de que llegue la imagen y no
+            # empuja el resto de la página (CLS). Es lo primero que se ve: sin lazy.
             bloque_intro = (f'<img class="obra-afiche" src="{esc(imagen)}" alt="{esc(titulo)}" '
-                            'style="max-width:100%;max-height:420px;border-radius:18px;margin-top:12px" '
-                            'loading="lazy" onerror="this.remove()">')
+                            'style="display:block;height:min(420px,90vw);width:auto;max-width:100%;'
+                            'object-fit:contain;border-radius:18px;margin-top:12px" '
+                            'fetchpriority="high" decoding="async" '
+                            'onerror="this.style.visibility=\'hidden\'">')
         og_image = imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
         robots = ""
     else:
