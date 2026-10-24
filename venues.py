@@ -457,6 +457,20 @@ VENUES_WEB = {
 }
 
 
+# Imagen por defecto de una sala: se usa SOLO cuando el evento no trae afiche
+# propio de la fuente. Cualquier sala puede tener una (foto de fachada o de
+# escenario, horizontal, sin fechas); vive en Movete-info/assets/images/salas/.
+VENUES_IMAGEN = {
+    'tres-empanadas-comedia': 'https://movete.info/assets/images/salas/tres-empanadas-comedia.webp',
+    'sociedad-platense-de-stand-up': 'https://movete.info/assets/images/salas/tres-empanadas-comedia.webp',
+}
+
+
+def venue_imagen(slug: str) -> str:
+    """Imagen por defecto de una sala (o '' si no tiene), por slug."""
+    return VENUES_IMAGEN.get(slug, '')
+
+
 def venue_web(slug: str) -> str:
     """Web oficial de una sala (o '' si no la tenemos), por slug."""
     return VENUES_WEB.get(slug, '')

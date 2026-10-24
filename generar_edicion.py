@@ -32,7 +32,7 @@ from edicion import (
     slug_edicion,
 )
 from imagenes import localizar_imagenes
-from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram, venue_web,
+from venues import (venue_info, venue_masivo, venue_canonico, venue_slug, venue_instagram, venue_web, venue_imagen,
                     VENUES_MASIVOS, VENUES_DIRECCIONES)
 
 
@@ -1319,6 +1319,20 @@ def render_pagina_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
     )
 
 
+def completar_imagen_de_sala(eventos: list[dict]) -> int:
+    """A los eventos sin imagen les pone la imagen por defecto de su sala, si tiene."""
+    n = 0
+    for ev in eventos:
+        if str(ev.get("imagen") or "").strip():
+            continue
+        sala = venue_canonico(str(ev.get("lugar") or ""))
+        imagen = venue_imagen(sala["slug"]) if sala else ""
+        if imagen:
+            ev["imagen"] = imagen
+            n += 1
+    return n
+
+
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
             solo_fechada: bool = False, hoy_real: date | None = None,
             afiches_dir: str | Path | None = None) -> dict:
@@ -1334,6 +1348,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     se sirven desde /assets/afiches/ (ver imagenes.py). Sin el, URLs originales.
     """
     eventos, generado = cargar_eventos(eventos_json_path)
+    completar_imagen_de_sala(eventos)
     resumen_afiches = localizar_imagenes(eventos, afiches_dir) if afiches_dir else None
     _ALIAS_OBRA.clear()
     _ALIAS_OBRA.update(calcular_alias_obras(normalizar_categorias(eventos)))
