@@ -1039,32 +1039,70 @@ def _sin_gritos(titulo: str) -> str:
     return titulo
 
 
+def _sala_corta(nombre: str) -> str:
+    """'Hipódromo de La Plata' -> 'Hipódromo'. En el título ya dice
+    'en La Plata'; repetirlo gasta caracteres que Google corta."""
+    corto = re.sub(r"\s*(?:-|,|de|en)?\s*La Plata$", "", nombre or "", flags=re.I).strip()
+    return corto or (nombre or "")
+
+
+def _hora(ev: dict) -> str:
+    """'21:30' a partir de 'YYYY-MM-DD HH:MM:SS'; '' si no hay hora."""
+    h = (ev.get("fecha") or "")[11:16]
+    if not re.fullmatch(r"\d\d:\d\d", h) or h == "00:00":
+        return ""
+    return f"{int(h[:2])}" if h.endswith(":00") else h
+
+
 def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[str, str]:
-    """Title y description de la página de una obra. Mismo criterio que las
-    salas: lo concreto (qué día, dónde) en el título, que Google corta ~60."""
+    """Title y description de la página de una obra.
+
+    Search Console (oct/2026): estas páginas juntan miles de impresiones con
+    CTR de 0,2-0,4 % ("un poco de ruido la plata": 1.688 impr., 3 clics).
+    Quien busca un show quiere saber cuándo y dónde antes de clickear: va en
+    el título el día y la sala, y en la descripción la hora, la dirección y
+    que hay link a las entradas. Google corta el título en ~60 caracteres."""
     titulo = _sin_gritos(titulo)
-    salas = []
+    salas, direcciones = [], []
     for ev in eventos_obra:
-        n = venue_info(evento_lugar(ev))["nombre"]
-        if n and n not in salas:
-            salas.append(n)
+        info = venue_info(evento_lugar(ev))
+        if info["nombre"] and info["nombre"] not in salas:
+            salas.append(info["nombre"])
+            direcciones.append(info.get("direccion") or "")
     n = len(eventos_obra)
-    donde = salas[0] if len(salas) == 1 else ("varias salas" if salas else "")
-    if n == 1:
-        cuando = _fecha_corta(eventos_obra[0])
-        extra = f" ({cuando})" if cuando else ""
-        desc = f"{titulo} en La Plata: {cuando}" + (f" en {donde}" if donde else "") + "."
-    else:
-        desde, hasta = _fecha_corta(eventos_obra[0]), _fecha_corta(eventos_obra[-1])
-        extra = f": {n} funciones" + (f" ({desde} al {hasta})" if desde != hasta else "")
-        desc = f"{titulo} en La Plata: {n} funciones" + (f" en {donde}" if donde else "") + "."
-    desc += " Horarios, entradas y cómo llegar."
+    una_sala = len(salas) == 1
+    donde = salas[0] if una_sala else ("varias salas" if salas else "")
+    sala_t = _sala_corta(salas[0]) if una_sala else ""
     base = f"{titulo} en La Plata"
     marca = " · MoVeTe"
-    title = next(
-        (t for t in (base + extra + marca, base + extra, base + marca, base) if len(t) <= 62),
-        base[:61].rstrip(" ,·:(") + "…",
-    )
+
+    if n == 1:
+        cuando = _fecha_corta(eventos_obra[0])
+        hora = _hora(eventos_obra[0])
+        colas = [f" ({cuando}, {sala_t})" if cuando and sala_t else "",
+                 f" ({cuando})" if cuando else ""]
+        desc = f"{titulo} en La Plata: {cuando}" + (f" a las {hora} h" if hora else "")
+        desc += f" en {donde}" if donde else ""
+    else:
+        desde, hasta = _fecha_corta(eventos_obra[0]), _fecha_corta(eventos_obra[-1])
+        rango = f"{desde} al {hasta}" if desde and hasta and desde != hasta else desde
+        colas = [f" ({rango}, {sala_t})" if rango and sala_t else "",
+                 f": {n} funciones ({rango})" if rango else "",
+                 f" ({n} funciones desde {desde})" if desde else "",
+                 f": {n} funciones"]
+        desc = f"{titulo} en La Plata: {n} funciones" + (f" del {rango}" if " al " in rango else "")
+        desc += f" en {donde}" if donde else ""
+    if una_sala and direcciones[0]:
+        desc += f" ({direcciones[0]})"
+    desc = desc.rstrip(":") + "."
+    hay_link = any(str(e.get("url") or "").strip() for e in eventos_obra)
+    desc += (" Link a las entradas, horarios y cómo llegar." if hay_link
+             else " Horarios, entradas y cómo llegar.")
+
+    candidatos = []
+    for c in [c for c in colas if c] + [""]:
+        candidatos += [base + c + marca, base + c]
+    title = next((t for t in candidatos if len(t) <= 62), base[:61].rstrip(" ,·:(") + "…")
     return title, desc
 
 
