@@ -342,7 +342,9 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
     return f"""
     <article class="event-card{' has-media' if imagen else ''}" data-category="{esc(cat)}"
              data-dia="{f.date().isoformat()}" data-franja="{'tarde' if f.hour < 19 else 'noche'}"
-             data-texto="{esc(_texto_busqueda(evento_titulo(ev), datos_lugar['nombre'], cat_label(cat)))}">
+             data-texto="{esc(_texto_busqueda(evento_titulo(ev), datos_lugar['nombre'], cat_label(cat)))}"
+             data-titulo="{titulo}" data-inicio="{f.strftime('%Y-%m-%dT%H:%M')}" data-lugar="{lugar}"
+             data-direccion="{esc(direccion)}" data-link="{esc(('https://movete.info/en-vivo/obra/' + oslug + '/') if oslug else evento_url(ev))}">
       {media_html}
       <div class="event-card-topline">
         <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
@@ -1980,6 +1982,7 @@ PLANTILLA = """<!doctype html>
     </p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>
+  <script src="/assets/js/movete-acciones.js" defer></script>
 </body>
 </html>
 """
@@ -2063,6 +2066,7 @@ PLANTILLA_VENUE = """<!doctype html>
     </p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>
+  <script src="/assets/js/movete-acciones.js" defer></script>
 </body>
 </html>
 """

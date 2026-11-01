@@ -84,7 +84,7 @@ class VenueInfoTests(unittest.TestCase):
         self.assertEqual(info["esta_semana"], 2)
         # El show fijo aparece una sola vez pese al duplicado de la fuente,
         # y abre la cartelera (destacado, viernes) antes del evento del jueves.
-        self.assertEqual(cartelera.count("Sociedad Platense de Stand Up"), 1)
+        self.assertEqual(cartelera.count(">Sociedad Platense de Stand Up<"), 1)
         self.assertLess(
             cartelera.index("Viernes 26 de junio"),
             cartelera.index("Jueves 25 de junio"),
