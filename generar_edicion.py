@@ -1106,6 +1106,34 @@ def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[st
     return title, desc
 
 
+_CATS_COMEDIA = {"stand-up", "humor", "impro"}
+
+
+def bloque_sponsor_comedia(eventos_obra: list[dict]) -> str:
+    """Espacio promocional de Tres Empanadas en las páginas de shows de
+    comedia. Va identificado como promoción (DECISIONES.md: publicidad y
+    editorial separadas) y no sale en los shows del propio club."""
+    if not eventos_obra:
+        return ""
+    if not any(e.get("categoria") in _CATS_COMEDIA for e in eventos_obra):
+        return ""
+    if any("tres empanadas" in (evento_lugar(e) + " " + evento_titulo(e)).casefold()
+           for e in eventos_obra):
+        return ""
+    utm = "utm_source=movete&amp;utm_medium=obra&amp;utm_campaign=sponsor"
+    return f"""
+    <section class="ad-box sponsor-card" style="margin-top:28px">
+      <div class="sponsor-kicker">
+        <img class="sponsor-logo" src="/assets/images/tres-empanadas-comedia.png" alt="Tres Empanadas Comedia" width="36" height="36" decoding="async" loading="lazy">
+        <p class="ad-label">Espacio promocional</p>
+      </div>
+      <h2>¿Más stand up en La Plata?</h2>
+      <p>Tres Empanadas Comedia: shows a la gorra todos los jueves y viernes.</p>
+      <a class="button small" href="https://tresempanadas.com.ar/reservas/?{utm}">Reservar lugar</a>
+      <a class="sponsor-sublink" href="/en-vivo/sala/tres-empanadas-comedia/">Ver las próximas funciones →</a>
+    </section>"""
+
+
 def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                        titulo_viejo: str = "", titulo_principal: str = "",
                        alias_de: str = "") -> str:
@@ -1143,6 +1171,7 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
             re.sub(r'\s*<div class="event-card-media">.*?</div>', "",
                    render_evento(e, link_obra=False), flags=re.S).replace(" has-media", "")
             for e in eventos_obra)
+        bloque_eventos += bloque_sponsor_comedia(eventos_obra)
         schema = render_schema_eventos(eventos_obra)
         imagen = next((str(e.get("imagen") or "").strip() for e in eventos_obra
                        if str(e.get("imagen") or "").strip()), "")
