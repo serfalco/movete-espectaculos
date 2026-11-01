@@ -1106,6 +1106,88 @@ def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[st
     return title, desc
 
 
+# ---------------------------------------------------------------- obras pasadas
+# Cuando un show termina, su página no se borra ni se saca de Google: queda
+# un año con "la última vez en La Plata" y lo que hay parecido esta semana.
+# Los artistas que vuelven (Conociendo Rusia, La Vela Puerca) ya tienen la
+# URL posicionada cuando anuncian fecha. Pasado el año, noindex.
+# El dato de la última función viaja en un <meta name="movete-ultima"> dentro
+# de la propia página, así sobrevive entre corridas sin archivo aparte.
+
+DIAS_OBRA_PASADA_INDEXADA = 365
+_MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def datos_ultima_funcion(titulo: str, eventos_obra: list[dict]) -> dict:
+    """Lo mínimo para armar la página cuando el show ya pasó."""
+    ev = max(eventos_obra, key=lambda e: e.get("fecha", ""))
+    vc = venue_canonico(evento_lugar(ev)) or {}
+    imagen = next((str(e.get("imagen") or "").strip() for e in eventos_obra
+                   if str(e.get("imagen") or "").strip()), "")
+    return {"titulo": titulo, "fecha": (ev.get("fecha") or "")[:10],
+            "sala": vc.get("nombre") or venue_info(evento_lugar(ev))["nombre"],
+            "sala_slug": vc.get("slug", ""), "categoria": ev.get("categoria", "otros"),
+            "imagen": imagen}
+
+
+def meta_ultima(datos: dict) -> str:
+    return f'<meta name="movete-ultima" content="{esc(json.dumps(datos, ensure_ascii=False))}">'
+
+
+def leer_ultima(html_viejo: str) -> dict:
+    """Recupera la última función de una página ya generada: primero del
+    <meta movete-ultima>; si no está (páginas de antes de este cambio, que
+    todavía tenían funciones), del JSON-LD de Event."""
+    m = re.search(r'<meta name="movete-ultima" content="([^"]*)">', html_viejo)
+    if m:
+        try:
+            return json.loads(html.unescape(m.group(1)))
+        except ValueError:
+            pass
+    m = re.search(r'<script type="application/ld\+json">(.*?)</script>', html_viejo, re.S)
+    if not m:
+        return {}
+    try:
+        data = json.loads(m.group(1))
+    except ValueError:
+        return {}
+    evs = [it.get("item", {}) for it in data.get("itemListElement", [])]
+    evs = [e for e in evs if e.get("@type") == "Event" and e.get("startDate")]
+    if not evs:
+        return {}
+    ult = max(evs, key=lambda e: e["startDate"])
+    sala = (ult.get("location") or {}).get("name", "")
+    vc = venue_canonico(sala) or {}
+    cat = ""
+    mc = re.search(r'<p class="eyebrow">(.*?) en La Plata</p>', html_viejo)
+    if mc:
+        etiqueta = html.unescape(mc.group(1)).strip().casefold()
+        cat = next((k for k, v in CAT_LABEL.items() if v.casefold() == etiqueta), "")
+    return {"titulo": html.unescape(ult.get("name", "")), "fecha": ult["startDate"][:10],
+            "sala": sala, "sala_slug": vc.get("slug", ""), "categoria": cat or "otros",
+            "imagen": next((e.get("image", "") for e in evs if e.get("image")), "")}
+
+
+def _fecha_larga(iso: str) -> str:
+    try:
+        d = date.fromisoformat(iso[:10])
+    except ValueError:
+        return ""
+    return f"{_DIAS_SEMANA[d.weekday()]} {d.day} de {_MESES[d.month - 1]} de {d.year}"
+
+
+def render_parecidos(parecidos: list[dict]) -> str:
+    if not parecidos:
+        return ""
+    items = "".join(
+        f'<li><a href="/en-vivo/obra/{esc(p["slug"])}/">{esc(p["titulo"])}</a>'
+        f' · {esc(p["cuando"])}{(" · " + esc(p["sala"])) if p.get("sala") else ""}</li>'
+        for p in parecidos)
+    return ('<h2 style="margin-top:28px">Parecido, en las próximas semanas</h2>'
+            f'<ul class="obra-parecidos" style="line-height:1.7">{items}</ul>')
+
+
 _CATS_COMEDIA = {"stand-up", "humor", "impro"}
 
 
@@ -1136,7 +1218,8 @@ def bloque_sponsor_comedia(eventos_obra: list[dict]) -> str:
 
 def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                        titulo_viejo: str = "", titulo_principal: str = "",
-                       alias_de: str = "") -> str:
+                       alias_de: str = "", ultima: dict | None = None,
+                       parecidos: list[dict] | None = None) -> str:
     """Página propia de una obra/show: /en-vivo/obra/<slug>/.
 
     Con funciones: todas las fechas y salas, JSON-LD Event por función.
@@ -1185,7 +1268,44 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                             'fetchpriority="high" decoding="async" '
                             'onerror="this.style.visibility=\'hidden\'">')
         og_image = imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
-        robots = ""
+        robots = meta_ultima(datos_ultima_funcion(titulo, eventos_obra))
+    elif ultima and ultima.get("fecha") and (
+            jueves - date.fromisoformat(ultima["fecha"][:10])).days <= DIAS_OBRA_PASADA_INDEXADA:
+        titulo = _sin_gritos(titulo_viejo or ultima.get("titulo") or slug.replace("-", " ").capitalize())
+        sala = ultima.get("sala", "")
+        cuando = _fecha_larga(ultima["fecha"])
+        page_title = next((t for t in (f"{titulo} en La Plata: próximas fechas · MoVeTe",
+                                       f"{titulo} en La Plata: próximas fechas",
+                                       f"{titulo} en La Plata · MoVeTe") if len(t) <= 62),
+                          f"{titulo} en La Plata"[:61] + "…")
+        # Si la fecha guardada todavía no llegó (la fuente dejó de traer el
+        # show), no se puede decir "fue": se dice que estaba anunciada.
+        ya_paso = ultima["fecha"][:10] < jueves.isoformat()
+        verbo = "la última función fue el" if ya_paso else "tenía función anunciada el"
+        page_description = (f"{titulo} en La Plata: {verbo} {cuando}"
+                            + (f" en {sala}" if sala else "")
+                            + ". Las próximas fechas aparecen acá apenas se anuncien.")
+        cat = ultima.get("categoria") or "otros"
+        eyebrow = f"{cat_label(cat)} en La Plata"
+        titulo_agenda = "Próximas fechas"
+        link_sala = (f' en <a href="/en-vivo/sala/{esc(ultima["sala_slug"])}/">{esc(sala)}</a>'
+                     if ultima.get("sala_slug") and sala else (f" en {esc(sala)}" if sala else ""))
+        bloque_eventos = (
+            '<p class="empty">Por ahora no hay funciones anunciadas en La Plata. '
+            + (f'La última fue el {esc(cuando)}{link_sala}.</p>' if ya_paso else
+               f'Tenía función anunciada el {esc(cuando)}{link_sala}: confirmá con la sala.</p>')
+            + render_parecidos(parecidos or [])
+            + '<p style="margin-top:18px"><a href="/en-vivo/">Mirá todo lo que hay esta semana →</a></p>')
+        schema = ""
+        imagen = ultima.get("imagen", "")
+        bloque_intro = ""
+        if imagen:
+            bloque_intro = (f'<img class="obra-afiche" src="{esc(imagen)}" alt="{esc(titulo)}" '
+                            'style="display:block;height:min(320px,80vw);width:auto;max-width:100%;'
+                            'object-fit:contain;border-radius:18px;margin-top:12px;opacity:.85" '
+                            'decoding="async" onerror="this.style.display=\'none\'">')
+        og_image = imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+        robots = meta_ultima(ultima)
     else:
         titulo = titulo_viejo or slug.replace("-", " ").capitalize()
         page_title = f"{titulo} · MoVeTe"
@@ -1195,6 +1315,8 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
         bloque_eventos = ('<p class="empty">Por ahora no hay funciones anunciadas. '
                           '<a href="/en-vivo/">Mirá qué hay esta semana →</a></p>')
         schema, bloque_intro, robots = "", "", '<meta name="robots" content="noindex">'
+        if ultima:
+            robots += "\n  " + meta_ultima(ultima)
         og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
 
     html = PLANTILLA_VENUE.format(
@@ -1562,18 +1684,30 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
                                titulo_viejo=titulos_por_slug.get(variante, ""),
                                alias_de=principal),
             encoding="utf-8")
-    # Obras que ya no tienen funciones: página sin fechas y noindex (no 404).
+    # Próximas obras por categoría, para "parecido" en las páginas de shows pasados.
+    proximas_por_cat: dict[str, list[dict]] = defaultdict(list)
+    for oslug, evs in sorted(eventos_por_obra.items(), key=lambda kv: min(e.get("fecha", "") for e in kv[1])):
+        primera = min(evs, key=lambda e: e.get("fecha", ""))
+        proximas_por_cat[primera.get("categoria", "otros")].append({
+            "slug": oslug, "titulo": _sin_gritos(titulos_por_slug.get(oslug) or evento_titulo(primera)),
+            "cuando": _fecha_corta(primera), "sala": venue_info(evento_lugar(primera))["nombre"]})
+    # Obras sin funciones: un año indexadas con "la última vez" (ver
+    # DIAS_OBRA_PASADA_INDEXADA); después, o si no hay datos, noindex (no 404).
     if obra_root.is_dir():
         existentes = {d.name for d in obra_root.iterdir() if (d / "index.html").exists()}
         for d in sorted(obra_root.iterdir()):
             idx = d / "index.html"
             if (d.is_dir() and d.name not in eventos_por_obra
                     and d.name not in _ALIAS_OBRA and idx.exists()):
-                m = re.search(r"<h1>(.*?)</h1>", idx.read_text(encoding="utf-8"), re.S)
+                texto = idx.read_text(encoding="utf-8")
+                m = re.search(r"<h1>(.*?)</h1>", texto, re.S)
                 viejo = html.unescape(m.group(1).strip()) if m else ""
                 principal = principal_existente(d.name, existentes)
-                idx.write_text(render_pagina_obra(d.name, [], jueves, viejo,
-                                                  alias_de=principal), encoding="utf-8")
+                ultima = {} if principal else leer_ultima(texto)
+                idx.write_text(render_pagina_obra(
+                    d.name, [], jueves, viejo, alias_de=principal, ultima=ultima,
+                    parecidos=proximas_por_cat.get(ultima.get("categoria", ""), [])[:6]),
+                    encoding="utf-8")
 
     # Página evergreen "Lo que se viene" (grandes shows anticipados)
     lqsv_dir = out / "lo-que-se-viene"
