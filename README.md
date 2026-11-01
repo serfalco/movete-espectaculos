@@ -8,6 +8,10 @@ Entrada:
 eventos.json
 ```
 
+`eventos.json` lo genera `movete-scraper` en cada corrida y no se versiona.
+`eventos.ejemplo.json` es una muestra vieja (junio de 2026) para probar local;
+no es la cartelera real.
+
 Salida:
 
 ```txt
@@ -18,5 +22,5 @@ Movete-info/en-vivo/AAAA-MM-DD/index.html
 Correr local:
 
 ```bash
-python generar_edicion.py eventos.json ../Movete-info/en-vivo
+python generar_edicion.py --eventos eventos.ejemplo.json --output ../Movete-info/en-vivo
 ```
