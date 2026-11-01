@@ -281,6 +281,13 @@ def principal_existente(slug: str, existentes: set[str]) -> str:
     return min(candidatos, key=len) if candidatos else ""
 
 
+def _texto_busqueda(*partes: str) -> str:
+    """Texto en minúsculas y sin acentos para el buscador de la cartelera."""
+    import unicodedata
+    t = " ".join(p for p in partes if p).casefold()
+    return "".join(c for c in unicodedata.normalize("NFD", t) if unicodedata.category(c) != "Mn")
+
+
 def render_evento(ev: dict, link_obra: bool = True) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
@@ -333,7 +340,9 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
       </div>"""
 
     return f"""
-    <article class="event-card{' has-media' if imagen else ''}" data-category="{esc(cat)}">
+    <article class="event-card{' has-media' if imagen else ''}" data-category="{esc(cat)}"
+             data-dia="{f.date().isoformat()}" data-franja="{'tarde' if f.hour < 19 else 'noche'}"
+             data-texto="{esc(_texto_busqueda(evento_titulo(ev), datos_lugar['nombre'], cat_label(cat)))}">
       {media_html}
       <div class="event-card-topline">
         <p class="event-date">{f.day} {MESES_ABR[f.month]}</p>
@@ -385,7 +394,127 @@ def render_esta_semana(eventos_semana: list[dict]) -> str:
             """
         )
 
-    return "\n".join(bloques)
+    cats = sorted({ev.get("categoria", "otros") for ev in eventos_semana}, key=cat_label)
+    return render_buscador(cats) + "\n".join(bloques) + _SCRIPT_BUSCADOR
+
+
+_ESTILO_BUSCADOR = """
+<style>
+  .buscador { display: grid; gap: 10px; margin: 8px 0 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line-strong); }
+  .buscador input[type=search] { width: 100%; font: inherit; font-size: 1rem; padding: 11px 14px;
+    border: 1px solid var(--line-strong); border-radius: 12px; background: var(--paper); color: var(--ink); }
+  .buscador-fila { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .buscador-fila button, .buscador-fila select { font: inherit; font-size: .88rem; padding: 6px 12px;
+    border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); cursor: pointer; }
+  .buscador-fila button[aria-pressed=true] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .buscador-cuenta { margin: 0; font-size: .85rem; color: var(--muted); }
+  [data-sin-resultados] button { font: inherit; margin-left: 4px; padding: 4px 12px; border-radius: 999px;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--ink); cursor: pointer; }
+  .buscador-cuenta button { font: inherit; background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; }
+</style>"""
+
+
+def render_buscador(cats: list[str]) -> str:
+    """Buscador y filtros combinables (día, horario, categoría) arriba de la
+    cartelera. Todo en el navegador: filtra las tarjetas que ya están en la
+    página. El estado va en la URL (?q=&dia=&franja=&cat=) para poder
+    compartir una búsqueda."""
+    opciones = "".join(f'<option value="{esc(c)}">{esc(cat_label(c))}</option>' for c in cats)
+    select = (f'<select data-f="cat" aria-label="Categoría"><option value="">Todas las categorías</option>'
+              f'{opciones}</select>') if len(cats) > 1 else ""
+    return _ESTILO_BUSCADOR + f"""
+    <div class="buscador" role="search">
+      <input type="search" data-f="q" placeholder="Buscá artista, obra o sala" aria-label="Buscar en la cartelera" autocomplete="off">
+      <div class="buscador-fila" data-grupo="dia" aria-label="Día">
+        <button type="button" data-v="" aria-pressed="true">Toda la semana</button>
+        <button type="button" data-v="hoy" aria-pressed="false">Hoy</button>
+        <button type="button" data-v="manana" aria-pressed="false">Mañana</button>
+        <button type="button" data-v="finde" aria-pressed="false">Finde</button>
+      </div>
+      <div class="buscador-fila" data-grupo="franja" aria-label="Horario">
+        <button type="button" data-v="" aria-pressed="true">Todo el día</button>
+        <button type="button" data-v="tarde" aria-pressed="false">Tarde</button>
+        <button type="button" data-v="noche" aria-pressed="false">Noche</button>
+        {select}
+      </div>
+      <p class="buscador-cuenta" aria-live="polite"></p>
+    </div>
+    <p class="empty" data-sin-resultados style="display:none">No hay nada con esos filtros.
+      <button type="button" data-limpiar>Ver toda la semana</button></p>"""
+
+
+_SCRIPT_BUSCADOR = """
+<script>
+(function () {
+  var raiz = document.getElementById("esta-semana") || document;
+  var barra = raiz.querySelector(".buscador");
+  if (!barra) return;
+  var tarjetas = Array.prototype.slice.call(raiz.querySelectorAll(".event-card[data-dia]"));
+  var secciones = raiz.querySelectorAll(".day-block");
+  var input = barra.querySelector('[data-f="q"]');
+  var select = barra.querySelector('[data-f="cat"]');
+  var cuenta = barra.querySelector(".buscador-cuenta");
+  var vacio = raiz.querySelector("[data-sin-resultados]");
+  var estado = { q: "", dia: "", franja: "", cat: "" };
+
+  function sinAcentos(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function iso(d) { return d.toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }); }
+  var hoy = iso(new Date());
+  var manana = iso(new Date(Date.now() + 864e5));
+  function esFinde(dia) { var w = new Date(dia + "T12:00:00").getDay(); return w === 5 || w === 6 || w === 0; }
+
+  function aplicar() {
+    var palabras = sinAcentos(estado.q).split(/\s+/).filter(Boolean);
+    var n = 0;
+    tarjetas.forEach(function (t) {
+      var d = t.getAttribute("data-dia");
+      var ok = (!estado.cat || t.getAttribute("data-category") === estado.cat)
+        && (!estado.franja || t.getAttribute("data-franja") === estado.franja)
+        && (!estado.dia || (estado.dia === "hoy" ? d === hoy : estado.dia === "manana" ? d === manana : esFinde(d) && d >= hoy))
+        && palabras.every(function (p) { return (t.getAttribute("data-texto") || "").indexOf(p) !== -1; });
+      t.style.display = ok ? "" : "none";
+      if (ok) n++;
+    });
+    Array.prototype.forEach.call(secciones, function (s) {
+      var alguna = Array.prototype.some.call(s.querySelectorAll(".event-card[data-dia]"), function (t) { return t.style.display !== "none"; });
+      s.style.display = alguna ? "" : "none";
+    });
+    var filtrando = estado.q || estado.dia || estado.franja || estado.cat;
+    cuenta.innerHTML = filtrando ? n + (n === 1 ? " evento" : " eventos") + ' · <button type="button" data-limpiar>limpiar filtros</button>' : tarjetas.length + " eventos esta semana";
+    vacio.style.display = n ? "none" : "";
+    barra.querySelectorAll("[data-grupo]").forEach(function (g) {
+      g.querySelectorAll("button").forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-v") === estado[g.getAttribute("data-grupo")] ? "true" : "false");
+      });
+    });
+    try {
+      var u = new URL(location.href);
+      ["q", "dia", "franja", "cat"].forEach(function (k) { if (estado[k]) u.searchParams.set(k, estado[k]); else u.searchParams.delete(k); });
+      history.replaceState(null, "", u);
+    } catch (e) {}
+  }
+
+  function limpiar() { estado = { q: "", dia: "", franja: "", cat: "" }; input.value = ""; if (select) select.value = ""; aplicar(); }
+
+  try {
+    var p = new URL(location.href).searchParams;
+    ["q", "dia", "franja", "cat"].forEach(function (k) { estado[k] = p.get(k) || ""; });
+    input.value = estado.q; if (select) select.value = estado.cat;
+  } catch (e) {}
+
+  var espera;
+  input.addEventListener("input", function () { clearTimeout(espera); espera = setTimeout(function () { estado.q = input.value; aplicar(); }, 120); });
+  if (select) select.addEventListener("change", function () { estado.cat = select.value; aplicar(); });
+  barra.querySelectorAll("[data-grupo]").forEach(function (g) {
+    g.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]"); if (!b) return;
+      estado[g.getAttribute("data-grupo")] = b.getAttribute("data-v"); aplicar();
+    });
+  });
+  raiz.addEventListener("click", function (e) { if (e.target.closest("[data-limpiar]")) limpiar(); });
+  aplicar();
+})();
+</script>"""
 
 
 def render_lo_que_se_viene(eventos: list[dict], jueves: date) -> str:
