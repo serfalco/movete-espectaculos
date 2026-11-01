@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 _preview*/
 _salida*/
+
+# Lo genera movete-scraper en cada corrida; el de muestra es eventos.ejemplo.json
+eventos.json
