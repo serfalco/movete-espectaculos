@@ -1713,6 +1713,12 @@ PLANTILLA_VENUE = """<!doctype html>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/movete.css">
+  <style>
+    .nl-form {{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }}
+    .nl-form input[type="email"] {{ flex: 1 1 200px; min-width: 0; font: inherit; font-size: 1rem; padding: 11px 14px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--paper); color: var(--ink); }}
+    .nl-form button {{ cursor: pointer; }}
+    .nl-nota {{ margin: 10px 0 0; font-size: .88rem; color: var(--muted); }}
+  </style>
 </head>
 <body id="top">
   <header class="site-header">
@@ -1734,6 +1740,21 @@ PLANTILLA_VENUE = """<!doctype html>
     <section class="section">
       <h2>{titulo_agenda}</h2>
       {bloque_eventos}
+    </section>
+
+    <section class="section">
+      <article class="card">
+        <p class="tag">No te lo pierdas</p>
+        <h2>¿Qué hay esta semana en La Plata?</h2>
+        <p>Dejanos tu mail y todos los jueves te llega la cartelera: teatro, música, stand up y cine. Sin spam.</p>
+        <form class="nl-form" action="https://buttondown.com/api/emails/embed-subscribe/MoVeTe" method="post" target="_blank">
+          <label for="nl-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Tu mail</label>
+          <input id="nl-email" type="email" name="email" required placeholder="tu@mail.com" autocomplete="email">
+          <input type="hidden" name="embed" value="1">
+          <button class="button small" type="submit">Avisame</button>
+        </form>
+        <p class="nl-nota">Te llega un mail para confirmar. Un envío por semana.</p>
+      </article>
     </section>
 
     <p class="site-notice">La info puede cambiar. Confirmá horarios y disponibilidad con la sala.</p>
