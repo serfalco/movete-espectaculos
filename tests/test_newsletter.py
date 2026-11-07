@@ -38,6 +38,38 @@ class EmailTests(unittest.TestCase):
         self.assertIn("🎵 Música", cuerpo)
         self.assertNotIn("###", cuerpo)
 
+    def test_html_un_evento_por_fila_con_link_a_la_obra(self):
+        evs = [ev("Obra Uno", "2026-10-03 21:00:00", "Sala X"),
+               ev("Obra Dos", "2026-10-04 20:30:00", "Sala Y")]
+        _, cuerpo = armar_email(evs, date(2026, 10, 1))
+        self.assertTrue(cuerpo.startswith("<!-- buttondown-editor-mode: plaintext -->"))
+        self.assertGreaterEqual(cuerpo.count("<tr><td width="), 2)  # filas separadas
+        self.assertIn("https://movete.info/en-vivo/obra/obra-uno/", cuerpo)
+        self.assertIn("20:30 h", cuerpo)
+
+    def test_escapa_html_del_titulo(self):
+        evs = [ev("<b>Rock & Roll</b>", "2026-10-03 21:00:00", "Sala X", cat="musica")]
+        _, cuerpo = armar_email(evs, date(2026, 10, 1))
+        self.assertNotIn("<b>Rock", cuerpo)
+        self.assertIn("&lt;b&gt;Rock &amp; Roll", cuerpo)
+
+
+class ImagenTests(unittest.TestCase):
+    def test_usa_copia_de_movete_si_existe(self):
+        import os, tempfile
+        from generar_newsletter import _imagen
+        from imagenes import nombre_local
+        url = "https://ejemplo.com/afiche.jpg"
+        with tempfile.TemporaryDirectory() as d:
+            os.environ["MOVETE_AFICHES_DIR"] = d
+            try:
+                self.assertEqual(_imagen({"imagen": url}), url)  # no hay copia
+                open(os.path.join(d, nombre_local(url)), "wb").close()
+                self.assertEqual(_imagen({"imagen": url}),
+                                 "https://movete.info/assets/afiches/" + nombre_local(url))
+            finally:
+                del os.environ["MOVETE_AFICHES_DIR"]
+
 
 if __name__ == "__main__":
     unittest.main()

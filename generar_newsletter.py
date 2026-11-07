@@ -16,6 +16,7 @@ revisarlo en Buttondown antes de mandarlo).
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import sys
@@ -32,7 +33,14 @@ from generar_edicion import (
     evento_titulo,
     evento_lugar,
     elegir_destacado_under,
+    evento_url,
+    obra_slug,
+    calcular_alias_obras,
+    _ALIAS_OBRA,
+    _hora,
+    _sin_gritos,
 )
+from imagenes import nombre_local, URL_BASE as URL_AFICHES
 from venues import venue_canonico, venue_masivo
 
 BASE = "https://movete.info"
@@ -110,14 +118,131 @@ def _elegir(candidatos: list[dict], n: int) -> list[dict]:
     return sorted(elegidos, key=lambda e: e["fecha"])
 
 
-def _linea_evento(ev: dict) -> str:
+# --- Diseño del mail -------------------------------------------------------
+# HTML con estilos en línea y tablas: es lo único que Gmail, Apple Mail y
+# Outlook respetan. Antes iba en markdown y Buttondown pegaba las líneas de
+# cada rubro en un solo párrafo ("Vie 30 · A — Sala · Sáb 31 · B — ...").
+# Colores de la marca (style.css): papel, tinta y naranja.
+TINTA = "#0e0d10"
+PAPEL = "#f5f1e8"
+ACENTO = "#ff5128"
+GRIS = "#6b6870"
+LINEA = "#e6e0d3"
+SANS = "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif"
+SERIF = "Georgia,'Times New Roman',serif"
+COLOR_RUBRO = {"🎭 Teatro": "#7b5ea7", "🎵 Música": "#2e86ab",
+               "😂 Stand up": "#ff5128", "💃 Danza e infantil": "#44bba4"}
+# El mail se abre en Buttondown tal cual: sin esta marca lo pasa por markdown.
+MODO_HTML = "<!-- buttondown-editor-mode: plaintext -->"
+
+
+def _e(s: object) -> str:
+    return html.escape(str(s or ""), quote=True)
+
+
+def _link(ev: dict) -> str:
+    oslug = obra_slug(ev)
+    if oslug:
+        return f"{BASE}/en-vivo/obra/{oslug}/"
+    return evento_url(ev) or f"{BASE}/en-vivo/"
+
+
+def _imagen(ev: dict) -> str:
+    """La copia liviana de movete.info si la edición ya la generó; si no, la
+    URL original. La carpeta es la misma que usa generar_edicion.py por
+    defecto en el workflow (../Movete-info/assets/afiches); se puede cambiar
+    con MOVETE_AFICHES_DIR."""
+    url = str(ev.get("imagen") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        return ""
+    if url.startswith(BASE):
+        return url
+    carpeta = (os.environ.get("MOVETE_AFICHES_DIR", "").strip()
+               or os.path.join("..", "Movete-info", "assets", "afiches"))
+    if carpeta and os.path.exists(os.path.join(carpeta, nombre_local(url))):
+        return URL_AFICHES + nombre_local(url)
+    return url
+
+
+def _cuando(ev: dict) -> str:
     f = parse_fecha(ev["fecha"])
-    cuando = f"{DIAS_CORTOS[f.weekday()]} {f.day}"
-    return f"- {cuando} · **{evento_titulo(ev)}** — {evento_lugar(ev)}"
+    h = _hora(ev)
+    txt = f"{DIAS_CORTOS[f.weekday()]} {f.day}"
+    return f"{txt} · {h} h" if h else txt
+
+
+def _boton(texto: str, url: str, color: str = ACENTO) -> str:
+    return (f'<a href="{_e(url)}" style="display:inline-block;background:{color};'
+            f'color:#ffffff;font-family:{SANS};font-size:13px;font-weight:700;'
+            f'text-decoration:none;padding:8px 14px;border-radius:999px;'
+            f'margin:4px 4px 0 0">{_e(texto)}</a>')
+
+
+def _fila_evento(ev: dict, color: str) -> str:
+    img = _imagen(ev)
+    url = _link(ev)
+    miniatura = (
+        f'<td width="64" valign="top" style="padding:12px 12px 12px 0">'
+        f'<a href="{_e(url)}"><img src="{_e(img)}" width="64" alt="" '
+        f'style="display:block;width:64px;border-radius:6px;border:0"></a></td>'
+        if img else
+        f'<td width="6" valign="top" style="padding:12px 12px 12px 0">'
+        f'<div style="width:6px;height:44px;background:{color};border-radius:3px"></div></td>'
+    )
+    return (
+        f'<tr>{miniatura}'
+        f'<td valign="top" style="padding:12px 0;border-bottom:1px solid {LINEA}">'
+        f'<div style="font-family:{SANS};font-size:12px;font-weight:700;'
+        f'letter-spacing:.04em;text-transform:uppercase;color:{color}">{_e(_cuando(ev))}</div>'
+        f'<a href="{_e(url)}" style="display:block;font-family:{SANS};font-size:16px;'
+        f'font-weight:700;line-height:1.3;color:{TINTA};text-decoration:none;'
+        f'margin:3px 0 2px">{_e(_sin_gritos(evento_titulo(ev)))}</a>'
+        f'<div style="font-family:{SANS};font-size:13px;line-height:1.4;color:{GRIS}">'
+        f'📍 {_e(evento_lugar(ev))}</div></td></tr>'
+    )
+
+
+def _bloque_rubro(titulo: str, eventos: list[dict]) -> str:
+    color = COLOR_RUBRO.get(titulo, ACENTO)
+    filas = "".join(_fila_evento(e, color) for e in eventos)
+    return (
+        f'<tr><td style="padding:22px 20px 4px">'
+        f'<div style="font-family:{SANS};font-size:15px;font-weight:800;color:{TINTA};'
+        f'padding-bottom:6px;border-bottom:2px solid {color}">{_e(titulo)}</div>'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        f'border="0">{filas}</table></td></tr>'
+    )
+
+
+def _bloque_destacado(ev: dict) -> str:
+    img = _imagen(ev)
+    url = _link(ev)
+    foto = (f'<a href="{_e(url)}"><img src="{_e(img)}" width="520" alt="" '
+            f'style="display:block;width:100%;max-width:520px;height:auto;'
+            f'border-radius:10px 10px 0 0;border:0"></a>' if img else "")
+    return (
+        f'<tr><td style="padding:20px 20px 0">'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+        f'style="background:#ffffff;border-radius:10px;border:1px solid {LINEA}">'
+        f'<tr><td>{foto}</td></tr><tr><td style="padding:16px 18px 18px">'
+        f'<div style="font-family:{SANS};font-size:11px;font-weight:800;letter-spacing:.08em;'
+        f'color:{ACENTO}">⭐ NO TE LO PIERDAS</div>'
+        f'<a href="{_e(url)}" style="display:block;font-family:{SERIF};font-size:22px;'
+        f'font-weight:700;line-height:1.25;color:{TINTA};text-decoration:none;margin:6px 0 4px">'
+        f'{_e(_sin_gritos(evento_titulo(ev)))}</a>'
+        f'<div style="font-family:{SANS};font-size:14px;color:{GRIS}">'
+        f'{_e(_cuando(ev))} · {_e(evento_lugar(ev))}</div>'
+        f'<div style="padding-top:10px">{_boton("Ver detalles", url)}</div>'
+        f'</td></tr></table></td></tr>'
+    )
 
 
 def armar_email(eventos: list[dict], jueves: date) -> tuple[str, str]:
     rango = etiqueta_rango(jueves)
+    # Mismos links que la edición: la variante de un título apunta a la
+    # página principal de la obra (ver calcular_alias_obras).
+    _ALIAS_OBRA.clear()
+    _ALIAS_OBRA.update(calcular_alias_obras(normalizar_categorias(eventos)))
     semana = eventos_de_la_semana(eventos, jueves)
     destacado = elegir_destacado_under(
         [e for e in normalizar_categorias(eventos) if e.get("fecha")], jueves
@@ -125,29 +250,46 @@ def armar_email(eventos: list[dict], jueves: date) -> tuple[str, str]:
 
     subject = f"MoVeTe · Qué hacer en La Plata · semana {rango}"
 
-    partes = [f"**Semana {rango}** · lo que no te podés perder, por rubro.\n"]
-
+    filas = [
+        f'<tr><td style="background:{TINTA};padding:22px 20px;border-radius:12px 12px 0 0">'
+        f'<div style="font-family:{SERIF};font-size:26px;font-weight:700;color:{PAPEL}">'
+        f'MoVeTe<span style="color:{ACENTO}">.</span></div>'
+        f'<div style="font-family:{SANS};font-size:13px;color:#cfc9bd;margin-top:4px">'
+        f'Qué hacer en La Plata · semana {_e(rango)}</div></td></tr>'
+    ]
     if destacado:
-        f = parse_fecha(destacado["fecha"])
-        partes.append(
-            f"⭐ **No te lo pierdas:** {evento_titulo(destacado)} — "
-            f"{evento_lugar(destacado)} · {DIAS_CORTOS[f.weekday()]} {f.day}\n"
-        )
+        filas.append(_bloque_destacado(destacado))
 
     for cats, titulo, n in RUBROS:
         elegidos = _elegir([e for e in semana if e.get("categoria") in cats], n)
         if elegidos:
-            partes.append(f"**{titulo}**")
-            partes.append("\n".join(_linea_evento(e) for e in elegidos))
-            partes.append("")
+            filas.append(_bloque_rubro(titulo, elegidos))
 
-    partes.append(
-        f"👉 Todo lo demás: [En vivo]({BASE}/en-vivo/) · [Cine]({BASE}/cine/) · "
-        f"[Grandes shows]({BASE}/en-vivo/lo-que-se-viene/)"
+    filas.append(
+        f'<tr><td align="center" style="padding:26px 20px 8px">'
+        f'<div style="font-family:{SANS};font-size:13px;color:{GRIS};padding-bottom:6px">'
+        f'Toda la cartelera, día por día:</div>'
+        + _boton("🎤 En vivo", f"{BASE}/en-vivo/", TINTA)
+        + _boton("🎬 Cine", f"{BASE}/cine/", TINTA)
+        + _boton("🏟️ Grandes shows", f"{BASE}/en-vivo/lo-que-se-viene/", TINTA)
+        + '</td></tr>'
     )
-    partes.append(f"\n_Porque la cultura es encontrarnos._ · [MoVeTe]({BASE})")
+    filas.append(
+        f'<tr><td align="center" style="padding:14px 20px 24px;font-family:{SERIF};'
+        f'font-size:14px;font-style:italic;color:{GRIS}">Porque la cultura es encontrarnos. · '
+        f'<a href="{BASE}" style="color:{ACENTO};text-decoration:none">movete.info</a></td></tr>'
+    )
 
-    return subject, "\n".join(partes)
+    cuerpo = (
+        f'{MODO_HTML}\n'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+        f'style="background:{PAPEL}"><tr><td align="center" style="padding:12px 8px">'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+        f'style="max-width:560px;background:{PAPEL}">'
+        + "".join(filas) +
+        '</table></td></tr></table>'
+    )
+    return subject, cuerpo
 
 
 def _alertar(msg: str) -> None:
@@ -215,7 +357,7 @@ def main() -> int:
     if args.dry_run:
         print("=== SUBJECT ===")
         print(subject)
-        print("\n=== BODY (markdown) ===")
+        print("\n=== BODY (html) ===")
         print(body)
         return 0
 
