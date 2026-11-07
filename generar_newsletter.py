@@ -148,14 +148,17 @@ def _link(ev: dict) -> str:
 
 
 def _imagen(ev: dict) -> str:
-    """La copia liviana de movete.info si la edición ya la generó (la carpeta
-    viene en MOVETE_AFICHES_DIR); si no, la URL original."""
+    """La copia liviana de movete.info si la edición ya la generó; si no, la
+    URL original. La carpeta es la misma que usa generar_edicion.py por
+    defecto en el workflow (../Movete-info/assets/afiches); se puede cambiar
+    con MOVETE_AFICHES_DIR."""
     url = str(ev.get("imagen") or "").strip()
     if not url.startswith(("http://", "https://")):
         return ""
     if url.startswith(BASE):
         return url
-    carpeta = os.environ.get("MOVETE_AFICHES_DIR", "").strip()
+    carpeta = (os.environ.get("MOVETE_AFICHES_DIR", "").strip()
+               or os.path.join("..", "Movete-info", "assets", "afiches"))
     if carpeta and os.path.exists(os.path.join(carpeta, nombre_local(url))):
         return URL_AFICHES + nombre_local(url)
     return url
