@@ -148,10 +148,9 @@ def _link(ev: dict) -> str:
 
 
 def _imagen(ev: dict) -> str:
-    """La copia liviana de movete.info si la edición ya la generó; si no, la
-    URL original. La carpeta es la misma que usa generar_edicion.py por
-    defecto en el workflow (../Movete-info/assets/afiches); se puede cambiar
-    con MOVETE_AFICHES_DIR."""
+    """Solo la copia liviana de movete.info (la que genera la edición en
+    ../Movete-info/assets/afiches; se cambia con MOVETE_AFICHES_DIR). Sin
+    copia no va imagen: la original puede pesar varios MB o no cargar."""
     url = str(ev.get("imagen") or "").strip()
     if not url.startswith(("http://", "https://")):
         return ""
@@ -159,9 +158,25 @@ def _imagen(ev: dict) -> str:
         return url
     carpeta = (os.environ.get("MOVETE_AFICHES_DIR", "").strip()
                or os.path.join("..", "Movete-info", "assets", "afiches"))
-    if carpeta and os.path.exists(os.path.join(carpeta, nombre_local(url))):
+    if os.path.exists(os.path.join(carpeta, nombre_local(url))):
         return URL_AFICHES + nombre_local(url)
-    return url
+    return ""
+
+
+EMOJI_CAT = {"teatro": "🎭", "impro": "🎭", "musica": "🎵", "stand-up": "😂",
+             "humor": "😂", "danza": "💃", "infantil": "🧸"}
+
+
+def _banner_generico(ev: dict, url: str) -> str:
+    """Portada del destacado cuando no hay afiche: HTML puro, no pesa nada."""
+    emoji = EMOJI_CAT.get(ev.get("categoria") or "", "✨")
+    return (f'<a href="{_e(url)}" style="text-decoration:none">'
+            f'<div style="background:{TINTA};border-radius:10px 10px 0 0;'
+            f'padding:26px 18px;text-align:center">'
+            f'<div style="font-size:44px;line-height:1">{emoji}</div>'
+            f'<div style="font-family:{SERIF};font-size:18px;font-weight:700;'
+            f'color:{PAPEL};margin-top:10px">MoVeTe<span style="color:{ACENTO}">.</span>'
+            f'</div></div></a>')
 
 
 def _cuando(ev: dict) -> str:
@@ -219,7 +234,8 @@ def _bloque_destacado(ev: dict) -> str:
     url = _link(ev)
     foto = (f'<a href="{_e(url)}"><img src="{_e(img)}" width="520" alt="" '
             f'style="display:block;width:100%;max-width:520px;height:auto;'
-            f'border-radius:10px 10px 0 0;border:0"></a>' if img else "")
+            f'border-radius:10px 10px 0 0;border:0"></a>' if img
+            else _banner_generico(ev, url))
     return (
         f'<tr><td style="padding:20px 20px 0">'
         f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
