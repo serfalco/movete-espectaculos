@@ -63,7 +63,7 @@ class ImagenTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             os.environ["MOVETE_AFICHES_DIR"] = d
             try:
-                self.assertEqual(_imagen({"imagen": url}), url)  # no hay copia
+                self.assertEqual(_imagen({"imagen": url}), "")  # sin copia, sin imagen
                 open(os.path.join(d, nombre_local(url)), "wb").close()
                 self.assertEqual(_imagen({"imagen": url}),
                                  "https://movete.info/assets/afiches/" + nombre_local(url))
