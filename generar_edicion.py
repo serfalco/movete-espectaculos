@@ -45,6 +45,8 @@ CAT_LABEL = {
     "infantil": "Infantil",
     "taller": "Taller",
     "a-plasticas": "Artes plásticas",
+    "charlas": "Charlas y letras",
+    "ferias": "Ferias y fiestas",
     "impro": "Impro",
     "humor": "Humor",
     "otros": "Otros",
@@ -60,6 +62,8 @@ CATEGORY_ORDER = [
     "impro",
     "humor",
     "a-plasticas",
+    "ferias",
+    "charlas",
     "otros",
 ]
 
@@ -78,6 +82,8 @@ CAT_INTRO = {
     "impro": "Impro en La Plata: shows de improvisación, humor y teatro espontáneo para esta semana.",
     "humor": "Humor en vivo en La Plata: comedia, monólogos y propuestas para salir a reírse.",
     "a-plasticas": "Artes plásticas en La Plata: muestras, exposiciones, fotografía y artes visuales.",
+    "ferias": "Ferias y fiestas en La Plata: ferias de diseño y vinilos, degustaciones, aniversarios de bares y festejos de la semana.",
+    "charlas": "Charlas y letras en La Plata: conversatorios, presentaciones de libros, poesía y encuentros literarios de la semana.",
     "otros": "Más cosas para hacer en La Plata: actividades culturales, encuentros y propuestas de la semana.",
 }
 
