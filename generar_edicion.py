@@ -1033,6 +1033,73 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         print(f"[sitemap] no se pudo escribir: {e}")
 
 
+def escribir_archivo(en_vivo_dir: Path, jueves: date) -> None:
+    """/en-vivo/archivo/: enlaza todas las salas, los shows indexables y las
+    ediciones semanales de en vivo y cine. Es el punto de entrada que les
+    faltaba a esas páginas: sin ningún enlace interno Google las trata como
+    huérfanas (Ahrefs, nov/2026: 118 páginas del sitemap sin enlaces)."""
+    out = Path(en_vivo_dir)
+    root = out.parent
+
+    def h1_e_indexable(idx: Path) -> tuple[str, bool]:
+        texto = idx.read_text(encoding="utf-8")
+        m = re.search(r"<h1>(.*?)</h1>", texto, re.S)
+        return (html.unescape(m.group(1).strip()) if m else idx.parent.name,
+                "noindex" not in texto[:900])
+
+    def lista(items: list[tuple[str, str]]) -> str:
+        if not items:
+            return '<p class="empty">Todavía no hay.</p>'
+        lis = "".join(f'<li><a href="{esc(u)}">{esc(t)}</a></li>' for u, t in items)
+        return f'<ul class="archivo-lista" style="line-height:1.7;columns:16rem">{lis}</ul>'
+
+    def paginas(sub: str) -> list[tuple[str, str]]:
+        d = out / sub
+        res = []
+        if d.is_dir():
+            for c in d.iterdir():
+                idx = c / "index.html"
+                if c.is_dir() and idx.exists():
+                    t, ok = h1_e_indexable(idx)
+                    if ok:
+                        res.append((f"/en-vivo/{sub}/{c.name}/", t))
+        return sorted(res, key=lambda x: x[1].casefold())
+
+    def ediciones(seccion: str) -> list[tuple[str, str]]:
+        d = root / seccion
+        if not d.is_dir():
+            return []
+        res = []
+        for c in sorted(d.iterdir(), reverse=True):
+            if c.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", c.name) and (c / "index.html").exists():
+                f = date.fromisoformat(c.name)
+                res.append((f"/{seccion}/{c.name}/", f"Semana del {f.day}/{f.month}/{f.year}"))
+        return res
+
+    salas, shows = paginas("sala"), paginas("obra")
+    cuerpo = (lista(salas)
+              + f'<h2 style="margin-top:28px">Shows ({len(shows)})</h2>' + lista(shows)
+              + '<h2 style="margin-top:28px">Ediciones de En vivo</h2>' + lista(ediciones("en-vivo"))
+              + '<h2 style="margin-top:28px">Ediciones de Cine</h2>' + lista(ediciones("cine")))
+    pagina = PLANTILLA_VENUE.format(
+        page_title="Archivo: salas, shows y ediciones · MoVeTe",
+        page_description=("Todas las salas, los shows y las ediciones semanales de "
+                          "MoVeTe, la cartelera de teatro, música, stand up y cine de La Plata."),
+        page_url="https://movete.info/en-vivo/archivo/",
+        og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
+        bloque_schema="",
+        eyebrow="Archivo de MoVeTe",
+        h1="Salas, shows y ediciones",
+        bloque_mapa="",
+        titulo_agenda=f"Salas ({len(salas)})",
+        bloque_eventos=cuerpo,
+        anio=jueves.year,
+    ).replace(' aria-current="page"', "", 1)
+    destino = out / "archivo" / "index.html"
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(pagina, encoding="utf-8")
+
+
 _DIAS_CORTOS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 
 
@@ -1043,6 +1110,26 @@ def _fecha_corta(ev: dict) -> str:
     except ValueError:
         return ""
     return f"{_DIAS_CORTOS[d.weekday()]} {d.day}/{d.month}"
+
+
+DESC_MAX = 155
+
+
+def recortar_desc(texto: str, maximo: int = DESC_MAX) -> str:
+    """Meta description de no más de ~155 caracteres: es lo que Google
+    muestra en el móvil; lo que sobra se corta igual y se pierde la cola
+    (Ahrefs, nov/2026: 496 de 965 páginas pasadas de largo)."""
+    texto = " ".join(texto.split())
+    if len(texto) <= maximo:
+        return texto
+    corte = texto[: maximo - 1]
+    if " " in corte:
+        corte = corte[: corte.rfind(" ")]
+    return corte.rstrip(" ,;:·—-(") + "…"
+
+
+def _sumar_si_entra(desc: str, cola: str, maximo: int = DESC_MAX) -> str:
+    return desc + cola if len(desc + cola) <= maximo else desc
 
 
 def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[dict]) -> tuple[str, str]:
@@ -1078,8 +1165,12 @@ def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[d
         desde, hasta = _fecha_corta(eventos_sala[0]), _fecha_corta(eventos_sala[-1])
         base = f"{lugar}: cartelera"
         extra = f" · {n} funciones" + (f" ({desde} al {hasta})" if desde and hasta and desde != hasta else "")
-        muestra = " · ".join(titulos[:3]) + (" y más" if len(titulos) > 3 else "")
-        desc = f"Cartelera de {nombre}: {muestra}. Horarios, entradas y cómo llegar."
+        desc = ""
+        for k in (3, 2, 1):
+            muestra = " · ".join(titulos[:k]) + (" y más" if len(titulos) > k else "")
+            desc = f"Cartelera de {nombre}: {muestra}. Horarios, entradas y cómo llegar."
+            if len(desc) <= DESC_MAX:
+                break
 
     # Google corta el título en ~60 caracteres. Se prueba de más completo a
     # menos: con cola y marca, con cola, solo la cola sin fecha, sin cola; y
@@ -1092,11 +1183,26 @@ def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[d
         base[:61].rstrip(" ,·:(") + "…",
     )
     if direccion:
-        desc += f" Dirección: {direccion}."
-    return title, desc
+        desc = _sumar_si_entra(desc, f" Dirección: {direccion}.")
+    return title, recortar_desc(desc)
 
 
-def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> str:
+def render_otros_shows_sala(anteriores: list[dict] | None) -> str:
+    """Shows de la sala que hoy no tienen funciones (pasados o que la fuente
+    dejó de traer). Sin este enlace sus páginas quedan huérfanas: están en el
+    sitemap pero ninguna página las enlaza y Google las valora poco."""
+    if not anteriores:
+        return ""
+    items = "".join(
+        f'<li><a href="/en-vivo/obra/{esc(a["slug"])}/">{esc(a["titulo"])}</a>'
+        + (f' · {esc(_fecha_larga(a["fecha"]))}' if a.get("fecha") else "") + "</li>"
+        for a in anteriores)
+    return ('<h2 style="margin-top:28px">Otros shows en esta sala</h2>'
+            f'<ul class="sala-anteriores" style="line-height:1.7">{items}</ul>')
+
+
+def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
+                        anteriores: list[dict] | None = None) -> str:
     """Pagina evergreen de una sala: /en-vivo/sala/<slug>/."""
     nombre = venue["nombre"]
     slug = venue["slug"]
@@ -1161,7 +1267,7 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date) -> 
         h1=esc(nombre),
         bloque_mapa=bloque_mapa,
         titulo_agenda=esc(titulo_agenda),
-        bloque_eventos=bloque_eventos,
+        bloque_eventos=bloque_eventos + render_otros_shows_sala(anteriores),
         anio=jueves.year,
     )
 
@@ -1229,12 +1335,17 @@ def titulo_y_descripcion_obra(titulo: str, eventos_obra: list[dict]) -> tuple[st
                  f": {n} funciones"]
         desc = f"{titulo} en La Plata: {n} funciones" + (f" del {rango}" if " al " in rango else "")
         desc += f" en {donde}" if donde else ""
+    desc = desc.rstrip(":")
     if una_sala and direcciones[0]:
-        desc += f" ({direcciones[0]})"
-    desc = desc.rstrip(":") + "."
+        desc = _sumar_si_entra(desc, f" ({direcciones[0]})", DESC_MAX - 30)
+    desc += "."
     hay_link = any(str(e.get("url") or "").strip() for e in eventos_obra)
-    desc += (" Link a las entradas, horarios y cómo llegar." if hay_link
-             else " Horarios, entradas y cómo llegar.")
+    for cola in ((" Link a las entradas, horarios y cómo llegar." if hay_link
+                  else " Horarios, entradas y cómo llegar."), " Entradas y cómo llegar."):
+        if len(desc + cola) <= DESC_MAX:
+            desc += cola
+            break
+    desc = recortar_desc(desc)
 
     candidatos = []
     for c in [c for c in colas if c] + [""]:
@@ -1420,8 +1531,9 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
         ya_paso = ultima["fecha"][:10] < jueves.isoformat()
         verbo = "la última función fue el" if ya_paso else "tenía función anunciada el"
         page_description = (f"{titulo} en La Plata: {verbo} {cuando}"
-                            + (f" en {sala}" if sala else "")
-                            + ". Las próximas fechas aparecen acá apenas se anuncien.")
+                            + (f" en {sala}" if sala else "") + ".")
+        page_description = recortar_desc(_sumar_si_entra(
+            page_description, " Las próximas fechas aparecen acá apenas se anuncien."))
         cat = ultima.get("categoria") or "otros"
         eyebrow = f"{cat_label(cat)} en La Plata"
         titulo_agenda = "Próximas fechas"
@@ -1587,7 +1699,7 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
     page_url = f"https://movete.info/en-vivo/{tipo}/"
     html_doc = PLANTILLA_VENUE.format(
         page_title=esc(page_title),
-        page_description=esc(page_description),
+        page_description=esc(recortar_desc(page_description)),
         page_url=esc(page_url),
         og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
         bloque_schema=render_schema_eventos(usados),
@@ -1765,30 +1877,6 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
         entrada = eventos_por_sala.setdefault(vc["slug"], {"venue": vc, "eventos": []})
         entrada["eventos"].append(ev)
 
-    salidas_venue = []
-    sala_root = out / "sala"
-    for slug, data in eventos_por_sala.items():
-        evs = sorted(data["eventos"], key=lambda e: e.get("fecha", ""))
-        pagina = render_pagina_venue(data["venue"], evs, jueves)
-        destino = sala_root / slug / "index.html"
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(pagina, encoding="utf-8")
-        salidas_venue.append(str(destino))
-
-    # Salas que ya tenían página pero esta semana no traen eventos: se
-    # regeneran vacías. Si no, la página vieja queda con funciones pasadas
-    # (y Google la sigue mostrando con un título que ya no es verdad).
-    catalogo = {}
-    for nombre, *_ in list(VENUES_MASIVOS.values()) + list(VENUES_DIRECCIONES.values()):
-        vc = venue_canonico(nombre)
-        if vc:
-            catalogo.setdefault(vc["slug"], vc)
-    if sala_root.is_dir():
-        for d in sorted(sala_root.iterdir()):
-            if d.is_dir() and d.name not in eventos_por_sala and d.name in catalogo:
-                (d / "index.html").write_text(
-                    render_pagina_venue(catalogo[d.name], [], jueves), encoding="utf-8")
-
     # Páginas por obra/show: agrupa todas las funciones futuras por título.
     eventos_por_obra: dict[str, list[dict]] = defaultdict(list)
     for ev in normalizar_categorias(eventos):
@@ -1830,6 +1918,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
             "cuando": _fecha_corta(primera), "sala": venue_info(evento_lugar(primera))["nombre"]})
     # Obras sin funciones: un año indexadas con "la última vez" (ver
     # DIAS_OBRA_PASADA_INDEXADA); después, o si no hay datos, noindex (no 404).
+    anteriores_por_sala: dict[str, list[dict]] = defaultdict(list)
     if obra_root.is_dir():
         existentes = {d.name for d in obra_root.iterdir() if (d / "index.html").exists()}
         for d in sorted(obra_root.iterdir()):
@@ -1845,6 +1934,43 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
                     d.name, [], jueves, viejo, alias_de=principal, ultima=ultima,
                     parecidos=proximas_por_cat.get(ultima.get("categoria", ""), [])[:6]),
                     encoding="utf-8")
+                if (ultima.get("sala_slug") and ultima.get("fecha")
+                        and (jueves - date.fromisoformat(ultima["fecha"][:10])).days
+                        <= DIAS_OBRA_PASADA_INDEXADA):
+                    anteriores_por_sala[ultima["sala_slug"]].append({
+                        "slug": d.name, "fecha": ultima["fecha"][:10],
+                        "titulo": _sin_gritos(viejo or ultima.get("titulo") or d.name)})
+    for lista in anteriores_por_sala.values():
+        lista.sort(key=lambda a: a["fecha"], reverse=True)
+
+    # Páginas por sala (evergreen): se escriben después de las obras para
+    # poder enlazar los shows que ya no tienen funciones.
+
+    salidas_venue = []
+    sala_root = out / "sala"
+    for slug, data in eventos_por_sala.items():
+        evs = sorted(data["eventos"], key=lambda e: e.get("fecha", ""))
+        pagina = render_pagina_venue(data["venue"], evs, jueves,
+                                     anteriores_por_sala.get(slug, [])[:40])
+        destino = sala_root / slug / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(pagina, encoding="utf-8")
+        salidas_venue.append(str(destino))
+
+    # Salas que ya tenían página pero esta semana no traen eventos: se
+    # regeneran vacías. Si no, la página vieja queda con funciones pasadas
+    # (y Google la sigue mostrando con un título que ya no es verdad).
+    catalogo = {}
+    for nombre, *_ in list(VENUES_MASIVOS.values()) + list(VENUES_DIRECCIONES.values()):
+        vc = venue_canonico(nombre)
+        if vc:
+            catalogo.setdefault(vc["slug"], vc)
+    if sala_root.is_dir():
+        for d in sorted(sala_root.iterdir()):
+            if d.is_dir() and d.name not in eventos_por_sala and d.name in catalogo:
+                (d / "index.html").write_text(
+                    render_pagina_venue(catalogo[d.name], [], jueves,
+                                        anteriores_por_sala.get(d.name, [])[:40]), encoding="utf-8")
 
     # Página evergreen "Lo que se viene" (grandes shows anticipados)
     lqsv_dir = out / "lo-que-se-viene"
@@ -1854,6 +1980,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
         encoding="utf-8",
     )
 
+    escribir_archivo(out, jueves)
     generar_sitemap(out)
 
     return {
@@ -1984,6 +2111,8 @@ PLANTILLA = """<!doctype html>
       <span aria-hidden="true">·</span>
       <span>{anio}</span>
       <span aria-hidden="true">·</span>
+      <a href="/en-vivo/archivo/">Archivo</a>
+      <span aria-hidden="true">·</span>
       <button class="footer-share" type="button" data-share-page title="Avisá que existimos por WhatsApp" aria-label="Avisá que existimos por WhatsApp">Avisá que existimos <img class="share-icon" src="/assets/icons/whatsapp.svg" alt=""></button>
     </p>
   </footer>
@@ -2069,6 +2198,8 @@ PLANTILLA_VENUE = """<!doctype html>
       <span>La Plata</span>
       <span aria-hidden="true">·</span>
       <span>{anio}</span>
+      <span aria-hidden="true">·</span>
+      <a href="/en-vivo/archivo/">Archivo</a>
     </p>
   </footer>
   <script src="/assets/js/movete.js" defer></script>
