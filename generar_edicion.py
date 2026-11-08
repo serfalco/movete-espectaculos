@@ -768,6 +768,42 @@ def render_destacado_under(ev: dict | None) -> str:
 """
 
 
+def fecha_schema(f: datetime) -> str:
+    """startDate con la zona horaria de La Plata. Sin offset Google tiene que
+    adivinarla (y avisa); sin hora conocida va solo la fecha."""
+    if f.hour == 0 and f.minute == 0:
+        return f.date().isoformat()
+    return f.strftime("%Y-%m-%dT%H:%M:00-03:00")
+
+
+def campos_extra_schema(ev: dict, sala: str) -> dict:
+    """Campos que Google recomienda para la ficha de evento en el buscador:
+    url (la página del show en MoVeTe), offers (link a las entradas),
+    organizer (la sala), description e image. Sin precio: las fuentes no
+    lo traen y no se inventa."""
+    extra: dict = {}
+    titulo = evento_titulo(ev)
+    oslug = obra_slug(ev)
+    if oslug:
+        extra["url"] = f"https://movete.info/en-vivo/obra/{_ALIAS_OBRA.get(oslug, oslug)}/"
+    entradas = evento_url(ev)
+    if entradas:
+        extra["offers"] = {"@type": "Offer", "url": entradas}
+        extra.setdefault("url", entradas)
+    imagen = str(ev.get("imagen") or "").strip()
+    if imagen:
+        extra["image"] = imagen
+    if sala:
+        org = {"@type": "Organization", "name": sala}
+        vc = venue_canonico(evento_lugar(ev))
+        if vc:
+            org["url"] = f"https://movete.info/en-vivo/sala/{vc['slug']}/"
+        extra["organizer"] = org
+    cat = cat_label(ev.get("categoria", "otros"))
+    extra["description"] = f"{_sin_gritos(titulo)}: {cat.lower()} en {sala or 'La Plata'}, La Plata."
+    return extra
+
+
 def render_schema_eventos(eventos_semana: list[dict]) -> str:
     """JSON-LD (Schema.org) con los eventos de la semana, para que Google los
     entienda y los muestre como resultados ricos."""
@@ -786,19 +822,12 @@ def render_schema_eventos(eventos_semana: list[dict]) -> str:
         ev_ld = {
             "@type": "Event",
             "name": evento_titulo(ev),
-            "startDate": f.isoformat(),
+            "startDate": fecha_schema(f),
             "eventStatus": "https://schema.org/EventScheduled",
             "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
             "location": lugar_ld,
         }
-        # La imagen ya venía en el pipeline y se mostraba en la tarjeta, pero
-        # no llegaba al JSON-LD. Google la pide para el resultado enriquecido.
-        imagen = str(ev.get("imagen") or "").strip()
-        if imagen:
-            ev_ld["image"] = imagen
-        url = evento_url(ev)
-        if url:
-            ev_ld["url"] = url
+        ev_ld.update(campos_extra_schema(ev, datos["nombre"]))
         items.append({"@type": "ListItem", "position": i, "item": ev_ld})
     if not items:
         return ""
