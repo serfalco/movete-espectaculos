@@ -69,3 +69,12 @@ def test_schema_evento_completo():
     sin_hora = dict(ev, fecha="2026-11-12 00:00:00")
     data = json.loads(re.search(r">(.*)</script>", ge.render_schema_eventos([sin_hora]), re.S).group(1))
     assert data["itemListElement"][0]["item"]["startDate"] == "2026-11-12"
+
+
+def test_migas_en_sala_y_obra():
+    venue = {"nombre": "Sala X", "slug": "sala-x", "direccion": ""}
+    assert '"BreadcrumbList"' in ge.render_pagina_venue(venue, [], date(2026, 11, 5))
+    ev = {"titulo": "Show X", "fecha": "2026-11-12 21:30:00", "lugar": "Teatro Abierto", "categoria": "teatro"}
+    html = ge.render_pagina_obra("show-x", [ev], date(2026, 11, 5))
+    assert '"BreadcrumbList"' in html and '"Show X"' in html
+    assert '"BreadcrumbList"' not in ge.render_pagina_obra("show-x", [], date(2026, 11, 5), "Show X")
