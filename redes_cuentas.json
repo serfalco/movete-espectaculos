@@ -1,0 +1,10 @@
+{
+  "_nota": "Cuentas de Instagram de las salas, por slug de venues.py. Si una sala está acá, los posts la arroban (le llega el aviso y puede repostear). Ejemplo: \"teatro-metro\": \"@teatrometro\". Solo cuentas verificadas a mano.",
+  "teatro-metro": "",
+  "teatro-opera-la-plata": "",
+  "teatro-argentino-de-la-plata": "",
+  "centro-cultural-pasaje-dardo-rocha": "",
+  "casa-suiza": "",
+  "teatro-la-nonna": "",
+  "tres-empanadas-comedia": ""
+}
