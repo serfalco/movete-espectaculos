@@ -1216,6 +1216,18 @@ def titulo_y_descripcion_venue(nombre: str, direccion: str, eventos_sala: list[d
     return title, recortar_desc(desc)
 
 
+def schema_migas(pasos: list[tuple[str, str]]) -> str:
+    """BreadcrumbList: Google muestra "MoVeTe › En vivo › Sala X" en el
+    resultado en lugar de la URL cruda. pasos = [(nombre, url), ...]."""
+    items = [{"@type": "ListItem", "position": i, "name": n, "item": u}
+             for i, (n, u) in enumerate(pasos, 1)]
+    data = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": items}
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False) + "</script>"
+
+
+MIGAS_BASE = [("MoVeTe", "https://movete.info/"), ("En vivo", "https://movete.info/en-vivo/")]
+
+
 def render_otros_shows_sala(anteriores: list[dict] | None) -> str:
     """Shows de la sala que hoy no tienen funciones (pasados o que la fuente
     dejó de traer). Sin este enlace sus páginas quedan huérfanas: están en el
@@ -1285,6 +1297,7 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
     schema = '<script type="application/ld+json">' + json.dumps(place, ensure_ascii=False) + "</script>"
     if eventos_sala:
         schema += render_schema_eventos(eventos_sala)
+    schema += schema_migas(MIGAS_BASE + [(nombre, page_url)])
 
     return PLANTILLA_VENUE.format(
         page_title=esc(page_title),
@@ -1596,6 +1609,19 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
         if ultima:
             robots += "\n  " + meta_ultima(ultima)
         og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+
+    if not alias_de and "noindex" not in robots:
+        sala_vc = None
+        if eventos_obra:
+            salas = {(venue_canonico(evento_lugar(e)) or {}).get("slug") for e in eventos_obra}
+            if len(salas) == 1:
+                sala_vc = venue_canonico(evento_lugar(eventos_obra[0]))
+        elif ultima and ultima.get("sala_slug") and ultima.get("sala"):
+            sala_vc = {"slug": ultima["sala_slug"], "nombre": ultima["sala"]}
+        pasos = list(MIGAS_BASE)
+        if sala_vc:
+            pasos.append((sala_vc["nombre"], f"https://movete.info/en-vivo/sala/{sala_vc['slug']}/"))
+        schema += schema_migas(pasos + [(titulo, page_url)])
 
     html = PLANTILLA_VENUE.format(
         page_title=esc(page_title),
