@@ -1,0 +1,3 @@
+Poppins — Copyright 2020 The Poppins Project Authors (Indian Type Foundry).
+Licencia SIL Open Font License 1.1: https://openfontlicense.org
+Se usa solo para dibujar las piezas de redes (generar_redes.py).
