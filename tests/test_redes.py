@@ -98,6 +98,8 @@ class PublicarTests(unittest.TestCase):
         "edicion": "2026-11-05",
         "carrusel": {"publicar": "2026-11-05", "imagenes": ["https://movete.info/redes/a.jpg"],
                      "instagram": "ig", "facebook": "fb"},
+        "reel": {"publicar": "2026-11-05", "video": "https://movete.info/redes/reel.mp4",
+                 "instagram": "ig", "facebook": "fb"},
         "historias": {"2026-11-05": {"imagen": "https://movete.info/redes/h.jpg", "facebook": "fb"},
                       "2026-11-06": {"imagen": "https://movete.info/redes/h2.jpg", "facebook": "fb"}},
     }
@@ -105,7 +107,7 @@ class PublicarTests(unittest.TestCase):
     def test_el_jueves_toca_carrusel_e_historia_y_el_viernes_solo_historia(self):
         jue = [n for n, _ in pr.tareas_de_hoy(self.MANIFEST, date(2026, 11, 5))]
         vie = [n for n, _ in pr.tareas_de_hoy(self.MANIFEST, date(2026, 11, 6))]
-        self.assertEqual(jue, ["ig_carrusel", "fb_carrusel", "ig_historia", "fb_dia"])
+        self.assertEqual(jue, ["ig_carrusel", "fb_carrusel", "ig_reel", "fb_reel", "ig_historia", "fb_dia"])
         self.assertEqual(vie, ["ig_historia", "fb_dia"])
 
     def _carpeta(self, tmp):
@@ -131,6 +133,8 @@ class PublicarTests(unittest.TestCase):
                 return {"access_token": "token-de-pagina"}
             if metodo == "GET":
                 return {"status_code": "FINISHED"}
+            if (datos or {}).get("upload_phase") == "start":
+                return {"video_id": "v1", "upload_url": "https://rupload.example/v1"}
             if ruta.startswith("page/"):
                 assert token == "token-de-pagina", "Facebook necesita el token de la página"
             return {"id": f"id{len(llamadas)}"}
@@ -141,13 +145,15 @@ class PublicarTests(unittest.TestCase):
             with mock.patch.dict(os.environ, env, clear=True), \
                  mock.patch.object(pr.Meta, "_llamar", falso), \
                  mock.patch.object(pr, "esperar_publicadas", lambda urls: None), \
+                 mock.patch.object(pr.urllib.request, "urlopen", mock.MagicMock()), \
                  mock.patch("sys.argv", ["x", "--redes", tmp, "--hoy", "2026-11-05"]):
                 self.assertEqual(pr.main(), 0)
                 primeras = len(llamadas)
                 self.assertEqual(pr.main(), 0)  # segunda corrida del mismo día
             self.assertEqual(len(llamadas), primeras)
             hechas = json.loads((carpeta / "publicado.json").read_text("utf-8"))["2026-11-05"]
-            self.assertEqual(set(hechas), {"ig_carrusel", "fb_carrusel", "ig_historia", "fb_dia"})
+            self.assertEqual(set(hechas), {"ig_carrusel", "fb_carrusel", "ig_reel", "fb_reel",
+                                           "ig_historia", "fb_dia"})
             self.assertIn(("POST", "ig/media_publish"), llamadas)
             self.assertIn(("POST", "page/feed"), llamadas)
 

@@ -525,7 +525,7 @@ def generar(eventos_path: str, salida: str | Path, afiches_dir: str | Path,
     url_base = f"{URL_REDES}/{jueves.isoformat()}"
     manifest: dict = {"edicion": jueves.isoformat(),
                       "generado": datetime.now().isoformat(timespec="seconds"),
-                      "carrusel": None, "historias": {}}
+                      "carrusel": None, "reel": None, "historias": {}}
 
     finde = elegir_finde(evs, jueves, afiches)
     if len(finde) >= 3:
@@ -544,6 +544,20 @@ def generar(eventos_path: str, salida: str | Path, afiches_dir: str | Path,
             "facebook": texto_carrusel(finde, jueves, "facebook", cuentas),
         }
 
+    # Reel del finde (mismo día que el carrusel). Si falla, el resto sale igual.
+    try:
+        import generar_reel as greel
+        del_reel = greel.elegir_reel(evs, jueves, afiches)
+        if greel.armar_reel(del_reel, jueves, afiches, carpeta / "reel.mp4"):
+            manifest["reel"] = {
+                "publicar": jueves.isoformat(),
+                "video": f"{url_base}/reel.mp4",
+                "instagram": greel.texto_reel(del_reel, jueves, "instagram"),
+                "facebook": greel.texto_reel(del_reel, jueves, "facebook"),
+            }
+    except Exception as e:  # noqa: BLE001
+        print(f"[redes] no se pudo armar el Reel: {e}")
+
     for k in range(7):
         dia = jueves + timedelta(days=k)
         del_dia = elegir_dia(evs, dia, afiches)
@@ -560,6 +574,7 @@ def generar(eventos_path: str, salida: str | Path, afiches_dir: str | Path,
     _podar(salida)
     return {"edicion": jueves.isoformat(),
             "carrusel": len(manifest["carrusel"]["imagenes"]) if manifest["carrusel"] else 0,
+            "reel": bool(manifest["reel"]),
             "historias": len(manifest["historias"])}
 
 
