@@ -120,10 +120,14 @@ class PublicarTests(unittest.TestCase):
     def test_publica_una_sola_vez_por_dia(self):
         llamadas = []
 
-        def falso(self, metodo, ruta, datos=None):
+        def falso(self, metodo, ruta, datos=None, token=None):
             llamadas.append((metodo, ruta))
+            if metodo == "GET" and (datos or {}).get("fields") == "access_token":
+                return {"access_token": "token-de-pagina"}
             if metodo == "GET":
                 return {"status_code": "FINISHED"}
+            if ruta.startswith("page/"):
+                assert token == "token-de-pagina", "Facebook necesita el token de la página"
             return {"id": f"id{len(llamadas)}"}
 
         env = {"META_TOKEN": "t", "META_PAGE_ID": "page", "META_IG_ID": "ig"}
