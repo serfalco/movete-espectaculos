@@ -52,9 +52,24 @@ class Meta:
     def __init__(self, token: str, page_id: str, ig_id: str, version: str):
         self.token, self.page_id, self.ig_id = token, page_id, ig_id
         self.base = f"https://graph.facebook.com/{version}"
+        self._token_pagina: str | None = None
 
-    def _llamar(self, metodo: str, ruta: str, datos: dict | None = None) -> dict:
-        datos = dict(datos or {}, access_token=self.token)
+    def token_pagina(self) -> str:
+        """Facebook publica en la página solo con un token DE la página.
+
+        El del usuario del sistema sirve para Instagram; con él se pide el de
+        la página (tampoco vence).
+        """
+        if not self._token_pagina:
+            r = self._llamar("GET", self.page_id, {"fields": "access_token"})
+            if not r.get("access_token"):
+                raise ErrorMeta("No se pudo obtener el token de la página")
+            self._token_pagina = r["access_token"]
+        return self._token_pagina
+
+    def _llamar(self, metodo: str, ruta: str, datos: dict | None = None,
+                token: str | None = None) -> dict:
+        datos = dict(datos or {}, access_token=token or self.token)
         cuerpo = urllib.parse.urlencode(datos).encode()
         url = f"{self.base}/{ruta}"
         if metodo == "GET":
@@ -98,15 +113,17 @@ class Meta:
 
     # Facebook: varias fotos sin publicar y un post que las junta.
     def fb_album(self, imagenes: list[str], texto: str) -> str:
+        tp = self.token_pagina()
         fotos = [self._llamar("POST", f"{self.page_id}/photos",
-                              {"url": u, "published": "false"})["id"] for u in imagenes]
+                              {"url": u, "published": "false"}, tp)["id"] for u in imagenes]
         datos = {"message": texto}
         for i, fid in enumerate(fotos):
             datos[f"attached_media[{i}]"] = json.dumps({"media_fbid": fid})
-        return self._llamar("POST", f"{self.page_id}/feed", datos)["id"]
+        return self._llamar("POST", f"{self.page_id}/feed", datos, tp)["id"]
 
     def fb_foto(self, imagen: str, texto: str) -> str:
-        r = self._llamar("POST", f"{self.page_id}/photos", {"url": imagen, "caption": texto})
+        r = self._llamar("POST", f"{self.page_id}/photos", {"url": imagen, "caption": texto},
+                         self.token_pagina())
         return r.get("post_id") or r["id"]
 
 
