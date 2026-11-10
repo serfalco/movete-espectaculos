@@ -87,7 +87,7 @@ class Meta:
     def _ig_contenedor(self, **datos) -> str:
         return self._llamar("POST", f"{self.ig_id}/media", datos)["id"]
 
-    def _ig_esperar(self, cid: str, intentos: int = 30) -> None:
+    def _ig_esperar(self, cid: str, intentos: int = 60) -> None:
         for _ in range(intentos):
             estado = self._llamar("GET", cid, {"fields": "status_code"}).get("status_code")
             if estado == "FINISHED":
@@ -107,6 +107,31 @@ class Meta:
             self._ig_esperar(h)
         cid = self._ig_contenedor(media_type="CAROUSEL", children=",".join(hijos), caption=texto)
         return self._ig_publicar(cid)
+
+    def ig_reel(self, video: str, texto: str) -> str:
+        cid = self._ig_contenedor(media_type="REELS", video_url=video, caption=texto,
+                                  share_to_feed="true")
+        return self._ig_publicar(cid)
+
+    def fb_reel(self, video: str, texto: str) -> str:
+        """Reel en la página: se abre la subida, Meta baja el video y se publica."""
+        tp = self.token_pagina()
+        inicio = self._llamar("POST", f"{self.page_id}/video_reels", {"upload_phase": "start"}, tp)
+        vid = inicio["video_id"]
+        req = urllib.request.Request(
+            inicio.get("upload_url") or f"https://rupload.facebook.com/video-upload/v23.0/{vid}",
+            data=b"", method="POST",
+            headers={"Authorization": f"OAuth {tp}", "file_url": video})
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                r.read()
+        except urllib.error.HTTPError as e:
+            raise ErrorMeta(f"subida del Reel a Facebook: HTTP {e.code} "
+                            f"{e.read().decode('utf-8', 'replace')[:300]}") from None
+        self._llamar("POST", f"{self.page_id}/video_reels",
+                     {"upload_phase": "finish", "video_id": vid, "video_state": "PUBLISHED",
+                      "description": texto}, tp)
+        return vid
 
     def ig_historia(self, imagen: str) -> str:
         return self._ig_publicar(self._ig_contenedor(media_type="STORIES", image_url=imagen))
@@ -140,7 +165,8 @@ def esperar_publicadas(urls: list[str], minutos: int = 15) -> None:
             req = urllib.request.Request(url, method="HEAD",
                                          headers={"User-Agent": "MoVeTe/1.0 (+https://movete.info)"})
             with urllib.request.urlopen(req, timeout=20) as r:
-                if r.status == 200 and "image" in r.headers.get("Content-Type", ""):
+                tipo = r.headers.get("Content-Type", "")
+                if r.status == 200 and ("image" in tipo or "video" in tipo):
                     pendientes.pop(0)
                     continue
         except (urllib.error.URLError, TimeoutError):
@@ -155,6 +181,9 @@ def tareas_de_hoy(manifest: dict, hoy: date) -> list[tuple[str, dict]]:
     carrusel = manifest.get("carrusel")
     if carrusel and carrusel.get("publicar") == hoy.isoformat():
         tareas += [("ig_carrusel", carrusel), ("fb_carrusel", carrusel)]
+    reel = manifest.get("reel")
+    if reel and reel.get("publicar") == hoy.isoformat():
+        tareas += [("ig_reel", reel), ("fb_reel", reel)]
     historia = manifest.get("historias", {}).get(hoy.isoformat())
     if historia:
         tareas += [("ig_historia", historia), ("fb_dia", historia)]
@@ -212,12 +241,16 @@ def main() -> int:
     errores = 0
     for nombre, datos in tareas:
         try:
-            imagenes = datos.get("imagenes") or [datos["imagen"]]
-            esperar_publicadas(imagenes)
+            archivos = datos.get("imagenes") or [datos.get("imagen") or datos["video"]]
+            esperar_publicadas(archivos)
             if nombre == "ig_carrusel":
-                pid = meta.ig_carrusel(imagenes, datos["instagram"])
+                pid = meta.ig_carrusel(archivos, datos["instagram"])
             elif nombre == "fb_carrusel":
-                pid = meta.fb_album(imagenes, datos["facebook"])
+                pid = meta.fb_album(archivos, datos["facebook"])
+            elif nombre == "ig_reel":
+                pid = meta.ig_reel(datos["video"], datos["instagram"])
+            elif nombre == "fb_reel":
+                pid = meta.fb_reel(datos["video"], datos["facebook"])
             elif nombre == "ig_historia":
                 pid = meta.ig_historia(datos["imagen"])
             else:
