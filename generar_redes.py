@@ -45,7 +45,7 @@ from generar_edicion import (
 )
 from generar_newsletter import _elegir, EMOJI_CAT, RUBROS
 from imagenes import nombre_local, URL_BASE as URL_AFICHES
-from venues import venue_canonico
+from venues import venue_canonico, venue_instagram
 
 BASE = "https://movete.info"
 URL_REDES = f"{BASE}/redes"
@@ -173,14 +173,19 @@ def _link_obra(ev: dict) -> str:
 
 
 def _mencion(ev: dict, cuentas: dict) -> str:
-    """@cuenta de la sala si la tenemos cargada en redes_cuentas.json.
+    """@cuenta de la sala: la de VENUES_INSTAGRAM (venues.py), salvo que
+    `cuentas` traiga otra para ese slug.
 
     Arrobar avisa a la sala: si repostea, llega a su público, y si algún día
     nos linkea desde su web o linktree, ese link sí cuenta para Google.
     """
     vc = venue_canonico(evento_lugar(ev))
-    cuenta = cuentas.get(vc["slug"]) if vc else None
-    return f" {cuenta}" if cuenta else ""
+    if not vc:
+        return ""
+    cuenta = cuentas.get(vc["slug"]) or venue_instagram(vc["slug"])
+    if not cuenta:
+        return ""
+    return f" {cuenta if cuenta.startswith('@') else '@' + cuenta}"
 
 
 def _linea(ev: dict, cuentas: dict, solo_hora: bool = False) -> str:
@@ -570,7 +575,7 @@ def main() -> int:
     ap.add_argument("--eventos", default="eventos.json")
     ap.add_argument("--salida", default="../Movete-info/redes")
     ap.add_argument("--afiches", default="../Movete-info/assets/afiches")
-    ap.add_argument("--cuentas", default=str(AQUI / "redes_cuentas.json"))
+    ap.add_argument("--cuentas", default=None, help="JSON slug→@cuenta que pisa a venues.py")
     ap.add_argument("--hoy", default=None)
     args = ap.parse_args()
     try:

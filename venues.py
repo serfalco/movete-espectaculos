@@ -435,6 +435,18 @@ def venue_info(lugar: str) -> dict:
 
 
 VENUES_INSTAGRAM = {
+    # Verificadas a mano en Instagram (10/11/2026); los posts de redes las arroban.
+    'casa-suiza': '@casasuizalp',
+    'centro-cultural-islas-malvinas': '@cc.islasmalvinas',
+    'escenario-40': '@escenario40',
+    'la-merceria-teatro': '@lamerceriateatro',
+    'teatro-argentino-de-la-plata': '@teatro_argentino',
+    'teatro-coliseo-podesta': '@tcoliseopodesta',
+    'teatro-el-escape': '@teatroescape',
+    'teatro-la-nonna': '@teatrolanonna_oficial',
+    'teatro-metro': '@teatrometrolaplata',
+    'teatro-opera-la-plata': '@operalaplata',
+    'teatro-rene-favaloro': '@teatro.renefavaloro',
     'casa-hereje': '@casahereje',
     'comunidad-raices-fm-raices-rock': '@comunidadraices.lp',
     'entre-pueblos': '@entrepueblos_citybell',

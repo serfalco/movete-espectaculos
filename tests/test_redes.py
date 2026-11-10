@@ -56,10 +56,15 @@ class TextosTests(unittest.TestCase):
         self.assertIn("/en-vivo/obra/habitacion-macbeth/?utm_source=facebook", fb)
         self.assertLessEqual(ig.count("#"), 5)
 
-    def test_arroba_la_sala_si_esta_cargada(self):
+    def test_arroba_la_sala_con_la_cuenta_de_venues(self):
         evs = [ev("Las Hijas", "2026-11-08 19:30:00", "Teatro Metro")]
-        ig = gr.texto_carrusel(evs, JUEVES, "instagram", {"teatro-metro": "@teatrometro"})
-        self.assertIn("Teatro Metro @teatrometro", ig)
+        ig = gr.texto_carrusel(evs, JUEVES, "instagram", {})
+        self.assertIn("Teatro Metro @teatrometrolaplata", ig)
+
+    def test_sala_sin_cuenta_no_se_arroba(self):
+        evs = [ev("Algo", "2026-11-08 19:30:00", "Un lugar inventado")]
+        ig = gr.texto_carrusel(evs, JUEVES, "instagram", {})
+        self.assertNotIn(" @", ig.split("\n")[2])
 
 
 class GenerarTests(unittest.TestCase):
