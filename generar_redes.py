@@ -43,7 +43,7 @@ from generar_edicion import (
     _hora,
     _sin_gritos,
 )
-from generar_newsletter import _elegir, EMOJI_CAT, RUBROS
+from generar_newsletter import _elegir, _puntaje, EMOJI_CAT, RUBROS
 from imagenes import nombre_local, URL_BASE as URL_AFICHES
 from venues import venue_canonico, venue_instagram
 
@@ -76,6 +76,11 @@ LLAMADOS = [
     "Seguinos para tener los planes de cada finde 🙌",
     "¿La cartelera en tu mail cada jueves? Newsletter gratis, link en la bio 💌",
 ]
+
+# Rubros que más clics trajeron desde Facebook (medido el 11/11/2026): van
+# adelante en el carrusel y en el destacado del día. Suma por rubro, nunca
+# por sala: una sala grande de otro rubro puede seguir quedando primera.
+RUBROS_TIRON = {"stand-up", "humor"}
 
 TOPE_CARRUSEL = 8
 TOPE_HISTORIA = 4
@@ -129,7 +134,16 @@ def elegir_finde(eventos: list[dict], jueves: date, con_afiche) -> list[dict]:
                     break
             if len(unicos) >= TOPE_CARRUSEL:
                 break
-    return sorted(unicos, key=lambda e: e["fecha"])
+    return _por_tiron(unicos)
+
+
+def _por_tiron(evs: list[dict]) -> list[dict]:
+    """Lo que más engancha primero: la tapa y la primera placa son lo que se
+    ve en el feed antes de deslizar."""
+    def clave(e):
+        extra = 2 if e.get("categoria") in RUBROS_TIRON else 0
+        return (-(_puntaje(e) + extra), e["fecha"])
+    return sorted(evs, key=clave)
 
 
 def elegir_dia(eventos: list[dict], dia: date, con_afiche) -> list[dict]:
@@ -137,7 +151,7 @@ def elegir_dia(eventos: list[dict], dia: date, con_afiche) -> list[dict]:
     con_img = [e for e in cands if con_afiche(e)]
     if len(con_img) >= TOPE_HISTORIA:
         cands = con_img
-    return _elegir(cands, TOPE_HISTORIA)
+    return _por_tiron(_elegir(cands, TOPE_HISTORIA))
 
 
 def _clave_sala(ev: dict) -> str:
@@ -222,12 +236,17 @@ def texto_carrusel(evs: list[dict], jueves: date, red: str, cuentas: dict) -> st
 
 
 def texto_dia_facebook(evs: list[dict], dia: date, cuentas: dict) -> str:
+    """Una función destacada con su link y el resto sin links: un solo link
+    claro trae más clics que una lista de cuatro."""
     campania = f"hoy-{dia.isoformat()}"
-    lineas = [f"Hoy {DIAS[dia.weekday()]} {dia.day} de {MESES[dia.month - 1]} en La Plata:", ""]
-    for ev in evs:
-        lineas.append(_linea(ev, cuentas, solo_hora=True))
-        lineas.append(_utm(_link_obra(ev), "facebook", campania))
-    lineas += ["", "Más planes para hoy: " + _utm(f"{BASE}/en-vivo/hoy/", "facebook", campania),
+    destacado, otros = evs[0], evs[1:]
+    lineas = [f"Hoy {DIAS[dia.weekday()]} {dia.day} de {MESES[dia.month - 1]} en La Plata 👇", "",
+              _linea(destacado, cuentas, solo_hora=True),
+              "Entradas e info: " + _utm(_link_obra(destacado), "facebook", campania)]
+    if otros:
+        lineas += ["", "También hoy:"]
+        lineas += [_linea(ev, cuentas, solo_hora=True) for ev in otros]
+    lineas += ["", "Todos los planes de hoy: " + _utm(f"{BASE}/en-vivo/hoy/", "facebook", campania),
                "", "#LaPlata #QuéHacerEnLaPlata"]
     return "\n".join(lineas)
 
