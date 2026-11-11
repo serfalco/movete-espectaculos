@@ -798,6 +798,10 @@ def campos_extra_schema(ev: dict, sala: str) -> dict:
         vc = venue_canonico(evento_lugar(ev))
         if vc:
             org["url"] = f"https://movete.info/en-vivo/sala/{vc['slug']}/"
+        else:
+            # Search Console avisa si falta organizer.url: respaldo con el
+            # link de entradas o la cartelera general.
+            org["url"] = entradas or "https://movete.info/en-vivo/"
         extra["organizer"] = org
     cat = cat_label(ev.get("categoria", "otros"))
     extra["description"] = f"{_sin_gritos(titulo)}: {cat.lower()} en {sala or 'La Plata'}, La Plata."
