@@ -1650,7 +1650,7 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
 # Páginas con URL fija para las búsquedas "qué hacer hoy en La Plata" y "qué
 # hacer este fin de semana". Las ediciones fechadas no juntan historia en
 # Google (cada semana es una URL nueva); éstas sí. Se regeneran en cada
-# corrida (martes, jueves y viernes) y un script en la página oculta los días
+# corrida (martes, jueves y domingo) y un script en la página oculta los días
 # que ya pasaron, así nunca muestran el pasado aunque la corrida sea vieja.
 
 _SCRIPT_DIAS_PASADOS = """
@@ -1832,7 +1832,7 @@ def completar_imagen_de_sala(eventos: list[dict]) -> int:
 
 def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
             solo_fechada: bool = False, hoy_real: date | None = None,
-            afiches_dir: str | Path | None = None) -> dict:
+            afiches_dir: str | Path | None = None, sin_fechada: bool = False) -> dict:
     """Genera En Vivo.
 
     solo_fechada: escribe UNICAMENTE la edicion fechada (/en-vivo/<jueves>/) y
@@ -1840,6 +1840,12 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     salas ni las obras. Es la pre-edicion del martes: la semana que viene sale
     como URL propia para que Google la descubra antes, sin pisar la edicion
     vigente que sigue en pie hasta el miercoles.
+
+    sin_fechada: lo contrario. Actualiza todo (portada de En Vivo, rubros,
+    salas, obras, hoy y finde, sitemap) MENOS la edicion fechada vigente. Es la
+    pasada intermedia del martes y del domingo: entran los shows nuevos sin
+    reescribir /en-vivo/<jueves>/, que queda como la publico el jueves (si no,
+    perderia los dias que ya pasaron, porque el scraper descarta lo pasado).
 
     afiches_dir: si viene, las imagenes se bajan una vez, se achican a WebP y
     se sirven desde /assets/afiches/ (ver imagenes.py). Sin el, URLs originales.
@@ -1860,7 +1866,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
 
     out = Path(output_dir)
     slug_dir = out / info["slug"]
-    slug_dir.mkdir(parents=True, exist_ok=True)
+    if not sin_fechada:
+        slug_dir.mkdir(parents=True, exist_ok=True)
 
     archive_index = slug_dir / "index.html"
     current_index = out / "index.html"
@@ -1880,7 +1887,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
     )
     html_archivo = html_archivo_doc.replace('<main>', f'<main>\n  {banner}', 1)
 
-    archive_index.write_text(html_archivo, encoding="utf-8")
+    if not sin_fechada:
+        archive_index.write_text(html_archivo, encoding="utf-8")
     # Hoy y finde se escriben en todas las corridas, también en la
     # pre-edición del martes: usan la fecha real, no la de la edición.
     escribir_paginas_agenda(eventos, out, hoy_real)
@@ -2061,6 +2069,8 @@ def parse_args() -> argparse.Namespace:
                         help="Fecha YYYY-MM-DD que se toma como 'hoy' (pre-edicion: el proximo jueves)")
     parser.add_argument("--solo-fechada", action="store_true",
                         help="Escribe solo /en-vivo/<jueves>/ y el sitemap")
+    parser.add_argument("--sin-fechada", action="store_true",
+                        help="Actualiza todo menos /en-vivo/<jueves>/ (pasadas del martes y domingo)")
     parser.add_argument("--afiches", default=None,
                         help="Carpeta de copias livianas de imagenes (default: <output>/../assets/afiches)")
     parser.add_argument("--sin-afiches", action="store_true",
@@ -2073,8 +2083,10 @@ def main() -> None:
     hoy = date.fromisoformat(args.hoy) if args.hoy else None
     afiches = None if args.sin_afiches else (
         args.afiches or Path(args.output).parent / "assets" / "afiches")
+    if args.solo_fechada and args.sin_fechada:
+        raise SystemExit("--solo-fechada y --sin-fechada no van juntos")
     info = generar(args.eventos, args.output, hoy=hoy, solo_fechada=args.solo_fechada,
-                   afiches_dir=afiches)
+                   afiches_dir=afiches, sin_fechada=args.sin_fechada)
     print(json.dumps(info, ensure_ascii=False, indent=2))
 
 
