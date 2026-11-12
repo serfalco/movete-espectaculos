@@ -13,6 +13,7 @@ python generar_edicion.py --eventos eventos.json --output ../Movete-info/en-vivo
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import random
@@ -341,7 +342,7 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
     if imagen:
         media_html = f"""
       <div class="event-card-media">
-        <img src="{esc(imagen)}" alt="" loading="lazy" decoding="async"
+        <img src="{esc(imagen)}" alt="Afiche de {titulo}" loading="lazy" decoding="async"
              onerror="this.style.visibility='hidden'">
       </div>"""
 
@@ -994,7 +995,161 @@ def _pagina_categoria_vacia(categoria: str, jueves: date) -> str:
 """
 
 
-def generar_sitemap(en_vivo_dir: Path) -> None:
+LASTMOD_JSON = "data/sitemap-lastmod.json"
+
+
+def _huella(idx: Path) -> str:
+    """Huella del contenido propio de una página: el texto de <main>, sin el
+    bloque "Parecido" (cambia cada semana en los shows pasados aunque el show
+    no haya cambiado)."""
+    try:
+        texto = idx.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    m = re.search(r"<main\b.*?</main>", texto, re.S)
+    cuerpo = m.group(0) if m else texto
+    cuerpo = re.sub(r'<h2[^>]*>Parecido, en las próximas semanas</h2>\s*<ul class="obra-parecidos".*?</ul>',
+                    "", cuerpo, flags=re.S)
+    cuerpo = re.sub(r"<[^>]+>", " ", cuerpo)
+    return hashlib.sha1(" ".join(cuerpo.split()).encode("utf-8")).hexdigest()[:16]
+
+
+def fechas_de_cambio(root: Path, urls: list[tuple[str, str]], hoy: date) -> dict[str, str]:
+    """lastmod real de cada URL del sitemap: el día en que cambió su contenido.
+
+    Se guarda la huella de cada página en data/sitemap-lastmod.json; la fecha
+    solo se mueve cuando la huella cambia. Así Google ve qué se tocó en cada
+    pasada (martes, jueves, domingo) en vez de un sitemap sin fechas.
+    La primera vez una edición fechada arranca con su propia fecha y el resto
+    con la del día.
+    """
+    ruta = root / LASTMOD_JSON
+    try:
+        previo = json.loads(ruta.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        previo = {}
+    nuevo: dict[str, dict] = {}
+    for loc, inicial in urls:
+        idx = root / loc.strip("/") / "index.html"
+        huella = _huella(idx)
+        if not huella:
+            continue
+        ant = previo.get(loc) or {}
+        if ant.get("huella") == huella and ant.get("fecha"):
+            fecha = ant["fecha"]
+        elif not ant and inicial:
+            fecha = inicial
+        else:
+            fecha = hoy.isoformat()
+        nuevo[loc] = {"fecha": fecha, "huella": huella}
+    try:
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.write_text(json.dumps(nuevo, ensure_ascii=False, indent=0, sort_keys=True) + "\n",
+                        encoding="utf-8")
+    except OSError as e:
+        print(f"[sitemap] no se pudo guardar {LASTMOD_JSON}: {e}")
+    return {loc: d["fecha"] for loc, d in nuevo.items()}
+
+
+DIAS_EDICION_INDEXADA = 28
+
+
+def retirar_ediciones_viejas(root: Path, jueves: date, dias: int = DIAS_EDICION_INDEXADA) -> int:
+    """Ediciones fechadas de más de 4 semanas (/en-vivo/AAAA-MM-DD/ y
+    /cine/AAAA-MM-DD/): noindex, follow y canonical propio.
+
+    Nunca tuvieron impresiones en Search Console y entre ellas comparten
+    título; varias de julio y agosto de 2026 además apuntaban su canonical a
+    la portada de la sección. Con noindex dejan de contar como duplicado y
+    Google sigue pasando por sus enlaces. Los archivos no se borran.
+    """
+    tocadas = 0
+    for seccion in ("cine", "en-vivo"):
+        d = root / seccion
+        if not d.is_dir():
+            continue
+        for sub in sorted(d.iterdir()):
+            idx = sub / "index.html"
+            if not (sub.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", sub.name) and idx.exists()):
+                continue
+            if (jueves - date.fromisoformat(sub.name)).days <= dias:
+                continue
+            texto = idx.read_text(encoding="utf-8")
+            if "noindex" in texto[:900]:
+                continue
+            propio = f'<link rel="canonical" href="https://movete.info/{seccion}/{sub.name}/">'
+            nuevo, n = re.subn(r'<link rel="canonical" href="[^"]*">', propio, texto, count=1)
+            m = re.search(r'<meta charset="?utf-8"?\s*/?>', nuevo, re.I)
+            if not m:
+                continue
+            extra = '\n  <meta name="robots" content="noindex, follow">'
+            if not n:
+                extra += "\n  " + propio
+            nuevo = nuevo[:m.end()] + extra + nuevo[m.end():]
+            idx.write_text(nuevo, encoding="utf-8")
+            tocadas += 1
+    return tocadas
+
+
+_MARCA_ALIAS_INI = "# --- Alias de obra (generado por movete-espectaculos, no editar a mano) ---"
+_MARCA_ALIAS_FIN = "# --- fin alias de obra ---"
+
+
+def escribir_redirects_alias(root: Path, alias: dict[str, str]) -> int:
+    """301 reales para las variantes de un mismo show.
+
+    La página del alias solo tenía meta refresh + noindex, que no traspasa a
+    la principal lo que juntó la URL vieja. Workers aplica _redirects aunque
+    exista un archivo en esa ruta, así que la página queda solo de respaldo.
+    Las reglas viejas se conservan: una variante que deja de detectarse
+    sigue redirigiendo mientras exista su página de alias.
+    """
+    ruta = root / "_redirects"
+    if not ruta.exists():
+        return 0
+    texto = ruta.read_text(encoding="utf-8")
+    pares: dict[str, str] = {}
+    m = re.search(re.escape(_MARCA_ALIAS_INI) + r"\n(.*?)" + re.escape(_MARCA_ALIAS_FIN), texto, re.S)
+    if m:
+        for linea in m.group(1).splitlines():
+            partes = linea.split()
+            if len(partes) == 3 and partes[2] == "301":
+                pares[partes[0]] = partes[1]
+        texto = (texto[:m.start()] + texto[m.end():]).rstrip("\n") + "\n"
+    for variante, principal in alias.items():
+        if variante and principal and variante != principal:
+            pares[f"/en-vivo/obra/{variante}/"] = f"/en-vivo/obra/{principal}/"
+    # Sin cadenas ni vueltas: si el destino también es alias, se va al final.
+    def final(u: str) -> str:
+        vistos = {u}
+        while pares.get(u) and pares[u] not in vistos:
+            u = pares[u]
+            vistos.add(u)
+        return u
+    def pagina(u: str) -> Path:
+        return root / u.strip("/") / "index.html"
+
+    def es_alias(u: str) -> bool:
+        # Solo se redirige una URL cuya página hoy es de alias: si esa
+        # variante volvió a ser un show con página propia, la regla se cae.
+        try:
+            return 'http-equiv="refresh"' in pagina(u).read_text(encoding="utf-8")[:900]
+        except OSError:
+            return False
+
+    limpio = {o: final(d) for o, d in pares.items()}
+    limpio = {o: d for o, d in limpio.items()
+              if o != d and d not in limpio and es_alias(o) and pagina(d).exists() and not es_alias(d)}
+    if not limpio:
+        ruta.write_text(texto, encoding="utf-8")
+        return 0
+    bloque = "\n".join([_MARCA_ALIAS_INI] + [f"{o} {d} 301" for o, d in sorted(limpio.items())]
+                       + [_MARCA_ALIAS_FIN])
+    ruta.write_text(texto.rstrip("\n") + "\n\n" + bloque + "\n", encoding="utf-8")
+    return len(limpio)
+
+
+def generar_sitemap(en_vivo_dir: Path, hoy: date | None = None) -> None:
     """Regenera sitemap.xml: páginas fijas, categorías vigentes (indexables) y
     TODAS las ediciones archivadas de cine y en-vivo (URLs permanentes)."""
     root = Path(en_vivo_dir).parent
@@ -1002,6 +1157,9 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
 
     def es_fecha(nombre: str) -> bool:
         return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", nombre))
+
+    def indexable(idx: Path) -> bool:
+        return idx.exists() and "noindex" not in idx.read_text(encoding="utf-8")[:900]
 
     urls: list[tuple[str, str]] = [("/", ""), ("/cine/", ""), ("/cine/pelis/", ""), ("/en-vivo/", "")]
 
@@ -1021,7 +1179,9 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         if not d.is_dir():
             continue
         for sub in sorted(d.iterdir()):
-            if sub.is_dir() and es_fecha(sub.name):
+            # Las ediciones retiradas (noindex, ver retirar_ediciones_viejas)
+            # quedan afuera: no se le pide a Google que indexe lo que no va.
+            if sub.is_dir() and es_fecha(sub.name) and indexable(sub / "index.html"):
                 urls.append((f"/{seccion}/{sub.name}/", sub.name))
 
     # Páginas fijas por sala de cine (las escribe movete-cine)
@@ -1051,10 +1211,12 @@ def generar_sitemap(en_vivo_dir: Path) -> None:
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
-    for loc, lastmod in urls:
+    fechas = fechas_de_cambio(root, urls, hoy or hoy_argentina())
+    for loc, _ in urls:
         if loc in vistos:
             continue
         vistos.add(loc)
+        lastmod = fechas.get(loc, "")
         if lastmod:
             lineas.append(f"  <url><loc>{base}{loc}</loc><lastmod>{lastmod}</lastmod></url>")
         else:
@@ -1536,6 +1698,9 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
         robots = (f'<meta name="robots" content="noindex, follow">\n  '
                   f'<meta http-equiv="refresh" content="0; url={esc(destino)}">')
         og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+        # La redireccion de verdad (301) sale de _redirects, ver
+        # escribir_redirects_alias(). Esta pagina queda de respaldo.
+        page_url = f"https://movete.info{destino}"
     elif eventos_obra:
         titulo = _sin_gritos(titulo_principal or evento_titulo(eventos_obra[0]))
         cat = eventos_obra[0].get("categoria", "otros")
@@ -1968,6 +2133,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
         salidas_obra.append(str(destino))
     # Variantes del mismo show: la URL sigue existiendo, sin indexar, y manda
     # a la página principal.
+    alias_total: dict[str, str] = dict(_ALIAS_OBRA)
     for variante, principal in _ALIAS_OBRA.items():
         destino = obra_root / variante / "index.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
@@ -1996,6 +2162,8 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
                 m = re.search(r"<h1>(.*?)</h1>", texto, re.S)
                 viejo = html.unescape(m.group(1).strip()) if m else ""
                 principal = principal_existente(d.name, existentes)
+                if principal:
+                    alias_total[d.name] = principal
                 ultima = {} if principal else leer_ultima(texto)
                 idx.write_text(render_pagina_obra(
                     d.name, [], jueves, viejo, alias_de=principal, ultima=ultima,
@@ -2047,6 +2215,9 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
         encoding="utf-8",
     )
 
+    n_alias = escribir_redirects_alias(out.parent, alias_total)
+    n_retiradas = retirar_ediciones_viejas(out.parent, jueves)
+    print(f"[indice] {n_alias} alias con 301, {n_retiradas} ediciones viejas pasadas a noindex")
     escribir_archivo(out, jueves)
     generar_sitemap(out)
 
