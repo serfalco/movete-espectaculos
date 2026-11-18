@@ -791,7 +791,7 @@ def campos_extra_schema(ev: dict, sala: str) -> dict:
     if entradas:
         extra["offers"] = {"@type": "Offer", "url": entradas}
         extra.setdefault("url", entradas)
-    imagen = str(ev.get("imagen") or "").strip()
+    imagen = str(ev.get("imagen_grande") or ev.get("imagen") or "").strip()
     if imagen:
         extra["image"] = imagen
     if sala:
@@ -1700,6 +1700,23 @@ _CAT_ENLACE = {
 }
 
 
+def boton_whatsapp(titulo: str, ev: dict, page_url: str) -> str:
+    """Botón grande para mandar el show por WhatsApp. Las visitas directas
+    (sin referer) ya son ~20 % del total y casi todas vienen de links
+    compartidos: cada envío trae gente nueva sin depender de nadie."""
+    try:
+        f = parse_fecha(ev["fecha"])
+        cuando = f"el {_DIAS_SEMANA[f.weekday()]} {f.day}/{f.month}"
+    except Exception:
+        cuando = ""
+    sala = venue_info(evento_lugar(ev))["nombre"]
+    texto = (f"¿Vamos? {titulo}" + (f" {cuando}" if cuando else "")
+             + (f" en {sala}" if sala else "") + f": {page_url}?utm_source=whatsapp&utm_medium=compartir")
+    href = "https://wa.me/?text=" + quote_plus(texto)
+    return (f'\n      <p style="margin-top:14px"><a class="button" href="{esc(href)}" target="_blank" '
+            f'rel="noopener" data-share="whatsapp">¿Vamos? Mandalo por WhatsApp</a></p>')
+
+
 def bloque_mas_para_hacer(cat: str) -> str:
     enlaces = []
     if cat in _CAT_ENLACE:
@@ -1797,8 +1814,11 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                             'object-fit:contain;border-radius:18px;margin-top:12px" '
                             'fetchpriority="high" decoding="async" '
                             'onerror="this.style.visibility=\'hidden\'">')
-        og_image = imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+        grande = next((str(e.get("imagen_grande") or "").strip() for e in eventos_obra
+                       if str(e.get("imagen_grande") or "").strip()), "")
+        og_image = grande or imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
         robots = meta_ultima(datos_ultima_funcion(titulo, eventos_obra))
+        bloque_intro += boton_whatsapp(titulo, eventos_obra[0], page_url)
     elif ultima and ultima.get("fecha") and (
             jueves - date.fromisoformat(ultima["fecha"][:10])).days <= DIAS_OBRA_PASADA_INDEXADA:
         titulo = _sin_gritos(titulo_viejo or ultima.get("titulo") or slug.replace("-", " ").capitalize())
@@ -1950,6 +1970,37 @@ def _bloques_por_dia(eventos: list[dict], dias: list[date]) -> tuple[str, list[d
     return "\n".join(bloques), usados
 
 
+# Orden de los rubros al elegir los planes del finde: uno de cada uno por
+# vuelta. Sin preferencia editorial por ningún rubro ni sala.
+_ORDEN_PLANES = ["teatro", "musica", "infantil", "stand-up", "danza", "ferias",
+                 "charlas", "a-plasticas", "humor", "impro", "taller", "otros"]
+
+
+def elegir_planes(eventos: list[dict], maximo: int = 10) -> list[dict]:
+    """Hasta 10 planes del finde con imagen, uno por show, alternando rubros.
+
+    Google Discover (el feed del celular) muestra sobre todo páginas con
+    imagen grande y una lista corta de recomendaciones: la página del finde
+    abre con esto y sigue con la agenda completa día por día."""
+    por_cat: dict[str, list[dict]] = defaultdict(list)
+    vistos = set()
+    for ev in sorted(eventos, key=lambda e: e.get("fecha", "")):
+        if not str(ev.get("imagen") or "").strip():
+            continue
+        clave = obra_slug(ev) or evento_titulo(ev).lower()
+        if clave in vistos:
+            continue
+        vistos.add(clave)
+        cat = ev.get("categoria") or "otros"
+        por_cat[cat if cat in _ORDEN_PLANES else "otros"].append(ev)
+    elegidos = []
+    while len(elegidos) < maximo and any(por_cat.values()):
+        for cat in _ORDEN_PLANES:
+            if por_cat.get(cat) and len(elegidos) < maximo:
+                elegidos.append(por_cat[cat].pop(0))
+    return sorted(elegidos, key=lambda e: e.get("fecha", ""))
+
+
 def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
     """tipo 'hoy' (los próximos 7 días, empezando por hoy) o 'fin-de-semana'."""
     eventos = [e for e in normalizar_categorias(eventos)
@@ -1978,6 +2029,16 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
 
     bloques, usados = _bloques_por_dia(eventos, dias)
     n = len(usados)
+    og_image = "https://movete.info/assets/images/cartelera-en-vivo.jpg"
+    if tipo != "hoy":
+        planes = elegir_planes(usados)
+        if len(planes) >= 3:
+            filas = "\n".join(render_evento(ev) for ev in planes)
+            bloques = (f'\n      <section class="planes-block">'
+                       f'\n        <h2>{len(planes)} planes para este finde</h2>'
+                       f'\n        <div class="grid cards">{filas}</div>\n      </section>\n' + bloques)
+            og_image = next((str(e.get("imagen_grande") or "").strip() for e in planes
+                             if str(e.get("imagen_grande") or "").strip()), og_image)
     if tipo == "hoy":
         page_description = (f"Qué hacer hoy en La Plata: {n} funciones de teatro, música en vivo, "
                             "stand up y más para hoy y los próximos días. Horarios, salas y entradas.")
@@ -1996,7 +2057,7 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
         page_title=esc(page_title),
         page_description=esc(recortar_desc(page_description)),
         page_url=esc(page_url),
-        og_image="https://movete.info/assets/images/cartelera-en-vivo.jpg",
+        og_image=esc(og_image),
         bloque_schema=render_schema_eventos(usados),
         eyebrow=esc(eyebrow),
         h1=esc(h1),
