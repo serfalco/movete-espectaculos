@@ -18,7 +18,7 @@ import html
 import json
 import random
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote_plus
@@ -1414,6 +1414,35 @@ def render_otros_shows_sala(anteriores: list[dict] | None) -> str:
             f'<ul class="sala-anteriores" style="line-height:1.7">{items}</ul>')
 
 
+def texto_sala(nombre: str, direccion: str, eventos_sala: list[dict],
+               anteriores: list[dict] | None) -> tuple[str, str]:
+    """Párrafo fijo de la sala, armado solo con lo que ya registramos.
+
+    Las páginas de sala reciben búsquedas que se repiten todas las semanas
+    ("guajira bar", "teatro favaloro"), pero solo tenían la lista de
+    funciones: si la semana venía vacía, quedaban casi sin texto. Este
+    párrafo dice dónde queda y qué se programa ahí, sin inventar nada.
+    Devuelve (html del párrafo, rubro más frecuente)."""
+    cats = [e.get("categoria") or "" for e in eventos_sala]
+    cats += [a.get("categoria") or "" for a in (anteriores or [])]
+    cats = [c for c in cats if c and c not in ("otros", "cine")]
+    fechas = [str(e.get("fecha") or "")[:10] for e in eventos_sala]
+    fechas += [str(a.get("fecha") or "")[:10] for a in (anteriores or [])]
+    fechas = sorted(f for f in fechas if re.fullmatch(r"\d{4}-\d{2}-\d{2}", f))
+    n = len(fechas)
+    if n < 2:
+        return "", (cats[0] if cats else "")
+    orden = [c for c, _ in Counter(cats).most_common(2)]
+    texto = f"{nombre} queda en {direccion}." if direccion else f"{nombre} es un espacio de La Plata."
+    desde = date.fromisoformat(fechas[0])
+    texto += f" En MoVeTe llevamos registrados {n} shows ahí desde {MESES[desde.month]} de {desde.year}"
+    if orden:
+        rubros = " y ".join(cat_label(c).lower() for c in orden)
+        texto += f", sobre todo de {rubros}"
+    texto += ". Acá abajo están las próximas funciones y los shows que ya pasaron."
+    return f'<p class="lead sala-texto">{esc(texto)}</p>', (orden[0] if orden else "")
+
+
 def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
                         anteriores: list[dict] | None = None) -> str:
     """Pagina evergreen de una sala: /en-vivo/sala/<slug>/."""
@@ -1424,6 +1453,7 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
     n = len(eventos_sala)
 
     page_title, page_description = titulo_y_descripcion_venue(nombre, direccion, eventos_sala)
+    parrafo_sala, rubro_sala = texto_sala(nombre, direccion, eventos_sala, anteriores)
     eyebrow = "Espacio en La Plata" if venue.get("masivo") else "Sala en La Plata"
 
     bloque_mapa = ""
@@ -1479,9 +1509,10 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
         bloque_schema=schema,
         eyebrow=esc(eyebrow),
         h1=esc(nombre),
-        bloque_mapa=bloque_mapa,
+        bloque_mapa=parrafo_sala + bloque_mapa,
         titulo_agenda=esc(titulo_agenda),
-        bloque_eventos=bloque_eventos + render_otros_shows_sala(anteriores),
+        bloque_eventos=(bloque_eventos + render_otros_shows_sala(anteriores)
+                        + bloque_mas_para_hacer(rubro_sala)),
         anio=jueves.year,
     )
 
@@ -2214,6 +2245,7 @@ def generar(eventos_json_path: str, output_dir: str, hoy: date | None = None,
                         <= DIAS_OBRA_PASADA_INDEXADA):
                     anteriores_por_sala[ultima["sala_slug"]].append({
                         "slug": d.name, "fecha": ultima["fecha"][:10],
+                        "categoria": ultima.get("categoria") or "",
                         "titulo": _sin_gritos(viejo or ultima.get("titulo") or d.name)})
     for lista in anteriores_por_sala.values():
         lista.sort(key=lambda a: a["fecha"], reverse=True)

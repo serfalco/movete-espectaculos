@@ -136,3 +136,25 @@ def test_imagen_por_defecto_de_sala_solo_si_falta():
     assert eventos[1]["imagen"] == "https://fuente/afiche.jpg"
     assert eventos[2]["imagen"].endswith("/salas/tres-empanadas-comedia.webp")
     assert not eventos[3].get("imagen")
+
+
+def test_sala_tiene_parrafo_fijo_y_enlaces():
+    from datetime import date
+    import generar_edicion as ge
+    venue = {"nombre": "Sala X", "slug": "sala-x", "direccion": "Calle 1 N° 2, La Plata"}
+    evs = [{"titulo": "Show A", "fecha": "2026-11-20 21:00:00", "lugar": "Sala X", "categoria": "musica"}]
+    ant = [{"slug": "b", "titulo": "Show B", "fecha": "2026-09-05", "categoria": "musica"},
+           {"slug": "c", "titulo": "Show C", "fecha": "2026-10-01", "categoria": "stand-up"}]
+    html = ge.render_pagina_venue(venue, evs, date(2026, 11, 19), ant)
+    assert "Sala X queda en Calle 1 N° 2, La Plata." in html
+    assert "3 shows ahí desde septiembre de 2026" in html
+    assert "sobre todo de música" in html
+    assert 'href="/en-vivo/musica/"' in html and 'href="/en-vivo/hoy/"' in html
+
+
+def test_sala_sin_historia_no_inventa_texto():
+    from datetime import date
+    import generar_edicion as ge
+    venue = {"nombre": "Sala Y", "slug": "sala-y", "direccion": ""}
+    html = ge.render_pagina_venue(venue, [], date(2026, 11, 19), [])
+    assert "llevamos registrados" not in html
