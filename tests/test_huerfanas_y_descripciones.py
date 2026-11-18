@@ -78,3 +78,19 @@ def test_migas_en_sala_y_obra():
     html = ge.render_pagina_obra("show-x", [ev], date(2026, 11, 5))
     assert '"BreadcrumbList"' in html and '"Show X"' in html
     assert '"BreadcrumbList"' not in ge.render_pagina_obra("show-x", [], date(2026, 11, 5), "Show X")
+
+
+def test_ficha_enlaza_rubro_hoy_finde_y_portada():
+    ev = {"titulo": "Show X", "fecha": "2026-11-12 21:30:00", "lugar": "Teatro Abierto", "categoria": "teatro"}
+    html = ge.render_pagina_obra("show-x", [ev], date(2026, 11, 5))
+    for href in ('href="/en-vivo/teatro/"', 'href="/en-vivo/hoy/"',
+                 'href="/en-vivo/fin-de-semana/"', 'href="/"'):
+        assert href in html
+    assert "Más teatro en La Plata" in html
+
+
+def test_ficha_pasada_tambien_enlaza():
+    ultima = {"titulo": "Show X", "fecha": "2026-11-01 21:00:00", "sala": "Sala X",
+              "sala_slug": "sala-x", "categoria": "musica"}
+    html = ge.render_pagina_obra("show-x", [], date(2026, 11, 5), ultima=ultima)
+    assert "Más música en vivo en La Plata" in html and 'href="/en-vivo/hoy/"' in html

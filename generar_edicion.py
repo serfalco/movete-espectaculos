@@ -907,7 +907,9 @@ def render_html(
     page_title = (
         seo_titles.get(categoria, f"{categoria_label} en La Plata · {rango} · MoVeTe")
         if categoria
-        else f"Qué hacer en La Plata esta semana · Teatro, música, stand up y más · MoVeTe"
+        # La portada se queda con "Qué hacer / agenda cultural"; esta página
+        # apunta a espectáculos, para que las dos no compitan en Google.
+        else "Espectáculos en La Plata esta semana: teatro, música y más"
     )
     page_description = (
         seo_descriptions.get(categoria, f"Cartelera de {categoria_label.lower()} en La Plata. Edición semanal {rango}.")
@@ -1644,6 +1646,39 @@ def render_parecidos(parecidos: list[dict]) -> str:
             f'<ul class="obra-parecidos" style="line-height:1.7">{items}</ul>')
 
 
+# Las fichas de cada show son las páginas que más tráfico traen de Google
+# (Search Console, nov 2026), pero solo enlazaban arriba con "Inicio" y
+# "En vivo". Este bloque les pasa esa autoridad a las páginas de rubro, de
+# hoy, del finde y a la portada, con textos que dicen qué hay en cada una.
+_CAT_ENLACE = {
+    "teatro": "Más teatro en La Plata",
+    "musica": "Más música en vivo en La Plata",
+    "stand-up": "Más stand up en La Plata",
+    "danza": "Más danza en La Plata",
+    "infantil": "Más espectáculos infantiles en La Plata",
+    "taller": "Más talleres en La Plata",
+    "impro": "Más impro en La Plata",
+    "humor": "Más humor en La Plata",
+    "a-plasticas": "Más muestras y artes plásticas en La Plata",
+    "ferias": "Más ferias y fiestas en La Plata",
+    "charlas": "Más charlas y letras en La Plata",
+}
+
+
+def bloque_mas_para_hacer(cat: str) -> str:
+    enlaces = []
+    if cat in _CAT_ENLACE:
+        enlaces.append((f"/en-vivo/{cat}/", _CAT_ENLACE[cat]))
+    enlaces += [
+        ("/en-vivo/hoy/", "Qué hacer hoy en La Plata"),
+        ("/en-vivo/fin-de-semana/", "Qué hacer este fin de semana"),
+        ("/", "Agenda cultural de La Plata"),
+    ]
+    items = "".join(f'<li><a href="{u}">{esc(t)} →</a></li>' for u, t in enlaces)
+    return ('<h2 style="margin-top:28px">Más para hacer en La Plata</h2>'
+            f'<ul class="obra-mas" style="line-height:1.8">{items}</ul>')
+
+
 _CATS_COMEDIA = {"stand-up", "humor", "impro"}
 
 
@@ -1714,6 +1749,7 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                    render_evento(e, link_obra=False), flags=re.S).replace(" has-media", "")
             for e in eventos_obra)
         bloque_eventos += bloque_sponsor_comedia(eventos_obra)
+        bloque_eventos += bloque_mas_para_hacer(cat)
         schema = render_schema_eventos(eventos_obra)
         imagen = next((str(e.get("imagen") or "").strip() for e in eventos_obra
                        if str(e.get("imagen") or "").strip()), "")
@@ -1755,7 +1791,7 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
             + (f'La última fue el {esc(cuando)}{link_sala}.</p>' if ya_paso else
                f'Tenía función anunciada el {esc(cuando)}{link_sala}: confirmá con la sala.</p>')
             + render_parecidos(parecidos or [])
-            + '<p style="margin-top:18px"><a href="/en-vivo/">Mirá todo lo que hay esta semana →</a></p>')
+            + bloque_mas_para_hacer(ultima.get("categoria") or "otros"))
         schema = ""
         imagen = ultima.get("imagen", "")
         bloque_intro = ""
