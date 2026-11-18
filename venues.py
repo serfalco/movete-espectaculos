@@ -117,6 +117,18 @@ VENUES_DIRECCIONES = {
         'Teatro Metro', 'Calle 4 N° 978 entre 51 y 53, La Plata',
         ['teatro metro'],
     ),
+    # Complejo donde está Teatro Metro; sus otras salas (Sala A, Sala C,
+    # Auditorio Charly García) llegan como "<sala> - Casa Metro". Dirección
+    # del Instagram oficial @casametrolp (18/11/2026).
+    'casa_metro': (
+        'Casa Metro', 'Calle 4 N° 978 entre 51 y 53, La Plata',
+        ['casa metro'],
+    ),
+    # planomato.com y la planilla de GPT coinciden (18/11/2026).
+    'el_teatro_bar': (
+        'El Teatro Bar', 'Calle 43 N° 632 e/ 7 y 8, La Plata',
+        ['el teatro bar'],
+    ),
     'teatro_opera': (
         'Teatro Ópera La Plata', 'Calle 58 entre 10 y 11, La Plata',
         ['teatro opera', 'teatro opera la plata'],
@@ -288,7 +300,8 @@ VENUES_DIRECCIONES = {
     'teatro_unlp_mediza': (
         'Teatro UNLP y Biblioteca Popular Teatral "Alberto Mediza"',
         'Calle 10 N° 1076 e/ 54 y 55, La Plata',
-        ['teatro unlp y biblioteca popular teatral', 'teatro unlp', 'alberto mediza'],
+        ['teatro unlp y biblioteca popular teatral', 'teatro unlp', 'teatro de la unlp',
+         'alberto mediza'],
     ),
     # --- Exportadas desde MoVeTe-venues ---
     'estudio_71': (
