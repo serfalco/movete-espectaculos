@@ -124,6 +124,16 @@ VENUES_DIRECCIONES = {
         'Casa Metro', 'Calle 4 N° 978 entre 51 y 53, La Plata',
         ['casa metro'],
     ),
+    # Dirección confirmada por Tres (18/11/2026).
+    'dynamo_teatro': (
+        'Dynamo Teatro', 'Calle 17 N° 1754 esquina 68, La Plata',
+        ['dynamo teatro', 'dynamo'],
+    ),
+    # Dirección confirmada por Tres (18/11/2026).
+    'puerta_b': (
+        'Puerta B', 'Av. Montevideo N° 1609 y 25 de Mayo, Berisso',
+        ['puerta b'],
+    ),
     # planomato.com y la planilla de GPT coinciden (18/11/2026).
     'el_teatro_bar': (
         'El Teatro Bar', 'Calle 43 N° 632 e/ 7 y 8, La Plata',
