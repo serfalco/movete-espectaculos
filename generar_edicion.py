@@ -828,6 +828,10 @@ def render_schema_eventos(eventos_semana: list[dict]) -> str:
             "@type": "Event",
             "name": evento_titulo(ev),
             "startDate": fecha_schema(f),
+            # Las fuentes no traen la duración. Solo el día: dice que termina
+            # esa misma fecha sin inventar una hora (Search Console pedía
+            # endDate en los 309 eventos).
+            "endDate": f.date().isoformat(),
             "eventStatus": "https://schema.org/EventScheduled",
             "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
             "location": lugar_ld,

@@ -94,3 +94,10 @@ def test_ficha_pasada_tambien_enlaza():
               "sala_slug": "sala-x", "categoria": "musica"}
     html = ge.render_pagina_obra("show-x", [], date(2026, 11, 5), ultima=ultima)
     assert "Más música en vivo en La Plata" in html and 'href="/en-vivo/hoy/"' in html
+
+
+def test_schema_evento_trae_enddate_del_mismo_dia():
+    import json, re
+    ev = {"titulo": "Show X", "fecha": "2026-11-12 21:30:00", "lugar": "Teatro Abierto", "categoria": "teatro"}
+    data = json.loads(re.search(r">(.*)</script>", ge.render_schema_eventos([ev]), re.S).group(1))
+    assert data["itemListElement"][0]["item"]["endDate"] == "2026-11-12"
