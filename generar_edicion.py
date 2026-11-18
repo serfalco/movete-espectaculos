@@ -1721,6 +1721,14 @@ def bloque_mas_para_hacer(cat: str) -> str:
     enlaces = []
     if cat in _CAT_ENLACE:
         enlaces.append((f"/en-vivo/{cat}/", _CAT_ENLACE[cat]))
+    # La temporada en curso o la que arranca en menos de un mes (verano,
+    # Carnaval...) se enlaza desde todas las fichas: es lo que la hace
+    # encontrable y le pasa autoridad justo cuando la gente la busca.
+    hoy = hoy_argentina()
+    for slug, t in TEMPORADAS.items():
+        ini, _ = rango_temporada(slug, hoy)
+        if (ini - hoy).days <= 30:
+            enlaces.append((f"/en-vivo/{slug}/", t["h1"]))
     enlaces += [
         ("/en-vivo/hoy/", "Qué hacer hoy en La Plata"),
         ("/en-vivo/fin-de-semana/", "Qué hacer este fin de semana"),
@@ -2072,9 +2080,133 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
     return html_doc
 
 
+# ---------------------------------------------------------------- temporadas
+# Búsquedas que explotan en fechas puntuales del año ("qué hacer en vacaciones
+# de invierno en La Plata", "carnaval La Plata", "año nuevo La Plata"). Cada
+# temporada tiene una URL fija que se llena sola con los shows de esos días:
+# así junta historia en Google año tras año. Fuera de temporada, o sin shows
+# cargados todavía, queda en noindex (no se muestra una página vacía).
+
+def _pascua(anio: int) -> date:
+    """Domingo de Pascua (algoritmo de Meeus/Butcher, calendario gregoriano)."""
+    a, b, c = anio % 19, anio // 100, anio % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    mes = (h + l - 7 * m + 114) // 31
+    dia = ((h + l - 7 * m + 114) % 31) + 1
+    return date(anio, mes, dia)
+
+
+TEMPORADAS = {
+    "verano": {
+        "rango": lambda y: (date(y, 12, 20), date(y + 1, 2, 28)),
+        "title": "Qué hacer en el verano en La Plata · Shows y salidas · MoVeTe",
+        "h1": "Qué hacer en el verano en La Plata",
+        "intro": ("Teatro, recitales, espectáculos infantiles y salidas para las vacaciones "
+                  "de verano en La Plata, de fin de diciembre a fin de febrero."),
+        "desc": "Qué hacer en el verano en La Plata: {n} funciones de teatro, música, infantiles y más en las vacaciones. Horarios, salas y entradas.",
+    },
+    "fiestas": {
+        "rango": lambda y: (date(y, 12, 15), date(y + 1, 1, 6)),
+        "title": "Navidad y Año Nuevo en La Plata · Shows y salidas · MoVeTe",
+        "h1": "Navidad y Año Nuevo en La Plata",
+        "intro": ("Shows, recitales, ferias y salidas para las fiestas de fin de año en La Plata, "
+                  "de mediados de diciembre a Reyes."),
+        "desc": "Qué hacer en las fiestas en La Plata: {n} funciones entre Navidad, Año Nuevo y Reyes. Teatro, música, ferias y más, con horarios.",
+    },
+    "carnaval": {
+        "rango": lambda y: (_pascua(y) - timedelta(days=50), _pascua(y) - timedelta(days=47)),
+        "title": "Carnaval en La Plata · Qué hacer el fin de semana largo · MoVeTe",
+        "h1": "Qué hacer en Carnaval en La Plata",
+        "intro": "Shows, recitales y salidas para el fin de semana largo de Carnaval en La Plata.",
+        "desc": "Qué hacer en Carnaval en La Plata: {n} funciones para el fin de semana largo. Teatro, música, infantiles y más, con horarios y entradas.",
+    },
+    "vacaciones-de-invierno": {
+        "rango": lambda y: (date(y, 7, 11), date(y, 8, 2)),
+        "title": "Vacaciones de invierno en La Plata · Qué hacer con chicos · MoVeTe",
+        "h1": "Vacaciones de invierno en La Plata",
+        "intro": ("Obras infantiles, títeres, cine, talleres y shows para las vacaciones de "
+                  "invierno en La Plata, en julio."),
+        "desc": "Qué hacer en las vacaciones de invierno en La Plata: {n} funciones de teatro infantil, títeres, talleres y más. Horarios y entradas.",
+    },
+    "aniversario-de-la-plata": {
+        "rango": lambda y: (date(y, 11, 14), date(y, 11, 22)),
+        "title": "Aniversario de La Plata · Shows y actividades · MoVeTe",
+        "h1": "Aniversario de La Plata",
+        "intro": ("La Plata se fundó el 19 de noviembre de 1882. Shows, recitales y salidas "
+                  "de la semana del cumpleaños de la ciudad."),
+        "desc": "Aniversario de La Plata: {n} funciones de teatro, música y más en la semana del 19 de noviembre. Horarios, salas y entradas.",
+    },
+}
+
+
+def rango_temporada(slug: str, hoy: date) -> tuple[date, date]:
+    """La temporada en curso o la próxima (nunca una que ya terminó)."""
+    rango = TEMPORADAS[slug]["rango"]
+    for y in (hoy.year - 1, hoy.year, hoy.year + 1):
+        ini, fin = rango(y)
+        if fin >= hoy:
+            return ini, fin
+    return rango(hoy.year + 1)
+
+
+def render_pagina_temporada(slug: str, eventos: list[dict], hoy: date) -> str:
+    t = TEMPORADAS[slug]
+    ini, fin = rango_temporada(slug, hoy)
+    desde = max(ini, hoy)
+    dias = [desde + timedelta(days=i) for i in range((fin - desde).days + 1)]
+    eventos = [e for e in normalizar_categorias(eventos)
+               if e.get("categoria") != "cine" and e.get("fecha")]
+    bloques, usados = _bloques_por_dia(eventos, dias)
+    n = len(usados)
+    vacia = ('<p class="empty" id="agenda-vacia"{}>Todavía no hay funciones cargadas para '
+             'estas fechas: se suman a medida que las salas las anuncian. '
+             '<a href="/en-vivo/">Mirá la cartelera de esta semana →</a></p>')
+    cuerpo = (bloques + "\n      " + vacia.format(' hidden style="display:none"') if bloques else vacia.format(""))
+    cuerpo += _SCRIPT_DIAS_PASADOS + bloque_mas_para_hacer("")
+    rango_txt = (f"del {ini.day}/{ini.month} al {fin.day}/{fin.month}/{fin.year}")
+    accesos = (f'<p class="home-lead">{esc(t["intro"])}</p>\n      <p class="venue-social">'
+               '<a href="/en-vivo/fin-de-semana/">Este fin de semana</a> · '
+               '<a href="/en-vivo/infantil/">Infantiles</a> · <a href="/en-vivo/teatro/">Teatro</a> · '
+               '<a href="/en-vivo/musica/">Recitales</a> · <a href="/cine/">Cine</a></p>')
+    planes = elegir_planes(usados)
+    og_image = next((str(e.get("imagen_grande") or "").strip() for e in planes
+                     if str(e.get("imagen_grande") or "").strip()),
+                    "https://movete.info/assets/images/cartelera-en-vivo.jpg")
+    html_doc = PLANTILLA_VENUE.format(
+        page_title=esc(t["title"]),
+        page_description=esc(recortar_desc(t["desc"].format(n=n))),
+        page_url=esc(f"https://movete.info/en-vivo/{slug}/"),
+        og_image=esc(og_image),
+        bloque_schema=render_schema_eventos(usados),
+        eyebrow=esc(f"La Plata · {rango_txt}"),
+        h1=esc(t["h1"]),
+        bloque_mapa=accesos,
+        titulo_agenda=esc("Agenda día por día"),
+        bloque_eventos=cuerpo,
+        anio=hoy.year,
+    )
+    # Menos de 3 funciones es una página casi vacía: no se indexa hasta
+    # que la temporada tenga shows anunciados.
+    if n < 3:
+        html_doc = html_doc.replace('<meta charset="utf-8">',
+                                    '<meta charset="utf-8">\n  <meta name="robots" content="noindex, follow">', 1)
+    return html_doc
+
+
 def escribir_paginas_agenda(eventos: list[dict], out: Path, hoy: date | None = None) -> list[str]:
     hoy = hoy or hoy_argentina()
     salidas = []
+    for slug in TEMPORADAS:
+        destino = out / slug / "index.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(render_pagina_temporada(slug, eventos, hoy), encoding="utf-8")
+        salidas.append(str(destino))
     for tipo in ("hoy", "fin-de-semana"):
         destino = out / tipo / "index.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
