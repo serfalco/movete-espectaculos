@@ -160,3 +160,37 @@ class PublicarTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_fb_reel_sube_bytes_y_no_la_url(tmp_path, monkeypatch):
+    """Facebook no puede bajar el video de movete.info (robots.txt de Cloudflare):
+    hay que mandarle los bytes, nunca el header file_url."""
+    import publicar_redes as pr
+
+    video = tmp_path / "reel.mp4"
+    video.write_bytes(b"\x00\x00\x00\x18ftypmp42" * 10)
+    meta = pr.Meta("tok", "PAGE", "IG", "v23.0")
+    meta._token_pagina = "tp"
+    llamadas = []
+    monkeypatch.setattr(meta, "_llamar", lambda m, r, d=None, t=None:
+                        llamadas.append(d) or {"video_id": "V1"})
+    subidas = []
+
+    class Resp:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self): return b"{}"
+
+    def falso_urlopen(req, timeout=None):
+        subidas.append(req)
+        return Resp()
+
+    monkeypatch.setattr(pr.urllib.request, "urlopen", falso_urlopen)
+    assert meta.fb_reel("https://movete.info/redes/x/reel.mp4", "texto", video) == "V1"
+    req = subidas[0]
+    headers = {k.lower(): v for k, v in req.header_items()}
+    assert "file_url" not in headers
+    assert req.data == video.read_bytes()
+    assert headers["file_size"] == str(len(req.data))
+    assert headers["offset"] == "0"
+    assert llamadas[-1]["upload_phase"] == "finish"

@@ -52,6 +52,7 @@ class Meta:
     def __init__(self, token: str, page_id: str, ig_id: str, version: str):
         self.token, self.page_id, self.ig_id = token, page_id, ig_id
         self.base = f"https://graph.facebook.com/{version}"
+        self.version = version
         self._token_pagina: str | None = None
 
     def token_pagina(self) -> str:
@@ -113,17 +114,27 @@ class Meta:
                                   share_to_feed="true")
         return self._ig_publicar(cid)
 
-    def fb_reel(self, video: str, texto: str) -> str:
-        """Reel en la página: se abre la subida, Meta baja el video y se publica."""
+    def fb_reel(self, video: str, texto: str, local: Path | None = None) -> str:
+        """Reel en la página: se abre la subida, se mandan los bytes y se publica.
+
+        Se suben los bytes del video y no su URL: si se le pasa el link
+        (header file_url), Facebook lo baja con el robot meta-externalagent y
+        el robots.txt que Cloudflare administra en movete.info lo bloquea
+        (HTTP 422 "Restricted by robots.txt"). Instagram baja con otro robot y
+        no tiene ese problema.
+        """
+        datos_video = _bytes_del_video(video, local)
         tp = self.token_pagina()
         inicio = self._llamar("POST", f"{self.page_id}/video_reels", {"upload_phase": "start"}, tp)
         vid = inicio["video_id"]
         req = urllib.request.Request(
-            inicio.get("upload_url") or f"https://rupload.facebook.com/video-upload/v23.0/{vid}",
-            data=b"", method="POST",
-            headers={"Authorization": f"OAuth {tp}", "file_url": video})
+            inicio.get("upload_url") or f"https://rupload.facebook.com/video-upload/{self.version}/{vid}",
+            data=datos_video, method="POST",
+            headers={"Authorization": f"OAuth {tp}", "offset": "0",
+                     "file_size": str(len(datos_video)),
+                     "Content-Type": "application/octet-stream"})
         try:
-            with urllib.request.urlopen(req, timeout=120) as r:
+            with urllib.request.urlopen(req, timeout=300) as r:
                 r.read()
         except urllib.error.HTTPError as e:
             raise ErrorMeta(f"subida del Reel a Facebook: HTTP {e.code} "
@@ -150,6 +161,18 @@ class Meta:
         r = self._llamar("POST", f"{self.page_id}/photos", {"url": imagen, "caption": texto},
                          self.token_pagina())
         return r.get("post_id") or r["id"]
+
+
+def _bytes_del_video(video: str, local: Path | None) -> bytes:
+    """El video del Reel: del checkout si está, si no se baja de movete.info."""
+    if local and local.is_file():
+        return local.read_bytes()
+    req = urllib.request.Request(video, headers={"User-Agent": "MoVeTe/1.0 (+https://movete.info)"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            return r.read()
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise ErrorMeta(f"No se pudo leer el video del Reel ({video}): {e}") from None
 
 
 def esperar_publicadas(urls: list[str], minutos: int = 15) -> None:
@@ -250,7 +273,8 @@ def main() -> int:
             elif nombre == "ig_reel":
                 pid = meta.ig_reel(datos["video"], datos["instagram"])
             elif nombre == "fb_reel":
-                pid = meta.fb_reel(datos["video"], datos["facebook"])
+                pid = meta.fb_reel(datos["video"], datos["facebook"],
+                                   carpeta / Path(urllib.parse.urlparse(datos["video"]).path).name)
             elif nombre == "ig_historia":
                 pid = meta.ig_historia(datos["imagen"])
             else:
