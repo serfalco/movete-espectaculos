@@ -114,6 +114,27 @@ class VenueCanonicoTests(unittest.TestCase):
         self.assertEqual(info["direccion"], "")
         self.assertEqual(info["slug"], "estadio-unico-diego-maradona")
 
+    def test_sala_confirmada_trae_coordenadas(self):
+        info = venue_canonico("Tres Empanadas Comedia")
+        self.assertAlmostEqual(info["lat"], -34.923728)
+        self.assertAlmostEqual(info["lng"], -57.971826)
+
+    def test_sala_sin_coordenadas_no_las_inventa(self):
+        # Telón Negro tiene direccion pero no coordenadas confirmadas.
+        info = venue_info("Telón Negro")
+        self.assertTrue(info["direccion"])
+        self.assertIsNone(info["lat"])
+        self.assertIsNone(info["lng"])
+        self.assertIsNone(venue_info("Lugar todavía sin verificar")["lat"])
+
+    def test_coordenadas_dentro_de_gran_la_plata(self):
+        from venues import VENUES_DIRECCIONES
+        for clave, (_n, _d, _a, *resto) in VENUES_DIRECCIONES.items():
+            if resto:
+                lat, lng = resto[0]
+                self.assertTrue(-35.05 < lat < -34.78, clave)
+                self.assertTrue(-58.20 < lng < -57.80, clave)
+
     def test_lugar_generico_no_tiene_pagina(self):
         self.assertIsNone(venue_canonico("La Plata"))
         self.assertIsNone(venue_canonico("Lugar todavía sin verificar"))
