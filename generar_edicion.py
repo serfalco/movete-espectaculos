@@ -295,6 +295,44 @@ def _texto_busqueda(*partes: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", t) if unicodedata.category(c) != "Mn")
 
 
+_DISPONIBILIDAD_SCHEMA = {
+    "disponible": "https://schema.org/InStock",
+    "pocas": "https://schema.org/LimitedAvailability",
+    "agotado": "https://schema.org/SoldOut",
+    "preventa": "https://schema.org/PreSale",
+}
+
+
+def _precio(ev: dict) -> float | None:
+    """Precio de la entrada si la fuente lo trajo (Teatro Cerca, Livepass,
+    Plateauno). None si no hay dato: nunca se inventa."""
+    p = ev.get("precio")
+    if isinstance(p, bool) or not isinstance(p, (int, float)) or p < 0:
+        return None
+    return p
+
+
+def texto_precio(ev: dict) -> str:
+    """'$30.000', 'Gratis' o 'Agotado' para la tarjeta; '' si no hay dato."""
+    if ev.get("disponibilidad") == "agotado":
+        return "Agotado"
+    p = _precio(ev)
+    if p is None:
+        return ""
+    if p == 0:
+        return "Gratis"
+    moneda = str(ev.get("moneda") or "ARS").upper()
+    signo = "$" if moneda == "ARS" else f"{moneda} "
+    return signo + f"{p:,.0f}".replace(",", ".")
+
+
+def elenco(ev: dict, maximo: int = 8) -> list[str]:
+    nombres = ev.get("elenco") or []
+    if not isinstance(nombres, list):
+        return []
+    return [str(n).strip() for n in nombres if str(n).strip()][:maximo]
+
+
 def render_evento(ev: dict, link_obra: bool = True) -> str:
     f = parse_fecha(ev["fecha"])
     cat = ev.get("categoria", "otros")
@@ -307,7 +345,9 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
     # Si la sala esta en el catalogo, su nombre linkea a su pagina propia.
     vc = venue_canonico(evento_lugar(ev))
     lugar_html = f'<a href="/en-vivo/sala/{vc["slug"]}/">{lugar}</a>' if vc else lugar
-    meta = " · ".join(p for p in [f"{hora} hs", lugar_html] if p.strip())
+    precio_txt = texto_precio(ev)
+    precio_html = f'<span class="event-precio" style="font-weight:600">{esc(precio_txt)}</span>' if precio_txt else ""
+    meta = " · ".join(p for p in [f"{hora} hs", lugar_html, precio_html] if p.strip())
     # El título lleva a la página propia de la obra (enlazado interno: es lo
     # que hace que Google la encuentre y la posicione). La web externa de
     # entradas queda como link aparte.
@@ -322,6 +362,13 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
     if url and (oslug or not link_obra):
         ticket_html = (f'\n      <p class="event-ticket"><a class="card-link" href="{url}" '
                        f'target="_blank" rel="noopener">Entradas y más info →</a></p>')
+    # El elenco va solo en la página de la obra (link_obra=False): en la
+    # cartelera alargaría cada tarjeta. Es lo que se muestra del performer del
+    # JSON-LD, que Google pide visible en la página.
+    nombres = elenco(ev) if not link_obra else []
+    elenco_html = ((f'\n      <p class="event-elenco" style="font-size:.88em;opacity:.8;margin:.2em 0 0">'
+                    f'Con {esc(", ".join(nombres))}</p>')
+                   if nombres else "")
     mapa_html = ""
     if direccion:
         maps_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(direccion)}"
@@ -358,7 +405,7 @@ def render_evento(ev: dict, link_obra: bool = True) -> str:
         <p class="pill">{esc(cat_label(cat))}</p>
       </div>
       <h3>{titulo_html}</h3>
-      <p class="event-meta">{meta}</p>{ticket_html}
+      <p class="event-meta">{meta}</p>{elenco_html}{ticket_html}
       {mapa_html}
     </article>
     """
@@ -777,20 +824,36 @@ def fecha_schema(f: datetime) -> str:
     return f.strftime("%Y-%m-%dT%H:%M:00-03:00")
 
 
-def campos_extra_schema(ev: dict, sala: str) -> dict:
+def campos_extra_schema(ev: dict, sala: str, con_elenco: bool = False) -> dict:
     """Campos que Google recomienda para la ficha de evento en el buscador:
     url (la página del show en MoVeTe), offers (link a las entradas),
-    organizer (la sala), description e image. Sin precio: las fuentes no
-    lo traen y no se inventa."""
+    organizer (la sala), description, image, y precio, disponibilidad y
+    elenco cuando la fuente los publica (si no, no se inventan)."""
     extra: dict = {}
     titulo = evento_titulo(ev)
     oslug = obra_slug(ev)
     if oslug:
         extra["url"] = f"https://movete.info/en-vivo/obra/{_ALIAS_OBRA.get(oslug, oslug)}/"
     entradas = evento_url(ev)
+    oferta: dict = {"@type": "Offer"}
     if entradas:
-        extra["offers"] = {"@type": "Offer", "url": entradas}
+        oferta["url"] = entradas
         extra.setdefault("url", entradas)
+    precio = _precio(ev)
+    if precio is not None:
+        oferta["price"] = precio
+        oferta["priceCurrency"] = str(ev.get("moneda") or "ARS").upper()
+        if precio == 0:
+            extra["isAccessibleForFree"] = True
+    disp = _DISPONIBILIDAD_SCHEMA.get(str(ev.get("disponibilidad") or ""))
+    if disp:
+        oferta["availability"] = disp
+    if len(oferta) > 1:
+        extra["offers"] = oferta
+    # El elenco solo se ve en la página de la obra: ahí va también al schema.
+    nombres = elenco(ev) if con_elenco else []
+    if nombres:
+        extra["performer"] = [{"@type": "Person", "name": n} for n in nombres]
     imagen = str(ev.get("imagen_grande") or ev.get("imagen") or "").strip()
     if imagen:
         extra["image"] = imagen
@@ -809,7 +872,7 @@ def campos_extra_schema(ev: dict, sala: str) -> dict:
     return extra
 
 
-def render_schema_eventos(eventos_semana: list[dict]) -> str:
+def render_schema_eventos(eventos_semana: list[dict], con_elenco: bool = False) -> str:
     """JSON-LD (Schema.org) con los eventos de la semana, para que Google los
     entienda y los muestre como resultados ricos."""
     items = []
@@ -836,7 +899,7 @@ def render_schema_eventos(eventos_semana: list[dict]) -> str:
             "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
             "location": lugar_ld,
         }
-        ev_ld.update(campos_extra_schema(ev, datos["nombre"]))
+        ev_ld.update(campos_extra_schema(ev, datos["nombre"], con_elenco))
         items.append({"@type": "ListItem", "position": i, "item": ev_ld})
     if not items:
         return ""
@@ -1810,7 +1873,7 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
             for e in eventos_obra)
         bloque_eventos += bloque_sponsor_comedia(eventos_obra)
         bloque_eventos += bloque_mas_para_hacer(cat)
-        schema = render_schema_eventos(eventos_obra)
+        schema = render_schema_eventos(eventos_obra, con_elenco=True)
         imagen = next((str(e.get("imagen") or "").strip() for e in eventos_obra
                        if str(e.get("imagen") or "").strip()), "")
         bloque_intro = ""
@@ -2028,7 +2091,14 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
         rango = (f"viernes {v.day}, sábado {sab.day} y domingo {dom.day} de {MESES[dom.month]}"
                  if v.month == dom.month else
                  f"viernes {v.day}/{v.month}, sábado {sab.day}/{sab.month} y domingo {dom.day}/{dom.month}")
-        page_title = "Qué hacer este fin de semana en La Plata · Shows y salidas · MoVeTe"
+        # Con las fechas en el título: quien busca "qué hacer este finde" ve
+        # que la página es de este finde y no de uno viejo.
+        fechas_t = (f"{v.day} al {dom.day} de {MESES[dom.month]}" if v.month == dom.month
+                    else f"{v.day}/{v.month} al {dom.day}/{dom.month}")
+        page_title = next((t for t in (
+            f"Qué hacer este fin de semana en La Plata ({fechas_t})",
+            f"Qué hacer el finde en La Plata ({fechas_t})")
+            if len(t) <= 62), "Qué hacer este fin de semana en La Plata · MoVeTe")
         h1 = "Qué hacer este fin de semana en La Plata"
         eyebrow = f"La Plata · Finde del {v.day}/{v.month} al {dom.day}/{dom.month}"
         intro = f"Teatro, recitales, stand up y salidas para el {rango} en La Plata."
@@ -2051,8 +2121,9 @@ def render_pagina_agenda(tipo: str, eventos: list[dict], hoy: date) -> str:
         page_description = (f"Qué hacer hoy en La Plata: {n} funciones de teatro, música en vivo, "
                             "stand up y más para hoy y los próximos días. Horarios, salas y entradas.")
     else:
-        page_description = (f"Qué hacer este fin de semana en La Plata: {n} funciones el {rango}. "
-                            "Teatro, recitales, stand up y salidas, con horarios y entradas.")
+        page_description = recortar_desc(
+            f"{n} planes para el {rango} en La Plata: teatro, recitales, "
+            "stand up y salidas, con horarios y entradas.")
     vacia = ('<p class="empty" id="agenda-vacia"{}>Ya no quedan funciones cargadas para estos días. '
              '<a href="/en-vivo/">Mirá la cartelera de la semana →</a></p>')
     cuerpo = (bloques + "\n      " + vacia.format(' hidden style="display:none"') if bloques else vacia.format(""))
