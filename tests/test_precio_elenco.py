@@ -69,3 +69,20 @@ class SchemaTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SinopsisTests(unittest.TestCase):
+    def test_sinopsis_en_la_obra_y_en_su_schema(self):
+        s = "Durante años, un escritor mantuvo su prestigio gracias a un pacto sobrenatural."
+        html = ge.render_pagina_obra("actuen", [ev(sinopsis=s)], date(2026, 11, 19))
+        self.assertIn(f'class="obra-sinopsis"', html)
+        (item,) = eventos_ld(html)
+        self.assertEqual(item["description"], s)
+
+    def test_cartelera_no_marca_la_sinopsis(self):
+        x = ge.campos_extra_schema(ev(sinopsis="Una obra sobre la memoria."), "Teatro Abierto")
+        self.assertNotIn("memoria", x["description"])
+
+    def test_sin_sinopsis_no_hay_parrafo(self):
+        html = ge.render_pagina_obra("actuen", [ev()], date(2026, 11, 19))
+        self.assertNotIn('class="obra-sinopsis"', html)

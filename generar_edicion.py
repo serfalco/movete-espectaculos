@@ -868,7 +868,11 @@ def campos_extra_schema(ev: dict, sala: str, con_elenco: bool = False) -> dict:
             org["url"] = entradas or "https://movete.info/en-vivo/"
         extra["organizer"] = org
     cat = cat_label(ev.get("categoria", "otros"))
-    extra["description"] = f"{_sin_gritos(titulo)}: {cat.lower()} en {sala or 'La Plata'}, La Plata."
+    sinop = str(ev.get("sinopsis") or "").strip()
+    # La sinopsis solo se ve en la página de la obra: en el resto se deja la
+    # descripción armada, para no marcar un texto que no está a la vista.
+    extra["description"] = (sinop if (sinop and con_elenco) else
+                            f"{_sin_gritos(titulo)}: {cat.lower()} en {sala or 'La Plata'}, La Plata.")
     return extra
 
 
@@ -1889,6 +1893,14 @@ def render_pagina_obra(slug: str, eventos_obra: list[dict], jueves: date,
                        if str(e.get("imagen_grande") or "").strip()), "")
         og_image = grande or imagen or "https://movete.info/assets/images/cartelera-en-vivo.jpg"
         robots = meta_ultima(datos_ultima_funcion(titulo, eventos_obra))
+        sinop = next((str(e.get("sinopsis") or "").strip() for e in eventos_obra
+                      if str(e.get("sinopsis") or "").strip()), "")
+        if sinop:
+            # Las primeras frases del texto de difusión de la sala (lo recorta
+            # el scraper): da a la página algo propio que leer y que Google
+            # pueda asociar a la obra.
+            bloque_intro += (f'<p class="obra-sinopsis" style="max-width:62ch;margin:14px 0 4px;'
+                             f'line-height:1.5">{esc(sinop)}</p>')
         bloque_intro += boton_whatsapp(titulo, eventos_obra[0], page_url)
     elif ultima and ultima.get("fecha") and (
             jueves - date.fromisoformat(ultima["fecha"][:10])).days <= DIAS_OBRA_PASADA_INDEXADA:
