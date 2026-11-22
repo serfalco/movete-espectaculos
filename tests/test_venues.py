@@ -119,6 +119,12 @@ class VenueCanonicoTests(unittest.TestCase):
         self.assertAlmostEqual(info["lat"], -34.923728)
         self.assertAlmostEqual(info["lng"], -57.971826)
 
+    def test_masivo_con_coordenadas_confirmadas_las_trae(self):
+        info = venue_canonico("Teatro Argentino de La Plata")
+        self.assertTrue(info["masivo"])
+        self.assertIsNotNone(info["lat"])
+        self.assertIsNone(venue_canonico("Estadio Único Diego Maradona")["lat"])
+
     def test_sala_sin_coordenadas_no_las_inventa(self):
         # Telón Negro tiene direccion pero no coordenadas confirmadas.
         info = venue_info("Telón Negro")

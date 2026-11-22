@@ -596,8 +596,12 @@ def venue_canonico(lugar: str):
     vm = venue_masivo(lugar)
     if vm:
         _clave, nombre = vm
+        # Un masivo puede estar tambien en VENUES_DIRECCIONES (Teatro
+        # Argentino): sus coordenadas confirmadas valen igual para el mapa.
+        info = venue_info(lugar)
         return {'slug': venue_slug(nombre), 'nombre': nombre,
-                'direccion': '', 'masivo': True, 'lat': None, 'lng': None}
+                'direccion': '', 'masivo': True,
+                'lat': info['lat'], 'lng': info['lng']}
     info = venue_info(lugar)
     if info['direccion']:
         return {'slug': venue_slug(info['nombre']), 'nombre': info['nombre'],
