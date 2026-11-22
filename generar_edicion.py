@@ -1064,6 +1064,7 @@ def _pagina_categoria_vacia(categoria: str, jueves: date) -> str:
       <a href="/">Inicio</a>
       <a href="/cine/">Cine</a>
       <a href="/en-vivo/" aria-current="page">En vivo</a>
+      <a href="/mapa/">Mapa</a>
     </nav>
   </header>
   <main>
@@ -2651,6 +2652,7 @@ PLANTILLA = """<!doctype html>
       <a href="/">Inicio</a>
       <a href="/cine/">Cine</a>
       <a href="/en-vivo/" aria-current="page">En vivo</a>
+      <a href="/mapa/">Mapa</a>
     </nav>
   </header>
 
@@ -2761,6 +2763,7 @@ PLANTILLA_VENUE = """<!doctype html>
       <a href="/">Inicio</a>
       <a href="/cine/">Cine</a>
       <a href="/en-vivo/" aria-current="page">En vivo</a>
+      <a href="/mapa/">Mapa</a>
     </nav>
   </header>
 
