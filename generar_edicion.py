@@ -118,6 +118,14 @@ def postal_address(direccion: str | None) -> dict:
     return addr
 
 
+def geo_schema(lat: float | None, lng: float | None) -> dict | None:
+    """GeoCoordinates para el Place del JSON-LD, solo si la sala tiene
+    coordenadas confirmadas en VENUES_DIRECCIONES. Nunca se deducen."""
+    if lat is None or lng is None:
+        return None
+    return {"@type": "GeoCoordinates", "latitude": lat, "longitude": lng}
+
+
 def normalizar_categorias(eventos: list[dict]) -> list[dict]:
     """Conserva compatibilidad con datos viejos sin publicar Actividades."""
     return [
@@ -891,6 +899,9 @@ def render_schema_eventos(eventos_semana: list[dict], con_elenco: bool = False) 
         lugar_ld = {"@type": "Place", "name": datos["nombre"]}
         lugar_ld["address"] = postal_address(
             ev.get("direccion") or datos["direccion"])
+        geo = geo_schema(datos["lat"], datos["lng"])
+        if geo:
+            lugar_ld["geo"] = geo
         ev_ld = {
             "@type": "Event",
             "name": evento_titulo(ev),
@@ -1561,6 +1572,9 @@ def render_pagina_venue(venue: dict, eventos_sala: list[dict], jueves: date,
     place = {"@context": "https://schema.org", "@type": "Place",
              "name": nombre, "url": page_url}
     place["address"] = postal_address(direccion)
+    geo = geo_schema(venue.get("lat"), venue.get("lng"))
+    if geo:
+        place["geo"] = geo
     if web:
         place["sameAs"] = web
     schema = '<script type="application/ld+json">' + json.dumps(place, ensure_ascii=False) + "</script>"

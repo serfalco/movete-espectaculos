@@ -41,6 +41,12 @@ VENUES_MASIVOS = {
 
 # Direcciones confirmadas para enriquecer las tarjetas de la cartelera. Los
 # alias absorben las variantes de mayusculas y nombres que traen las fuentes.
+#
+# Cuarto elemento opcional: (lat, lng). Geocodificadas una sola vez con
+# Nominatim/OSM el 21/11/2026; solo se cargaron las que coincidían en calle y
+# número, o en nombre y calle. Las dudosas quedan sin coordenadas hasta que
+# Tres las confirme: NUNCA se inventa ni se deduce una coordenada. Una sala sin
+# coordenadas sale igual en la lista del mapa, sin pin.
 VENUES_DIRECCIONES = {
     'area_chica': (
         'Área Chica', 'Boulevard 83 N° 403, La Plata', ['area chica'],
@@ -51,11 +57,13 @@ VENUES_DIRECCIONES = {
     ),
     'casa_hereje': (
         'Casa Hereje', 'Calle 40 N° 973, La Plata', ['casa hereje'],
+        (-34.914294, -57.967582),
     ),
     'centro_viejo_almacen': (
         'Centro Cultural Viejo Almacén El Obrero',
         'Av. 13 N° 1900 esquina 71, La Plata',
         ['centro cultural viejo almacen el obrero', 'viejo almacen el obrero'],
+        (-34.935574, -57.935211),
     ),
     'colibri': (
         'Colibrí Arte y Cultura', 'Diagonal 77 N° 444, La Plata',
@@ -63,6 +71,7 @@ VENUES_DIRECCIONES = {
     ),
     'escenario_40': (
         'Escenario 40', 'Calle 40 N° 1180, La Plata', ['escenario 40'],
+        (-34.918186, -57.971590),
     ),
     'espacio_44': (
         'Espacio 44', 'Av. 44 N° 496 entre 4 y 5, La Plata',
@@ -71,6 +80,7 @@ VENUES_DIRECCIONES = {
     'espacio_medusa': (
         'Espacio Medusa', 'Calle 55 N° 780 entre 10 y 11, La Plata',
         ['espacio medusa', 'medusa la plata'],
+        (-34.920669, -57.950009),
     ),
     'la_merceria': (
         'La Mercería Teatro', 'Calle 1 N° 210, La Plata',
@@ -85,9 +95,11 @@ VENUES_DIRECCIONES = {
             'biblioteca popular la chicharra',
             'la chicharra',
         ],
+        (-34.940304, -57.940053),
     ),
     'sala_420': (
         'Sala 420', 'Calle 42 N° 571 entre 6 y 7, La Plata', ['sala 420'],
+        (-34.908349, -57.957018),
     ),
     'teatro_abierto': (
         'Teatro Abierto', 'Calle 38 N° 1263 entre 20 y 21, La Plata',
@@ -96,6 +108,7 @@ VENUES_DIRECCIONES = {
     'teatro_argentino': (
         'Teatro Argentino de La Plata', 'Av. 51 entre 9 y 10, La Plata',
         ['teatro argentino', 'teatro argentino la plata'],
+        (-34.918160, -57.950989),
     ),
     'teatro_discepolo': (
         'Teatro Armando Discépolo', 'Calle 12 entre 62 y 63, La Plata',
@@ -104,6 +117,7 @@ VENUES_DIRECCIONES = {
     'teatro_coliseo': (
         'Teatro Coliseo Podestá', 'Calle 10 entre 46 y 47, La Plata',
         ['teatro coliseo podesta', 'teatro y museo coliseo podesta', 'coliseo podesta'],
+        (-34.915681, -57.955622),
     ),
     'teatro_el_escape': (
         'Teatro El Escape', 'Calle 44 N° 1443 entre 23 y 24, La Plata',
@@ -116,6 +130,7 @@ VENUES_DIRECCIONES = {
     'teatro_metro': (
         'Teatro Metro', 'Calle 4 N° 978 entre 51 y 53, La Plata',
         ['teatro metro'],
+        (-34.912942, -57.945254),
     ),
     # Complejo donde está Teatro Metro; sus otras salas (Sala A, Sala C,
     # Auditorio Charly García) llegan como "<sala> - Casa Metro". Dirección
@@ -123,11 +138,13 @@ VENUES_DIRECCIONES = {
     'casa_metro': (
         'Casa Metro', 'Calle 4 N° 978 entre 51 y 53, La Plata',
         ['casa metro'],
+        (-34.912942, -57.945254),
     ),
     # Dirección confirmada por Tres (18/11/2026).
     'dynamo_teatro': (
         'Dynamo Teatro', 'Calle 17 N° 1754 esquina 68, La Plata',
         ['dynamo teatro', 'dynamo'],
+        (-34.937092, -57.942481),
     ),
     # Dirección confirmada por Tres (18/11/2026).
     'puerta_b': (
@@ -138,6 +155,7 @@ VENUES_DIRECCIONES = {
     'el_teatro_bar': (
         'El Teatro Bar', 'Calle 43 N° 632 e/ 7 y 8, La Plata',
         ['el teatro bar'],
+        (-34.910500, -57.957024),
     ),
     'teatro_opera': (
         'Teatro Ópera La Plata', 'Calle 58 entre 10 y 11, La Plata',
@@ -154,6 +172,7 @@ VENUES_DIRECCIONES = {
             'tres empanadas comedia',
             'tres empanadas',
         ],
+        (-34.923728, -57.971826),
     ),
     # El show fijo de los viernes. Algunas fuentes lo nombran por el show y no
     # por la sala; mantiene su nombre propio pero comparte la direccion de la sala.
@@ -161,6 +180,7 @@ VENUES_DIRECCIONES = {
         'Sociedad Platense de Stand Up',
         'Calle 43 N° 1349 esquina 22, La Plata',
         ['sociedad platense de stand up'],
+        (-34.923728, -57.971826),
     ),
     # Salas de cine-club / Espacio INCAA que aparecen en En Vivo. Direcciones
     # tomadas del catalogo real de cine (movete-cine/espacios_cine.json).
@@ -173,6 +193,7 @@ VENUES_DIRECCIONES = {
         'Cine Ecoselect (Espacio INCAA)',
         'Calle 50 N° 1200 (Centro Cultural Islas Malvinas), La Plata',
         ['cine ecoselect espacio incaa', 'cine ecoselect', 'ecoselect', 'cine eco select'],
+        (-34.926024, -57.961839),
     ),
     'cine_select': (
         'Cine Select (Espacio INCAA)',
@@ -183,6 +204,7 @@ VENUES_DIRECCIONES = {
         'Centro de Capacitación, Información e Investigación Educativa (CIIE)',
         'Calle 57 N° 670 entre 8 y 9, La Plata',
         ['centro de capacitacion informacion e investigacion educativa', 'ciie'],
+        (-34.919899, -57.946122),
     ),
     'jubilados_abogados': (
         'Asociación de Jubilados y Pensionados (Caja de Abogados)',
@@ -200,6 +222,7 @@ VENUES_DIRECCIONES = {
     'la_ferreteria': (
         'Teatro Bar Cultural La Ferretería', 'Calle 57 N° 827 e/ 11 y 12, La Plata',
         ['teatro bar cultural la ferreteria', 'la ferreteria bar cultural', 'la ferreteria'],
+        (-34.922684, -57.949383),
     ),
     'ciudad_de_gatos': (
         'Ciudad de Gatos', 'Calle 71 N° 1099, La Plata',
@@ -208,14 +231,17 @@ VENUES_DIRECCIONES = {
     'rene_favaloro': (
         'Teatro René Favaloro', 'Calle 67 e/ 116 y 117, La Plata',
         ['teatro rene favaloro', 'multiespacio cultural rene favaloro', 'rene favaloro'],
+        (-34.918607, -57.924364),
     ),
     'dardo_rocha': (
         'Centro Cultural Pasaje Dardo Rocha', 'Calle 50 e/ 6 y 7, La Plata',
         ['centro cultural pasaje dardo rocha', 'pasaje dardo rocha'],
+        (-34.914031, -57.949549),
     ),
     'islas_malvinas': (
         'Centro Cultural Islas Malvinas', 'Calle 50 N° 1200 (esq. 19), La Plata',
         ['centro cultural y de la memoria islas malvinas', 'centro cultural islas malvinas', 'islas malvinas'],
+        (-34.926753, -57.961962),
     ),
     'meridiano_v': (
         'Meridiano V', 'Av. 71 y 17, La Plata',
@@ -224,34 +250,42 @@ VENUES_DIRECCIONES = {
     'casa_unclan': (
         'Casa Unclan', 'Calle 5 N° 1512 e/ 63 y 64, La Plata',
         ['club cultural casa unclan', 'casa unclan'],
+        (-34.921680, -57.935750),
     ),
     'casa_pulsar': (
         'Casa Pulsar', 'Calle 58 N° 512, La Plata',
         ['casa pulsar'],
+        (-34.917686, -57.941912),
     ),
     'pena_bellas_artes': (
         'Peña de las Bellas Artes', 'Calle 49 N° 879, La Plata',
         ['la pena de las bellas artes', 'pena de las bellas artes', 'pena bellas artes'],
+        (-34.919424, -57.956121),
     ),
     'museo_almafuerte': (
         'Museo Almafuerte', 'Av. 66 N° 530, La Plata',
         ['museo almafuerte'],
+        (-34.924552, -57.932947),
     ),
     'republica_ninos': (
         'República de los Niños', 'Camino General Belgrano y 501, Manuel B. Gonnet, La Plata',
         ['republica de los ninos'],
+        (-34.885220, -58.019254),
     ),
     'museo_ciencias': (
         'Museo de Ciencias Naturales de La Plata', 'Paseo del Bosque s/n (Av. 60 y 122), La Plata',
         ['museo de ciencias naturales de la plata', 'museo de ciencias naturales', 'museo de la plata'],
+        (-34.908993, -57.935457),
     ),
     'centro_arte_unlp': (
         'Centro de Arte UNLP', 'Calle 48 N° 575 e/ 6 y 7 (Edificio Karakachoff), La Plata',
         ['centro de arte unlp', 'centro de arte de la unlp'],
+        (-34.913012, -57.950726),
     ),
     'observatorio_planetario': (
         'Observatorio / Planetario de La Plata', 'Paseo del Bosque s/n, La Plata',
         ['observatorio de la plata', 'museo de astronomia y geofisica', 'planetario'],
+        (-34.909257, -57.932257),
     ),
     'jardin_botanico': (
         'Jardín Botánico del Parque Saavedra', 'Parque Saavedra, Calle 66 y 13, La Plata',
@@ -260,6 +294,7 @@ VENUES_DIRECCIONES = {
     'espacio_satelite': (
         'Espacio Satélite', 'Calle 6 N° 1030 e/ 53 y 54, La Plata',
         ['espacio satelite'],
+        (-34.915478, -57.946380),
     ),
     'refugio_62': (
         'Refugio 62', 'Calle 10 esquina 62, La Plata',
@@ -286,14 +321,17 @@ VENUES_DIRECCIONES = {
     'guajira_bar': (
         'Guajira Bar', 'Calle 49 N° 484 e/ 4 y 5, La Plata',
         ['guajira bar', 'guajira'],
+        (-34.912156, -57.947941),
     ),
     'teatro_la_nonna': (
         'Teatro La Nonna', 'Calle 47 N° 395 (esq. 3), La Plata',
         ['teatro la nonna', 'la nonna'],
+        (-34.909124, -57.947893),
     ),
     'esquina_america': (
         'Esquina América', 'Calle 71 y 18, La Plata',
         ['esquina america'],
+        (-34.940367, -57.940396),
     ),
     'pura_vida': (
         'Pura Vida', 'Diagonal 78 N° 733 e/ 8 y 61, La Plata',
@@ -302,21 +340,25 @@ VENUES_DIRECCIONES = {
     'lazuli': (
         'Lázuli Espacio Cultural', 'Calle 62 N° 468 e/ 4 y 5, La Plata',
         ['lazuli espacio cultural', 'lazuli'],
+        (-34.920133, -57.936464),
     ),
     'la_culturosa': (
         'La Culturosa', 'Calle 8 N° 1092 e/ 54 y 55, La Plata',
         ['la culturosa'],
+        (-34.918077, -57.947603),
     ),
     'teatro_unlp_mediza': (
         'Teatro UNLP y Biblioteca Popular Teatral "Alberto Mediza"',
         'Calle 10 N° 1076 e/ 54 y 55, La Plata',
         ['teatro unlp y biblioteca popular teatral', 'teatro unlp', 'teatro de la unlp',
          'alberto mediza'],
+        (-34.919706, -57.949736),
     ),
     # --- Exportadas desde MoVeTe-venues ---
     'estudio_71': (
         'Estudio 71', 'Calle 71 N° 576, La Plata',
         ['estudio 71', 'estudio7 1'],
+        (-34.929745, -57.928470),
     ),
     'entre_pueblos': (
         'Entre Pueblos', 'Calle 13C N° 372, City Bell, La Plata',
@@ -325,10 +367,12 @@ VENUES_DIRECCIONES = {
     'ruda': (
         'RUDA Red Ultrapotente de Amistad', 'Calle 70 N° 1136, La Plata',
         ['ruda', 'red ultrapotente de amistad', 'ruda red ultrapotente de amistad'],
+        (-34.939373, -57.941092),
     ),
     'espacio_sudaka': (
         'Espacio Sudaka', 'Av. 7 N° 1789, La Plata',
         ['espacio sudaka', 'sudaka'],
+        (-34.928397, -57.931736),
     ),
     'comunidad_raices': (
         'Comunidad Raíces - FM Raíces Rock', 'Calle 139 entre 40 y 41, La Plata',
@@ -341,6 +385,7 @@ VENUES_DIRECCIONES = {
     'espacio_live': (
         'Espacio Live', 'Calle 56 N° 685, La Plata',
         ['espacio live', 'espacio live la plata'],
+        (-34.919417, -57.947396),
     ),
     'tcb_berisso': (
         'TCB - Teatro Comunitario de Berisso', 'Nueva York y Marsella N° 4711, Berisso',
@@ -370,11 +415,13 @@ VENUES_DIRECCIONES = {
         'Calle 69 N° 1545, entre 25 y 26, La Plata',
         ['la macacha', 'macacha', 'la macacha casa cultural',
          'centro cultural la macacha'],
+        (-34.946132, -57.950802),
     ),
     'azulunala': (
         'Azulunala',
         'Calle 69 N° 864, entre 12 y 13, La Plata',
         ['azulunala'],
+        (-34.933524, -57.936706),
     ),
     'distrito_arte_cultura': (
         'Distrito de Arte y Cultura',
@@ -385,22 +432,26 @@ VENUES_DIRECCIONES = {
         'Casa Suiza',
         'Calle 2 N° 621, entre 44 y 45, La Plata',
         ['casa suiza'],
+        (-34.906475, -57.949697),
     ),
     'biblioteca_mafalda': (
         'Biblioteca Popular Mafalda y Libertad',
         'Diagonal 145 y 414 bis, Arturo Seguí, La Plata',
         ['biblioteca popular mafalda y libertad', 'biblioteca mafalda',
          'mafalda y libertad'],
+        (-34.888353, -58.128022),
     ),
     'la_salamanca': (
         'La Salamanca Centro de Cultura y Peña',
         'Calle 5 N° 1422, entre 61 y 62, La Plata',
         ['la salamanca', 'la salamanca centro de cultura y pena'],
+        (-34.920172, -57.937821),
     ),
     'doble_t': (
         'Espacio Doble-T',
         'Calle 34 N° 1618, entre 27 y 28, La Plata',
         ['espacio doble t', 'doble t'],
+        (-34.921368, -57.987487),
     ),
     'el_tiatrito': (
         'El Tiatrito Espacio Cultural',
@@ -411,6 +462,7 @@ VENUES_DIRECCIONES = {
         'La Compostera',
         'Calle 60 N° 647, esquina 8, La Plata',
         ['la compostera'],
+        (-34.921777, -57.942685),
     ),
 }
 
@@ -446,15 +498,20 @@ def venue_masivo(lugar: str):
 
 
 def venue_info(lugar: str) -> dict:
-    """Devuelve nombre canonico y direccion confirmada para un lugar."""
+    """Devuelve nombre canonico, direccion confirmada y coordenadas de un lugar.
+
+    'lat' y 'lng' son None si la sala todavia no tiene coordenadas confirmadas.
+    """
     original = str(lugar or '').strip() or 'La Plata'
     norm = _normalizar(original)
-    for nombre, direccion, alias in VENUES_DIRECCIONES.values():
+    for nombre, direccion, alias, *resto in VENUES_DIRECCIONES.values():
         for candidato in alias:
             alias_norm = _normalizar(candidato)
             if re.search(rf'(^|\s){re.escape(alias_norm)}(\s|$)', norm):
-                return {'nombre': nombre, 'direccion': direccion}
-    return {'nombre': original, 'direccion': ''}
+                lat, lng = resto[0] if resto else (None, None)
+                return {'nombre': nombre, 'direccion': direccion,
+                        'lat': lat, 'lng': lng}
+    return {'nombre': original, 'direccion': '', 'lat': None, 'lng': None}
 
 
 VENUES_INSTAGRAM = {
@@ -531,17 +588,23 @@ def venue_slug(nombre: str) -> str:
 def venue_canonico(lugar: str):
     """Identidad canonica de una sala para armar su pagina propia.
 
-    Devuelve dict {slug, nombre, direccion, masivo} si la sala esta en el
-    catalogo (masiva o con direccion confirmada); None si no la reconocemos
-    (no vale la pena una pagina para un lugar suelto o generico como 'La Plata').
+    Devuelve dict {slug, nombre, direccion, masivo, lat, lng} si la sala esta
+    en el catalogo (masiva o con direccion confirmada); None si no la
+    reconocemos (no vale la pena una pagina para un lugar suelto o generico
+    como 'La Plata'). lat/lng son None si no hay coordenadas confirmadas.
     """
     vm = venue_masivo(lugar)
     if vm:
         _clave, nombre = vm
+        # Un masivo puede estar tambien en VENUES_DIRECCIONES (Teatro
+        # Argentino): sus coordenadas confirmadas valen igual para el mapa.
+        info = venue_info(lugar)
         return {'slug': venue_slug(nombre), 'nombre': nombre,
-                'direccion': '', 'masivo': True}
+                'direccion': '', 'masivo': True,
+                'lat': info['lat'], 'lng': info['lng']}
     info = venue_info(lugar)
     if info['direccion']:
         return {'slug': venue_slug(info['nombre']), 'nombre': info['nombre'],
-                'direccion': info['direccion'], 'masivo': False}
+                'direccion': info['direccion'], 'masivo': False,
+                'lat': info['lat'], 'lng': info['lng']}
     return None

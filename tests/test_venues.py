@@ -114,6 +114,33 @@ class VenueCanonicoTests(unittest.TestCase):
         self.assertEqual(info["direccion"], "")
         self.assertEqual(info["slug"], "estadio-unico-diego-maradona")
 
+    def test_sala_confirmada_trae_coordenadas(self):
+        info = venue_canonico("Tres Empanadas Comedia")
+        self.assertAlmostEqual(info["lat"], -34.923728)
+        self.assertAlmostEqual(info["lng"], -57.971826)
+
+    def test_masivo_con_coordenadas_confirmadas_las_trae(self):
+        info = venue_canonico("Teatro Argentino de La Plata")
+        self.assertTrue(info["masivo"])
+        self.assertIsNotNone(info["lat"])
+        self.assertIsNone(venue_canonico("Estadio Único Diego Maradona")["lat"])
+
+    def test_sala_sin_coordenadas_no_las_inventa(self):
+        # Telón Negro tiene direccion pero no coordenadas confirmadas.
+        info = venue_info("Telón Negro")
+        self.assertTrue(info["direccion"])
+        self.assertIsNone(info["lat"])
+        self.assertIsNone(info["lng"])
+        self.assertIsNone(venue_info("Lugar todavía sin verificar")["lat"])
+
+    def test_coordenadas_dentro_de_gran_la_plata(self):
+        from venues import VENUES_DIRECCIONES
+        for clave, (_n, _d, _a, *resto) in VENUES_DIRECCIONES.items():
+            if resto:
+                lat, lng = resto[0]
+                self.assertTrue(-35.05 < lat < -34.78, clave)
+                self.assertTrue(-58.20 < lng < -57.80, clave)
+
     def test_lugar_generico_no_tiene_pagina(self):
         self.assertIsNone(venue_canonico("La Plata"))
         self.assertIsNone(venue_canonico("Lugar todavía sin verificar"))
@@ -158,3 +185,37 @@ def test_sala_sin_historia_no_inventa_texto():
     venue = {"nombre": "Sala Y", "slug": "sala-y", "direccion": ""}
     html = ge.render_pagina_venue(venue, [], date(2026, 11, 19), [])
     assert "llevamos registrados" not in html
+
+
+def _json_ld(html):
+    import json
+    import re
+    return [json.loads(m) for m in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)]
+
+
+def test_evento_en_sala_confirmada_lleva_geo():
+    import generar_edicion as ge
+    ev = {"titulo": "Show", "fecha": "2026-11-20 21:30:00", "lugar": "Tres Empanadas Comedia",
+          "categoria": "stand-up"}
+    data = _json_ld(ge.render_schema_eventos([ev]))[0]
+    lugar = data["itemListElement"][0]["item"]["location"]
+    assert lugar["geo"] == {"@type": "GeoCoordinates", "latitude": -34.923728, "longitude": -57.971826}
+
+
+def test_evento_sin_coordenadas_no_lleva_geo():
+    import generar_edicion as ge
+    for lugar in ("Telón Negro Teatro", "Lugar todavía sin verificar"):
+        ev = {"titulo": "Show", "fecha": "2026-11-20 21:30:00", "lugar": lugar, "categoria": "teatro"}
+        data = _json_ld(ge.render_schema_eventos([ev]))[0]
+        assert "geo" not in data["itemListElement"][0]["item"]["location"]
+
+
+def test_pagina_de_sala_lleva_geo_solo_si_lo_tiene():
+    from datetime import date
+    import generar_edicion as ge
+    con = ge.render_pagina_venue(venue_canonico("Casa Hereje"), [], date(2026, 11, 19), [])
+    place = next(d for d in _json_ld(con) if d.get("@type") == "Place")
+    assert place["geo"]["latitude"] == -34.914294
+    sin = ge.render_pagina_venue(venue_canonico("Telón Negro Teatro"), [], date(2026, 11, 19), [])
+    place = next(d for d in _json_ld(sin) if d.get("@type") == "Place")
+    assert "geo" not in place
