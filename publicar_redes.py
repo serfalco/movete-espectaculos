@@ -199,6 +199,13 @@ def esperar_publicadas(urls: list[str], minutos: int = 15) -> None:
         time.sleep(20)
 
 
+HORA_DESDE, HORA_HASTA = 8, 23  # se publica entre las 08:00 y las 22:59 (Argentina)
+
+
+def dentro_de_horario(ahora: datetime) -> bool:
+    return HORA_DESDE <= ahora.hour < HORA_HASTA
+
+
 def tareas_de_hoy(manifest: dict, hoy: date) -> list[tuple[str, dict]]:
     tareas = []
     carrusel = manifest.get("carrusel")
@@ -232,7 +239,15 @@ def main() -> int:
     except Exception:  # noqa: BLE001
         pass
 
-    hoy = date.fromisoformat(args.hoy) if args.hoy else datetime.now(ZONA).date()
+    ahora = datetime.now(ZONA)
+    # De madrugada no se publica: GitHub dispara tarde sus cron (26/11/2026:
+    # el de las 18:43 del miercoles corrio a las 00:46 del jueves y salieron
+    # el carrusel y el Reel a esa hora). Lo pendiente sale en la corrida de
+    # las 08:43.
+    if not args.hoy and not dentro_de_horario(ahora):
+        print(f"[redes] Son las {ahora:%H:%M} en Argentina: de madrugada no se publica.")
+        return 0
+    hoy = date.fromisoformat(args.hoy) if args.hoy else ahora.date()
     carpeta = Path(args.redes) / jueves_de_edicion(hoy).isoformat()
     ruta_manifest = carpeta / "manifest.json"
     if not ruta_manifest.exists():

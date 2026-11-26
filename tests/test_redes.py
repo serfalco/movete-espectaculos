@@ -84,6 +84,20 @@ class GenerarTests(unittest.TestCase):
             self.assertTrue((carpeta / "carrusel-00.jpg").exists())
             self.assertIn("2026-11-06", m["historias"])
 
+    def test_regenerar_conserva_lo_publicado(self):
+        """Si se rehacen las piezas, publicado.json queda: si no, se republica todo."""
+        evs = [ev(f"Show {i}", f"2026-11-0{6 + i % 3} 21:00:00", f"Sala {i}") for i in range(4)]
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "ev.json"
+            ruta.write_text(json.dumps({"generado": "x", "eventos": evs}), "utf-8")
+            carpeta = Path(tmp) / "redes" / "2026-11-05"
+            carpeta.mkdir(parents=True)
+            anotado = '{"2026-11-05": {"ig_carrusel": "1", "fb_reel": "2"}}'
+            (carpeta / "publicado.json").write_text(anotado, "utf-8")
+            gr.generar(str(ruta), Path(tmp) / "redes", Path(tmp) / "afiches", hoy=JUEVES)
+            self.assertEqual((carpeta / "publicado.json").read_text("utf-8"), anotado)
+            self.assertTrue((carpeta / "manifest.json").exists())
+
     def test_poda_ediciones_viejas(self):
         with tempfile.TemporaryDirectory() as tmp:
             for d in ("2026-10-15", "2026-10-22", "2026-10-29", "2026-11-05"):
@@ -194,3 +208,14 @@ def test_fb_reel_sube_bytes_y_no_la_url(tmp_path, monkeypatch):
     assert headers["file_size"] == str(len(req.data))
     assert headers["offset"] == "0"
     assert llamadas[-1]["upload_phase"] == "finish"
+
+
+class HorarioTests(unittest.TestCase):
+    def test_de_madrugada_no_se_publica(self):
+        import publicar_redes as pr
+        from datetime import datetime
+        self.assertFalse(pr.dentro_de_horario(datetime(2026, 11, 26, 0, 46)))
+        self.assertFalse(pr.dentro_de_horario(datetime(2026, 11, 26, 7, 59)))
+        self.assertTrue(pr.dentro_de_horario(datetime(2026, 11, 26, 8, 43)))
+        self.assertTrue(pr.dentro_de_horario(datetime(2026, 11, 26, 18, 43)))
+        self.assertFalse(pr.dentro_de_horario(datetime(2026, 11, 26, 23, 5)))

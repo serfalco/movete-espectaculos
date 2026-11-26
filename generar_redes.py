@@ -538,9 +538,16 @@ def generar(eventos_path: str, salida: str | Path, afiches_dir: str | Path,
 
     salida = Path(salida)
     carpeta = salida / jueves.isoformat()
+    # publicado.json anota lo que ya salio en redes. Se rehace la carpeta pero
+    # ese archivo se conserva: si se pierde, publicar_redes.py vuelve a
+    # publicar todo (26/11/2026: una corrida de respaldo lo borro).
+    publicado = carpeta / "publicado.json"
+    anotado = publicado.read_bytes() if publicado.exists() else None
     if carpeta.exists():
         shutil.rmtree(carpeta)
     carpeta.mkdir(parents=True)
+    if anotado is not None:
+        publicado.write_bytes(anotado)
     url_base = f"{URL_REDES}/{jueves.isoformat()}"
     manifest: dict = {"edicion": jueves.isoformat(),
                       "generado": datetime.now().isoformat(timespec="seconds"),
